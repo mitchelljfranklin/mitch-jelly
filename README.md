@@ -53,6 +53,15 @@ bun start
 
 ### Docker
 
+Pre-built images are available from GitHub Container Registry:
+
+```bash
+docker pull ghcr.io/mitchelljfranklin/mitch-jelly:latest
+docker run -d -p 3000:3000 --name mitch-jelly --restart unless-stopped ghcr.io/mitchelljfranklin/mitch-jelly:latest
+```
+
+Or build locally:
+
 ```bash
 docker build -t mitch-jelly .
 docker run -d -p 3000:3000 --name mitch-jelly --restart unless-stopped mitch-jelly
@@ -63,7 +72,7 @@ Or with docker-compose:
 ```yaml
 services:
   mitch-jelly:
-    build: .
+    image: ghcr.io/mitchelljfranklin/mitch-jelly:latest
     ports:
       - "3000:3000"
     environment:

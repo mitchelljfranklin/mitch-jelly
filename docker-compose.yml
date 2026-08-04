@@ -1,6 +1,6 @@
 services:
   mitch-jelly:
-    build: .
+    image: ghcr.io/mitchelljfranklin/mitch-jelly:latest
     ports:
       - "3000:3000"
     environment:
