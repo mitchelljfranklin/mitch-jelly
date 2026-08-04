@@ -22,7 +22,7 @@ const poppins = Poppins({
 
 export const metadata: Metadata = {
   title: "Mitch-Jelly",
-  description: "Glory of cinema, in your browser.",
+  description: "A modern, streamlined Jellyfin client.",
 };
 
 export default function RootLayout({

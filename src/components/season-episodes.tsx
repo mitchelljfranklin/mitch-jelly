@@ -11,6 +11,7 @@ import {
 } from "../components/ui/select";
 import { fetchSeasons, fetchEpisodes } from "../actions";
 import { markAsPlayed, markAsUnplayed } from "../actions/media";
+import { toast } from "sonner";
 import { Play, Star, Check, Eye, EyeOff } from "lucide-react";
 import { formatRuntime } from "../lib/utils";
 import { useAuth } from "../hooks/useAuth";
@@ -417,7 +418,11 @@ const EpisodeCard = React.memo(function EpisodeCard({
       const success = newState
         ? await markAsPlayed(episode.Id)
         : await markAsUnplayed(episode.Id);
-      if (!success) setIsWatchedOverride(!newState);
+      if (success) {
+        toast.success(newState ? "Marked as watched" : "Marked as unwatched");
+      } else {
+        setIsWatchedOverride(!newState);
+      }
     } catch {
       setIsWatchedOverride(!newState);
     } finally {

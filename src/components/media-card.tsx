@@ -5,6 +5,7 @@ import { Play, Check, Eye, EyeOff } from "lucide-react";
 import { decode } from "blurhash";
 import { usePlayback } from "../hooks/usePlayback";
 import { markAsPlayed, markAsUnplayed } from "../actions/media";
+import { toast } from "sonner";
 import { OptimizedImage } from "./optimized-image";
 import Link from "next/link";
 
@@ -237,7 +238,11 @@ export const MediaCard = React.memo(function MediaCard({
         const success = newState
           ? await markAsPlayed(itemId)
           : await markAsUnplayed(itemId);
-        if (!success) setIsWatchedOverride(!newState);
+        if (success) {
+          toast.success(newState ? "Marked as watched" : "Marked as unwatched");
+        } else {
+          setIsWatchedOverride(!newState);
+        }
       } catch {
         setIsWatchedOverride(!newState);
       } finally {

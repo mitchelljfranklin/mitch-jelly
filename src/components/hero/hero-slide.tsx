@@ -3,6 +3,7 @@ import { BaseItemDto } from "@jellyfin/sdk/lib/generated-client/models/base-item
 import { Play, Info, Eye, EyeOff } from "lucide-react";
 import { usePlayback } from "../../hooks/usePlayback";
 import { markAsPlayed, markAsUnplayed } from "../../actions/media";
+import { toast } from "sonner";
 import { Button } from "../ui/button";
 import { Badge } from "../ui/badge";
 import { useEffect, useMemo, useState } from "react";
@@ -118,7 +119,11 @@ export function HeroSlide({ item, serverUrl }: HeroSlideProps) {
       const success = newState
         ? await markAsPlayed(item.Id)
         : await markAsUnplayed(item.Id);
-      if (!success) setIsWatchedOverride(!newState);
+      if (success) {
+        toast.success(newState ? "Marked as watched" : "Marked as unwatched");
+      } else {
+        setIsWatchedOverride(!newState);
+      }
     } catch {
       setIsWatchedOverride(!newState);
     } finally {

@@ -39,6 +39,7 @@ import { markAsPlayed, markAsUnplayed } from "../actions/media";
 import { getMediaDetailsFromName, formatRuntime } from "../lib/utils";
 import { usePlayback } from "../hooks/usePlayback";
 import { useIsMobile } from "../hooks/use-mobile";
+import { toast } from "sonner";
 import { DolbyDigital, DolbyTrueHd, DolbyVision, DtsHd } from "./icons/codecs";
 import { UserPolicy } from "@jellyfin/sdk/lib/generated-client/models";
 
@@ -213,7 +214,9 @@ export function MediaActions({
       const success = newPlayedState
         ? await markAsPlayed(media.Id!)
         : await markAsUnplayed(media.Id!);
-      if (!success) {
+      if (success) {
+        toast.success(newPlayedState ? "Marked as watched" : "Marked as unwatched");
+      } else {
         setIsPlayed(!newPlayedState);
       }
     } catch {

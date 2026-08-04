@@ -95,31 +95,3 @@ export async function searchItems(query: string): Promise<JellyfinItem[]> {
     return [];
   }
 }
-
-// Separate function to search only people for testing
-export async function searchPeople(query: string): Promise<JellyfinItem[]> {
-  const { serverUrl, user } = await getAuthData();
-  if (!user.AccessToken) throw new Error("No access token found");
-
-  if (!query.trim()) return [];
-
-  const jellyfinInstance = createJellyfinInstance();
-  const api = jellyfinInstance.createApi(serverUrl);
-  api.accessToken = user.AccessToken;
-
-  try {
-    const personsApi = new PersonsApi(api.configuration);
-    const { data } = await personsApi.getPersons({
-      searchTerm: query,
-      userId: user.Id,
-      limit: 20,
-      fields: [ItemFields.PrimaryImageAspectRatio, ItemFields.Overview],
-      enableImages: true,
-    });
-
-    return data.Items || [];
-  } catch (error) {
-    console.error("Failed to search people:", error);
-    return [];
-  }
-}
