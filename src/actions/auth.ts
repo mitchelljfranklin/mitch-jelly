@@ -123,13 +123,8 @@ export async function authenticateUser(
     const jellyfinInstance = createJellyfinInstance();
     const api = jellyfinInstance.createApi(serverUrl);
 
-    // Log the request details for debugging
-    console.log("Authentication request details:", {
-      serverUrl,
-      username: username,
-      clientInfo: jellyfinInstance.clientInfo,
-      deviceInfo: jellyfinInstance.deviceInfo,
-    });
+    // Log the request details for debugging (without PII)
+    console.log("Authentication request:", { serverUrl, clientInfo: jellyfinInstance.clientInfo });
 
     const { data: result } = await api.authenticateUserByName(
       username,
@@ -592,8 +587,8 @@ export async function debugServerConnection(): Promise<void> {
         "X-Emby-Authorization": buildAuthorizationHeader(),
       },
       body: JSON.stringify({
-        Username: "test",
-        Pw: "test",
+        Username: process.env.NODE_ENV === "development" ? "test" : "",
+        Pw: process.env.NODE_ENV === "development" ? "test" : "",
       }),
     });
 

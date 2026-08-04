@@ -192,11 +192,9 @@ export function LogViewerDialog({
   const highlightSearchTerm = (text: string) => {
     if (!searchTerm) return text;
 
-    const regex = new RegExp(`(${searchTerm})`, "gi");
-    return text.replace(
-      regex,
-      "<mark class='bg-primary dark:bg-primary/50 text-white'>$1</mark>",
-    );
+    const escaped = searchTerm.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const regex = new RegExp(`(${escaped})`, "gi");
+    return text.replace(regex, (match) => `<mark class='bg-primary dark:bg-primary/50 text-white'>${match}</mark>`);
   };
 
   const filteredContent = React.useMemo(() => {
