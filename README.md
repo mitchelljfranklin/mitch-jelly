@@ -16,7 +16,7 @@ Mitch-Jelly is a clean, modern Jellyfin client designed for speed, simplicity, a
 - **Hero Media Bar** — Visually striking carousel showcasing highlighted content
 - **Smart Episodic Features** — Intro and Outro skipping for effortless binge-watching (requires the Intro Skipper plugin)
 - **Mini Player** — Keep watching while browsing with Picture-in-Picture mode
-- **Seerr Integration** — Built-in support for Jellyseerr/Overseerr for content discovery and requests
+- **Seerr Integration** — Built-in support for Seerr for content discovery and requests
 - **Performance** — 5-minute local caching, skeleton loading, paginated fetches, and infinite scroll for snappy UX
 
 ## vs Jellyfin Web
@@ -113,6 +113,15 @@ Modern browsers block requests from HTTPS sites to public HTTP endpoints. To use
 2. Run Mitch-Jelly locally (bun dev, Docker) over HTTP
 
 LAN/private IPs (192.168.x.x, 10.x.x.x, etc.) generally work over HTTP.
+
+## Security
+
+See [SECURITY.md](.github/SECURITY.md) for our security policy and vulnerability reporting process.
+
+## Contributing
+
+- [Report a bug](https://github.com/mitchelljfranklin/mitch-jelly/issues/new?template=bug_report.yml)
+- [Request a feature](https://github.com/mitchelljfranklin/mitch-jelly/issues/new?template=feature_request.yml)
 
 ## Credits
 
