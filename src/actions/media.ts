@@ -331,6 +331,7 @@ export async function fetchResumeItems() {
         ItemFields.CanDelete,
         ItemFields.PrimaryImageAspectRatio,
         ItemFields.Overview,
+        ItemFields.UserData,
       ],
       enableImages: true,
     });
@@ -364,6 +365,7 @@ export async function fetchNextUpItems() {
         ItemFields.CanDelete,
         ItemFields.PrimaryImageAspectRatio,
         ItemFields.Overview,
+        ItemFields.UserData,
       ],
       enableImages: true,
     });
@@ -1491,9 +1493,9 @@ export async function getNextEpisodeForSeries(
       userId: user.Id,
       parentId: seriesId,
       includeItemTypes: [BaseItemKind.Episode],
-      recursive: false,
-      sortBy: [ItemSortBy.SortName],
-      sortOrder: [SortOrder.Ascending],
+      recursive: true,
+      sortBy: [ItemSortBy.ParentIndexNumber, ItemSortBy.IndexNumber],
+      sortOrder: [SortOrder.Ascending, SortOrder.Ascending],
       fields: [
         ItemFields.CanDelete,
         ItemFields.PrimaryImageAspectRatio,

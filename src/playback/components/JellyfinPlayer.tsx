@@ -143,6 +143,20 @@ export const JellyfinPlayer: React.FC<JellyfinPlayerProps> = ({
           e.preventDefault();
           manager.stop();
           break;
+        case "f":
+        case "F":
+          e.preventDefault();
+          if (document.fullscreenElement) {
+            document.exitFullscreen();
+          } else {
+            document.documentElement.requestFullscreen();
+          }
+          break;
+        case "m":
+        case "M":
+          e.preventDefault();
+          manager.toggleMute();
+          break;
       }
     };
 

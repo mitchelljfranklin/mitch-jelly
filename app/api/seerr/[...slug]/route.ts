@@ -24,6 +24,20 @@ async function seerrFetch<T>(
   if (!/^https?:\/\//i.test(baseUrl)) {
     baseUrl = `https://${baseUrl}`;
   }
+
+  // Validate URL to prevent SSRF — reject private/internal IPs and localhost
+  try {
+    const parsed = new URL(baseUrl);
+    if (parsed.hostname === "localhost" || parsed.hostname === "127.0.0.1" || parsed.hostname === "[::1]") {
+      return { success: false, message: "Invalid server URL" };
+    }
+    if (parsed.hostname.startsWith("169.254.") || parsed.hostname.startsWith("0.") || parsed.hostname.startsWith("10.") || parsed.hostname.startsWith("172.16.") || parsed.hostname.startsWith("192.168.")) {
+      return { success: false, message: "Invalid server URL" };
+    }
+  } catch {
+    return { success: false, message: "Invalid server URL" };
+  }
+
   const fullUrl = `${baseUrl}${endpoint}`;
 
   // Credentials for Auto-Login

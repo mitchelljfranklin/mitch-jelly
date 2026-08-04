@@ -31,6 +31,8 @@ import {
   ArrowDown,
   Dices,
   Heart,
+  Eye,
+  EyeOff,
 } from "lucide-react";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
@@ -138,16 +140,17 @@ export function LibraryMediaList({
   const [sortOrder, setSortOrder] = useState<SortOrder>("asc");
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [randomSeed, setRandomSeed] = useState<number>(() => Math.random());
+  const [watchFilter, setWatchFilter] = useState<string>("all");
 
   // Infinite scroll: only render a window of items at a time
   const BATCH_SIZE = 200;
   const [visibleCount, setVisibleCount] = useState(BATCH_SIZE);
   const sentinelRef = useRef<HTMLDivElement>(null);
 
-  // Reset visible count when items or search changes
+  // Reset visible count when items, search, or filter changes
   useEffect(() => {
     setVisibleCount(BATCH_SIZE);
-  }, [mediaItems.length, searchQuery]);
+  }, [mediaItems.length, searchQuery, watchFilter]);
 
   // Intersection Observer for infinite scroll
   useEffect(() => {
@@ -172,9 +175,16 @@ export function LibraryMediaList({
 
   const filteredAndSortedItems = useMemo(() => {
     // First filter by search query
-    const filtered = mediaItems.filter((item) =>
+    let filtered = mediaItems.filter((item) =>
       (item.Name || "").toLowerCase().includes(searchQuery.toLowerCase()),
     );
+
+    // Then filter by watch status
+    if (watchFilter === "watched") {
+      filtered = filtered.filter((item) => item.UserData?.Played === true);
+    } else if (watchFilter === "unwatched") {
+      filtered = filtered.filter((item) => !item.UserData?.Played);
+    }
 
     // SortName ascending is the default. Items arrive from the server
     // sorted by SortName (ignoring articles). Re-sort by display Name locally
@@ -215,7 +225,7 @@ export function LibraryMediaList({
 
       return sortOrder === "desc" ? -comparison : comparison;
     });
-  }, [mediaItems, sortField, sortOrder, searchQuery, randomSeed]);
+  }, [mediaItems, sortField, sortOrder, searchQuery, randomSeed, watchFilter]);
 
   const selectedFieldLabel =
     sortFields.find((field) => field.value === sortField)?.label || "Name";
@@ -266,6 +276,50 @@ export function LibraryMediaList({
                   </DropdownMenuItem>
                 );
               })}
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          {/* Watch Status Filter */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="sm" className="gap-2">
+                {watchFilter === "watched" ? (
+                  <Eye className="h-4 w-4" />
+                ) : watchFilter === "unwatched" ? (
+                  <EyeOff className="h-4 w-4" />
+                ) : (
+                  <Eye className="h-4 w-4" />
+                )}
+                {watchFilter === "all"
+                  ? "All Items"
+                  : watchFilter === "watched"
+                    ? "Watched"
+                    : "Unwatched"}
+                <ChevronDown className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-40">
+              <DropdownMenuItem
+                onClick={() => setWatchFilter("all")}
+                className={`gap-2 ${watchFilter === "all" ? "bg-accent" : ""}`}
+              >
+                <Eye className="h-4 w-4" />
+                All Items
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => setWatchFilter("unwatched")}
+                className={`gap-2 ${watchFilter === "unwatched" ? "bg-accent" : ""}`}
+              >
+                <EyeOff className="h-4 w-4" />
+                Unwatched
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => setWatchFilter("watched")}
+                className={`gap-2 ${watchFilter === "watched" ? "bg-accent" : ""}`}
+              >
+                <Eye className="h-4 w-4" />
+                Watched
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
 
