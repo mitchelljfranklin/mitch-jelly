@@ -1287,6 +1287,11 @@ export async function fetchSeasons(tvShowId: string): Promise<JellyfinItem[]> {
     return data.Items || [];
   } catch (error) {
     console.error("Failed to fetch seasons:", error);
+    if (isAuthError(error)) {
+      const authError = new Error("Authentication expired. Please sign in again.");
+      (authError as any).isAuthError = true;
+      throw authError;
+    }
     return [];
   }
 }
@@ -1319,10 +1324,14 @@ export async function fetchEpisodes(seasonId: string): Promise<JellyfinItem[]> {
     return data.Items || [];
   } catch (error) {
     console.error("Failed to fetch episodes:", error);
+    if (isAuthError(error)) {
+      const authError = new Error("Authentication expired. Please sign in again.");
+      (authError as any).isAuthError = true;
+      throw authError;
+    }
     return [];
   }
 }
-
 export async function getNextEpisode(
   seasonId: string,
   episodeNumber: number | null | undefined,
@@ -1370,6 +1379,11 @@ export async function getNextEpisode(
     return null;
   } catch (error) {
     console.error("Failed to fetch next episode:", error);
+    if (isAuthError(error)) {
+      const authError = new Error("Authentication expired. Please sign in again.");
+      (authError as any).isAuthError = true;
+      throw authError;
+    }
     return null;
   }
 }
@@ -1422,6 +1436,11 @@ export async function getPreviousEpisode(
     return null;
   } catch (error) {
     console.error("Failed to fetch previous episode:", error);
+    if (isAuthError(error)) {
+      const authError = new Error("Authentication expired. Please sign in again.");
+      (authError as any).isAuthError = true;
+      throw authError;
+    }
     return null;
   }
 }
@@ -1445,6 +1464,11 @@ export async function fetchTVShowDetails(
     return data;
   } catch (error) {
     console.error("Failed to fetch TV show details:", error);
+    if (isAuthError(error)) {
+      const authError = new Error("Authentication expired. Please sign in again.");
+      (authError as any).isAuthError = true;
+      throw authError;
+    }
     return null;
   }
 }
@@ -1479,6 +1503,11 @@ export async function fetchEpisodeDetails(
     return data.Items?.[0] ?? null;
   } catch (error) {
     console.error("Failed to fetch episode details:", error);
+    if (isAuthError(error)) {
+      const authError = new Error("Authentication expired. Please sign in again.");
+      (authError as any).isAuthError = true;
+      throw authError;
+    }
     return null;
   }
 }
@@ -1543,6 +1572,11 @@ export async function getNextEpisodeForSeries(
     return data.Items[0] || null;
   } catch (error) {
     console.error("Failed to get next episode for series:", error);
+    if (isAuthError(error)) {
+      const authError = new Error("Authentication expired. Please sign in again.");
+      (authError as any).isAuthError = true;
+      throw authError;
+    }
     return null;
   }
 }

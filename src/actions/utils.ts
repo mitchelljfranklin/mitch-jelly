@@ -560,6 +560,11 @@ export async function getLibraryById(
     return library || null;
   } catch (error) {
     console.error("Failed to fetch library by ID:", error);
+    if (isAuthError(error)) {
+      const authError = new Error("Authentication expired. Please sign in again.");
+      (authError as any).isAuthError = true;
+      throw authError;
+    }
     return null;
   }
 }
