@@ -19,6 +19,31 @@ Mitch-Jelly is a clean, modern Jellyfin client designed for speed, simplicity, a
 - **Seerr Integration** — Built-in support for Jellyseerr/Overseerr for content discovery and requests
 - **Performance** — 5-minute local caching, skeleton loading, paginated fetches, and infinite scroll for snappy UX
 
+## vs Jellyfin Web
+
+| Feature | Jellyfin Web | Mitch-Jelly |
+|---------|-------------|-------------|
+| **Framework** | Vanilla JS + jQuery | Next.js 16 + React 19 + TypeScript |
+| **Performance** | Full page reloads | SPA navigation, instant transitions |
+| **Loading UX** | Basic spinners | Skeleton loading, progressive rendering, infinite scroll |
+| **Caching** | Browser cache only | 5-min localStorage + in-memory cache — instant revisits |
+| **Browse view** | Grid with next/prev buttons | Grid with infinite scroll (200 items at a time) |
+| **Sorting** | Server-side only | Client-side: Name, Date Added, Rating, Year, Runtime, Random |
+| **Search** | Full text search | Type-ahead suggestions, `/` shortcut, 200-result limit + Seerr |
+| **Watched badges** | Checkmark on cards | Checkmark + progress bars + "X left" episode counts |
+| **Mark as watched** | Context menu on card | Hover eye-toggle on every card + episode scroller + hero + detail page |
+| **Auto-mark watched** | Server-side at ~90% | Server-side + client-side fallback at >= 90% |
+| **Themes** | Light + Dark | 11 themes (Cinematic Theatre Black, Neon Grid, Emerald Ember, etc.) |
+| **Backdrops** | Static or blurred | Vibrant color-extracted aurora via WebGL |
+| **Hero carousel** | No | Full-height hero with Ken Burns effect, logo extraction |
+| **Mini player** | No | Picture-in-Picture while browsing |
+| **Seerr integration** | No | Built-in — discover, request, and manage media in-app |
+| **Custom app name** | No | Admin-configurable branding (sidebar, browser tab, all UI text) |
+| **Splash screen** | No | Cinematic splash loader |
+| **Intro/Outro skipping** | Plugin | Built-in support with Intro Skipper plugin |
+| **Docker** | Official image | GHCR image, manual `latest` or versioned release builds |
+| **License** | GPL v2 | AGPL v3 |
+
 ## Built With
 
 - **Frontend**: Next.js 16, React 19, TypeScript ~5.9
