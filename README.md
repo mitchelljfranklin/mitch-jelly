@@ -1,5 +1,9 @@
 # Mitch-Jelly
 
+<p align="center">
+  <img src="public/assets/logo/icon.png" alt="Mitch-Jelly Logo" width="128" height="128" />
+</p>
+
 **A Modern, Streamlined Jellyfin Client built with Next.js**
 
 Mitch-Jelly is a clean, modern Jellyfin client designed for speed, simplicity, and elegance. Born from the solid foundation of Aperture (originally built upon Finetic), Mitch-Jelly extends functionality with improved performance, watch status tracking, library management, and a customizable interface.
