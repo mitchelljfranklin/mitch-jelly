@@ -88,6 +88,7 @@ export async function fetchMovies(
         ItemFields.CanDelete,
         ItemFields.PrimaryImageAspectRatio,
         ItemFields.Overview,
+        ItemFields.UserData,
       ],
     });
     return data.Items || [];
@@ -128,13 +129,12 @@ export async function fetchMovieByCollection(
         ItemFields.CanDelete,
         ItemFields.PrimaryImageAspectRatio,
         ItemFields.Overview,
+        ItemFields.UserData,
       ],
     });
     return data.Items || [];
   } catch (error) {
     console.error("Failed to fetch movies:", error);
-
-    // If it's an authentication error, throw an error with a special flag
     if (isAuthError(error)) {
       const authError = new Error(
         "Authentication expired. Please sign in again.",
@@ -171,6 +171,7 @@ export async function fetchTVShows(
         ItemFields.CanDelete,
         ItemFields.PrimaryImageAspectRatio,
         ItemFields.Overview,
+        ItemFields.UserData,
       ],
     });
     return data.Items || [];
@@ -591,6 +592,7 @@ export async function fetchLiveTVItems(
         ItemFields.PrimaryImageAspectRatio,
         ItemFields.Overview,
         ItemFields.DateCreated,
+        ItemFields.UserData,
       ],
     });
 
@@ -856,6 +858,7 @@ export async function fetchHeroItems(): Promise<JellyfinItem[]> {
             "ProductionYear" as ItemFields,
             "CommunityRating" as ItemFields,
             "OfficialRating" as ItemFields,
+            ItemFields.UserData,
           ],
           enableImages: true,
           mediaTypes: [BaseItemKind.Movie, BaseItemKind.Series] as any,
@@ -876,6 +879,7 @@ export async function fetchHeroItems(): Promise<JellyfinItem[]> {
             "ProductionYear" as ItemFields,
             "CommunityRating" as ItemFields,
             "OfficialRating" as ItemFields,
+            ItemFields.UserData,
           ],
           enableImages: true,
         }),
@@ -895,6 +899,7 @@ export async function fetchHeroItems(): Promise<JellyfinItem[]> {
             "ProductionYear" as ItemFields,
             "CommunityRating" as ItemFields,
             "OfficialRating" as ItemFields,
+            ItemFields.UserData,
           ],
           enableImages: true,
         }),
@@ -917,6 +922,7 @@ export async function fetchHeroItems(): Promise<JellyfinItem[]> {
             "ProductionYear" as ItemFields,
             "CommunityRating" as ItemFields,
             "OfficialRating" as ItemFields,
+            ItemFields.UserData,
           ],
           enableImages: true,
         }),
@@ -1307,6 +1313,7 @@ export async function fetchEpisodes(seasonId: string): Promise<JellyfinItem[]> {
         ItemFields.PrimaryImageAspectRatio,
         ItemFields.Overview,
         ItemFields.MediaSources,
+        ItemFields.UserData,
       ],
     });
     return data.Items || [];
@@ -1395,6 +1402,7 @@ export async function getPreviousEpisode(
         ItemFields.PrimaryImageAspectRatio,
         ItemFields.Overview,
         ItemFields.MediaSources,
+        ItemFields.UserData,
       ],
     });
 
