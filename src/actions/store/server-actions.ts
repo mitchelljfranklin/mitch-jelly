@@ -24,6 +24,8 @@ export interface AuthData {
 
 export type SeerrAuthType = "api-key" | "jellyfin-user" | "local-user";
 
+// Note: For local-user auth, the proxy maps 'username' to Seerr's expected 'email' field
+// at app/api/seerr/[...slug]/route.ts:78
 export type SeerrAuthData =
   | { authType: "api-key"; serverUrl: string; apiKey: string }
   | {

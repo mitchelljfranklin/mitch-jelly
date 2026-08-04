@@ -36,7 +36,7 @@ export function NotConnected() {
             Discover Content
           </h2>
           <p className="text-base text-muted-foreground leading-relaxed">
-            Integrate with Overseerr or Jellyseerr to explore, request, and
+            Integrate with Seerr to explore, request, and
             discover new media directly within {appName}.
           </p>
         </div>
