@@ -75,6 +75,7 @@ export interface PlaybackContextValue {
   setAudioStreamIndex: (index: number) => void;
   setSubtitleStreamIndex: (index: number) => void;
   setSubtitleUrl: (url: string) => Promise<void>;
+  setSubtitleOffset: (offset: number) => void;
   registerPlayer: (type: PlayerType, player: Player) => void;
   unregisterPlayer: (type: PlayerType) => void;
   reportState: (updates: Partial<PlaybackState>) => void;
@@ -698,6 +699,13 @@ export function usePlaybackManager(): PlaybackContextValue {
     ],
   );
 
+  const setSubtitleOffset = useCallback(
+    (offset: number) => {
+      updateState({ subtitleOffset: offset });
+    },
+    [updateState],
+  );
+
   const setPreferredQuality = useCallback(
     (quality: string) => {
       updateState({ preferredQuality: quality });
@@ -794,6 +802,7 @@ export function usePlaybackManager(): PlaybackContextValue {
     setAudioStreamIndex,
     setSubtitleStreamIndex,
     setSubtitleUrl,
+    setSubtitleOffset,
     registerPlayer,
     unregisterPlayer,
     reportState: updateState,

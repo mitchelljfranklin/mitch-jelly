@@ -20,6 +20,7 @@ interface SubtitleDisplayProps {
   textTracks?: SubtitleTrack[];
   isVisible?: boolean;
   isControlsVisible?: boolean;
+  subtitleOffset?: number;
 }
 
 /**
@@ -193,6 +194,7 @@ export const SubtitleDisplay: React.FC<SubtitleDisplayProps> = ({
   textTracks = [],
   isVisible = true,
   isControlsVisible = true,
+  subtitleOffset = 0,
 }) => {
   const [allSubtitles, setAllSubtitles] = useState<Map<number, SubtitleLine[]>>(
     new Map(),
@@ -291,12 +293,14 @@ export const SubtitleDisplay: React.FC<SubtitleDisplayProps> = ({
       return;
     }
 
+    const adjustedTime = currentTime + subtitleOffset / 1000;
+
     const active = subtitles.find(
-      (sub) => currentTime >= sub.startTime && currentTime < sub.endTime,
+      (sub) => adjustedTime >= sub.startTime && adjustedTime < sub.endTime,
     );
 
     setCurrentSubtitle(active || null);
-  }, [currentTime, subtitleStreamIndex, allSubtitles]);
+  }, [currentTime, subtitleStreamIndex, subtitleOffset, allSubtitles]);
 
   if (!isVisible || !currentSubtitle) {
     return null;
