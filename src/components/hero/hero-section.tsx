@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useAtom } from "jotai";
 import { heroItemsAtom, heroLastVisitedTimeAtom } from "@/src/lib/atoms";
 import { fetchHeroItems } from "../../actions/media";
@@ -13,20 +13,27 @@ interface HeroSectionProps {
 export function HeroSection({ serverUrl }: HeroSectionProps) {
   const [items, setItems] = useAtom(heroItemsAtom);
   const [lastVisitedTime, setLastVisitedTime] = useAtom(heroLastVisitedTimeAtom);
-  const [loading, setLoading] = useState(true);
+  const hasCached = items.length > 0;
+  const [loading, setLoading] = useState(!hasCached);
+  const fetchIdRef = useRef(0);
 
   useEffect(() => {
     if (!serverUrl) return;
+    const thisFetchId = ++fetchIdRef.current;
     const now = Date.now();
-    // Only refetch if 60 seconds have passed since the page was last visited
-    if (now - lastVisitedTime < 60000) {
+    // Only refetch if 5 minutes have passed since the page was last visited
+    if (now - lastVisitedTime < 300000) {
       setLastVisitedTime(Date.now());
       setLoading(false);
       return;
     }
+    if (!hasCached) {
+      setLoading(true);
+    }
     async function loadHeroItems() {
       try {
         const heroItems = await fetchHeroItems();
+        if (thisFetchId !== fetchIdRef.current) return;
         setItems(heroItems);
         setLastVisitedTime(Date.now());
       } catch (error) {

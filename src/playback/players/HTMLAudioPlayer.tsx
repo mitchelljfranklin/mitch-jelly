@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useImperativeHandle, forwardRef } from 'react';
 import Hls from 'hls.js';
-import { BaseItemDto, MediaSourceInfo } from "@jellyfin/sdk/lib/generated-client/models";
+import { BaseItemDto } from "@jellyfin/sdk/lib/generated-client/models";
 import { PlayOptions, Player } from '../types';
 import * as htmlMediaHelper from '../utils/mediaHelper';
 

@@ -10,7 +10,9 @@ import {
   SelectValue,
 } from "../components/ui/select";
 import { fetchSeasons, fetchEpisodes } from "../actions";
-import { Play, Star } from "lucide-react";
+import { markAsPlayed, markAsUnplayed } from "../actions/media";
+import { toast } from "sonner";
+import { Play, Star, Check, Eye, EyeOff } from "lucide-react";
 import { formatRuntime } from "../lib/utils";
 import { useAuth } from "../hooks/useAuth";
 import { ScrollArea, ScrollBar } from "./ui/scroll-area";
@@ -29,6 +31,10 @@ interface Season {
   Name: string;
   IndexNumber?: number;
   ProductionYear?: number;
+  UserData?: {
+    UnplayedItemCount?: number;
+    Played?: boolean;
+  };
 }
 
 interface Episode {
@@ -45,6 +51,13 @@ interface Episode {
   CommunityRating?: number;
   OfficialRating?: string;
   CriticRating?: number;
+  UserData?: {
+    Played?: boolean;
+    PlayedPercentage?: number;
+    PlaybackPositionTicks?: number;
+    UnplayedItemCount?: number;
+    PlayCount?: number;
+  };
 }
 
 // Global cache for episodes and seasons data to prevent refetching when switching between episodes
@@ -382,6 +395,40 @@ const EpisodeCard = React.memo(function EpisodeCard({
 }) {
   const imageUrl = `${serverUrl}/Items/${episode.Id}/Images/Primary?width=576&height=324&quality=95`;
   const isCurrentEpisode = currentEpisodeId === episode.Id;
+  const isWatched = episode.UserData?.Played === true;
+  const [togglingWatched, setTogglingWatched] = useState(false);
+  const [isWatchedOverride, setIsWatchedOverride] = useState<boolean | null>(null);
+  const isWatchedEffective = isWatchedOverride ?? isWatched;
+  const progressPercentage =
+    episode.UserData?.PlaybackPositionTicks && episode.RunTimeTicks
+      ? Math.min(
+          (episode.UserData.PlaybackPositionTicks / episode.RunTimeTicks) * 100,
+          100,
+        )
+      : 0;
+
+  const handleToggleWatched = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (togglingWatched) return;
+    setTogglingWatched(true);
+    const newState = !isWatchedEffective;
+    setIsWatchedOverride(newState);
+    try {
+      const success = newState
+        ? await markAsPlayed(episode.Id)
+        : await markAsUnplayed(episode.Id);
+      if (success) {
+        toast.success(newState ? "Marked as watched" : "Marked as unwatched");
+      } else {
+        setIsWatchedOverride(!newState);
+      }
+    } catch {
+      setIsWatchedOverride(!newState);
+    } finally {
+      setTogglingWatched(false);
+    }
+  };
 
   // Memoize the date formatting function
   const formatDate = useCallback((dateString: string | undefined) => {
@@ -422,10 +469,21 @@ const EpisodeCard = React.memo(function EpisodeCard({
 
             {/* Play button overlay */}
             <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-all duration-300 flex items-center justify-center">
-              <div className="invisible group-hover:visible transition-opacity duration-300">
+              <div className="invisible group-hover:visible transition-opacity duration-300 flex gap-2">
                 <div className="bg-white/20 backdrop-blur-sm rounded-full p-3 hover:bg-white/30 transition-colors">
                   <Play className="h-6 w-6 text-white fill-white" />
                 </div>
+                <button
+                  onClick={handleToggleWatched}
+                  className="bg-white/20 backdrop-blur-sm rounded-full p-3 hover:bg-white/30 transition-colors cursor-pointer"
+                  title={isWatchedEffective ? "Mark as Unwatched" : "Mark as Watched"}
+                >
+                  {isWatchedEffective ? (
+                    <EyeOff className="h-6 w-6 text-white" />
+                  ) : (
+                    <Eye className="h-6 w-6 text-white" />
+                  )}
+                </button>
               </div>
             </div>
 
@@ -438,6 +496,25 @@ const EpisodeCard = React.memo(function EpisodeCard({
                 >
                   {formatRuntime(episode.RunTimeTicks)}
                 </Badge>
+              </div>
+            )}
+
+            {/* Watched checkmark badge */}
+            {isWatchedEffective && (
+              <div className="absolute top-2 right-2 z-10">
+                <div className="bg-primary rounded-full p-1 shadow-lg">
+                  <Check className="h-3 w-3 text-primary-foreground" strokeWidth={3} />
+                </div>
+              </div>
+            )}
+
+            {/* Progress bar */}
+            {progressPercentage > 0 && !isWatchedEffective && (
+              <div className="absolute bottom-0 left-0 right-0 h-1 bg-black/10 overflow-hidden rounded-b-lg">
+                <div
+                  className="h-full bg-primary transition-all duration-300"
+                  style={{ width: `${progressPercentage}%` }}
+                ></div>
               </div>
             )}
           </div>

@@ -17,7 +17,7 @@ interface SeerrRequestCardProps {
 export function SeerrRequestCard({ item }: SeerrRequestCardProps) {
   const { canManageRequests, serverUrl } = useSeerr();
   const router = useRouter();
-  const [_, setIsLoaded] = useState(false);
+  const [, setIsLoaded] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
   const [localStatus, setLocalStatus] = useState(item.status);
   const [isModalOpen, setIsModalOpen] = useState(false);

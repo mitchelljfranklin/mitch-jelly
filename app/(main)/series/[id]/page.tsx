@@ -228,12 +228,7 @@ export default function Show() {
           {seasons.map((season) => (
             <MediaCard
               key={season.Id}
-              item={{
-                Id: season.Id,
-                Name: season.Name || `Season ${season.IndexNumber}`,
-                Type: "Season",
-                ProductionYear: season.ProductionYear,
-              }}
+              item={season}
               serverUrl={serverUrl}
             />
           ))}

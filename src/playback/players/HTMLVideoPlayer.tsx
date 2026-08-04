@@ -8,7 +8,6 @@ import React, {
 import Hls from "hls.js";
 import {
   BaseItemDto,
-  MediaSourceInfo,
 } from "@jellyfin/sdk/lib/generated-client/models";
 import { PlayOptions, Player } from "../types";
 import * as htmlMediaHelper from "../utils/mediaHelper";
@@ -38,7 +37,6 @@ export const HTMLVideoPlayer = forwardRef<Player, HTMLVideoPlayerProps>(
       onPlay,
       onError,
       onVolumeChange,
-      subtitleOffset = 0,
       onDurationChange,
       onBufferedChange,
       textTracks: propTextTracks,
@@ -46,7 +44,7 @@ export const HTMLVideoPlayer = forwardRef<Player, HTMLVideoPlayerProps>(
     },
     ref,
   ) => {
-    const [textTracks, setTextTracks] = useState<any[]>([]);
+    const [, setTextTracks] = useState<any[]>([]);
     const videoRef = useRef<HTMLVideoElement>(null);
     const hlsRef = useRef<Hls | null>(null);
     const pendingSeekTicks = useRef<number | null>(null);
@@ -369,7 +367,7 @@ export const HTMLVideoPlayer = forwardRef<Player, HTMLVideoPlayerProps>(
         className={`w-full h-full bg-black ${className}`}
         crossOrigin="anonymous"
         playsInline
-        // @ts-ignore - Safari specific attributes
+        // @ts-expect-error - Safari specific attributes
         x-webkit-airplay="allow"
       ></video>
     );

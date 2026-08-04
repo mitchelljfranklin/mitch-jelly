@@ -26,6 +26,8 @@ import {
   ChevronDown,
   Music,
   Check,
+  Eye,
+  EyeOff,
 } from "lucide-react";
 import {
   getAuthData,
@@ -33,9 +35,11 @@ import {
   getUserWithPolicy,
   getUser,
 } from "../actions";
+import { markAsPlayed, markAsUnplayed } from "../actions/media";
 import { getMediaDetailsFromName, formatRuntime } from "../lib/utils";
 import { usePlayback } from "../hooks/usePlayback";
 import { useIsMobile } from "../hooks/use-mobile";
+import { toast } from "sonner";
 import { DolbyDigital, DolbyTrueHd, DolbyVision, DtsHd } from "./icons/codecs";
 import { UserPolicy } from "@jellyfin/sdk/lib/generated-client/models";
 
@@ -61,6 +65,10 @@ export function MediaActions({
     number | undefined
   >(undefined);
   const [userPolicy, setUserPolicy] = useState<UserPolicy | null>(null);
+  const [isPlayed, setIsPlayed] = useState<boolean>(
+    media?.UserData?.Played || false,
+  );
+  const [isTogglingPlayed, setIsTogglingPlayed] = useState(false);
 
   // Determine if this is a resume or new play
   const hasProgress =
@@ -112,6 +120,10 @@ export function MediaActions({
       }
     }
   }, [media]);
+
+  useEffect(() => {
+    setIsPlayed(media?.UserData?.Played || false);
+  }, [media?.UserData?.Played]);
 
   // Update selected audio when version changes
   useEffect(() => {
@@ -191,6 +203,27 @@ export function MediaActions({
 
   const download = async () => {
     window.open(await getDownloadUrl(selectedVersion.Id!), "_blank");
+  };
+
+  const handleTogglePlayed = async () => {
+    if (!media?.Id || isTogglingPlayed) return;
+    setIsTogglingPlayed(true);
+    const newPlayedState = !isPlayed;
+    setIsPlayed(newPlayedState);
+    try {
+      const success = newPlayedState
+        ? await markAsPlayed(media.Id!)
+        : await markAsUnplayed(media.Id!);
+      if (success) {
+        toast.success(newPlayedState ? "Marked as watched" : "Marked as unwatched");
+      } else {
+        setIsPlayed(!newPlayedState);
+      }
+    } catch {
+      setIsPlayed(!newPlayedState);
+    } finally {
+      setIsTogglingPlayed(false);
+    }
   };
 
   // Helper function to get display name for a media source
@@ -515,6 +548,24 @@ export function MediaActions({
           })()}
 
         <div className="flex w-full items-center gap-2 sm:w-auto">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleTogglePlayed}
+            disabled={isTogglingPlayed}
+            className="flex-1 sm:flex-none sm:h-9 sm:px-3 sm:gap-1"
+            title={isPlayed ? "Mark as Unwatched" : "Mark as Watched"}
+          >
+            {isPlayed ? (
+              <EyeOff className="h-4 w-4" />
+            ) : (
+              <Eye className="h-4 w-4" />
+            )}
+            <span className="ml-2 text-sm sm:hidden">
+              {isPlayed ? "Unwatched" : "Watched"}
+            </span>
+          </Button>
+
           <Button
             variant="outline"
             size="sm"

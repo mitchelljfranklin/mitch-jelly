@@ -32,11 +32,11 @@ export {
   fetchMovieByCollection,
   fetchSeasons,
   fetchEpisodes,
-  fetchTVShowDetails,
-  fetchEpisodeDetails,
   scanLibrary,
   markFavorite,
   unmarkFavorite,
+  markAsPlayed,
+  markAsUnplayed,
   fetchVirtualFolders,
   removeVirtualFolder,
   renameVirtualFolder,
@@ -44,7 +44,7 @@ export {
 } from "./media";
 
 // Search actions
-export { searchItems, searchPeople } from "./search";
+export { searchItems } from "./search";
 
 // Utility actions
 export {

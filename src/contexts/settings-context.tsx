@@ -41,7 +41,7 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
 
   // Load settings from localStorage on mount
   useEffect(() => {
-    const savedBitrate = localStorage.getItem("aperture-video-bitrate");
+    const savedBitrate = localStorage.getItem("mitch-jelly-video-bitrate");
     if (
       savedBitrate &&
       BITRATE_OPTIONS.some((option) => option.value === savedBitrate)
@@ -50,19 +50,19 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
     }
 
     const savedThemeBackdrops = localStorage.getItem(
-      "aperture-enable-theme-backdrops",
+      "mitch-jelly-enable-theme-backdrops",
     );
     if (savedThemeBackdrops !== null) {
       setEnableThemeBackdropsState(savedThemeBackdrops === "true");
     }
 
-    const savedThemeSongs = localStorage.getItem("aperture-enable-theme-songs");
+    const savedThemeSongs = localStorage.getItem("mitch-jelly-enable-theme-songs");
     if (savedThemeSongs !== null) {
       setEnableThemeSongsState(savedThemeSongs === "true");
     }
 
     const savedAuroraEffect = localStorage.getItem(
-      "aperture-enable-aurora-effect",
+      "mitch-jelly-enable-aurora-effect",
     );
     if (savedAuroraEffect !== null) {
       setEnableAuroraEffectState(savedAuroraEffect === "true");
@@ -72,22 +72,22 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
   // Save to localStorage when states change
   const setVideoBitrate = (bitrate: string) => {
     setVideoBitrateState(bitrate);
-    localStorage.setItem("aperture-video-bitrate", bitrate);
+    localStorage.setItem("mitch-jelly-video-bitrate", bitrate);
   };
 
   const setEnableThemeBackdrops = (enable: boolean) => {
     setEnableThemeBackdropsState(enable);
-    localStorage.setItem("aperture-enable-theme-backdrops", String(enable));
+    localStorage.setItem("mitch-jelly-enable-theme-backdrops", String(enable));
   };
 
   const setEnableThemeSongs = (enable: boolean) => {
     setEnableThemeSongsState(enable);
-    localStorage.setItem("aperture-enable-theme-songs", String(enable));
+    localStorage.setItem("mitch-jelly-enable-theme-songs", String(enable));
   };
 
   const setEnableAuroraEffect = (enable: boolean) => {
     setEnableAuroraEffectState(enable);
-    localStorage.setItem("aperture-enable-aurora-effect", String(enable));
+    localStorage.setItem("mitch-jelly-enable-aurora-effect", String(enable));
   };
 
   return (

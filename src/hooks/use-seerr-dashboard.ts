@@ -1,12 +1,7 @@
 "use client";
 
 import { useState, useCallback, useEffect } from "react";
-import {
-  getSeerrRecentlyAddedItems,
-  getSeerrTrendingItems,
-  getSeerrPopularMovies,
-  getSeerrPopularTv,
-} from "@/src/actions/seerr";
+import { getSeerrDiscovery } from "@/src/actions/seerr";
 import { SeerrMediaItem } from "@/src/types/seerr-types";
 import { useSeerr } from "@/src/contexts/seerr-context";
 
@@ -23,23 +18,13 @@ export function useSeerrDashboard() {
 
     setLoading(true);
     try {
-      const [
-        recentResult,
-        trendingResult,
-        popularMoviesResult,
-        popularTvResult,
-      ] = await Promise.all([
-        getSeerrRecentlyAddedItems(),
-        getSeerrTrendingItems(),
-        getSeerrPopularMovies(),
-        getSeerrPopularTv(),
-      ]);
-
-      if (recentResult?.results) setRecentlyAdded(recentResult.results);
-      if (trendingResult?.results) setTrending(trendingResult.results);
-      if (popularMoviesResult?.results)
-        setPopularMovies(popularMoviesResult.results);
-      if (popularTvResult?.results) setPopularTv(popularTvResult.results);
+      const data = await getSeerrDiscovery();
+      if (data) {
+        if (data.recent?.results) setRecentlyAdded(data.recent.results);
+        if (data.trending?.results) setTrending(data.trending.results);
+        if (data.popularMovies?.results) setPopularMovies(data.popularMovies.results);
+        if (data.popularTv?.results) setPopularTv(data.popularTv.results);
+      }
     } catch (error) {
       console.error("Failed to fetch Seerr dashboard content", error);
     } finally {

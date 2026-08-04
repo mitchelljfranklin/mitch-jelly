@@ -12,7 +12,6 @@ import {
   StepBack,
   StepForward,
 } from "lucide-react";
-import _ from "lodash";
 import { PlaybackContextValue } from "@/src/playback/hooks/usePlaybackManager";
 import { formatVideoTime } from "@/src/lib/utils";
 import { VideoOSDPlaybackButton } from "./VideoOSDPlaybackButton";
@@ -62,25 +61,29 @@ export const VideoOSDTransport: React.FC<VideoOSDTransportProps> = ({
             handleClick={onPreviousEpisode}
             Icon={StepBack}
             disabled={!hasPreviousEpisode}
+            label="Previous episode"
           />
         )}
-        <VideoOSDPlaybackButton handleClick={onSeekBack} Icon={RotateCcw} />
+        <VideoOSDPlaybackButton handleClick={onSeekBack} Icon={RotateCcw} label="Seek back 10 seconds" />
         <VideoOSDPlaybackButton
           handleClick={onPlayPause}
           Icon={paused ? Play : Pause}
+          label={paused ? "Play" : "Pause"}
         />
-        <VideoOSDPlaybackButton handleClick={onSeekForward} Icon={RotateCw} />
+        <VideoOSDPlaybackButton handleClick={onSeekForward} Icon={RotateCw} label="Seek forward 10 seconds" />
         {showEpisodeNavigation && (
           <VideoOSDPlaybackButton
             handleClick={onNextEpisode}
             Icon={StepForward}
             disabled={!hasNextEpisode}
+            label="Next episode"
           />
         )}
         <div className="flex items-center gap-2 ml-2 group/volume">
           <button
             onClick={manager.toggleMute}
             className="text-white/70 hover:text-white transition-colors shrink-0"
+            aria-label={muted || volume === 0 ? "Unmute" : "Mute"}
           >
             {muted || volume === 0 ? (
               <VolumeX className="w-5 h-5" />
@@ -142,6 +145,7 @@ export const VideoOSDTransport: React.FC<VideoOSDTransportProps> = ({
           onClick={toggleFullscreen}
           className="text-white/70 hover:text-white transition-colors"
           title="Fullscreen"
+          aria-label={isFullscreen ? "Exit fullscreen" : "Fullscreen"}
         >
           {isFullscreen ? (
             <Minimize className="w-5 h-5" />

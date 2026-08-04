@@ -3,6 +3,13 @@
 import { cookies } from "next/headers";
 import { AuthenticationResult } from "@jellyfin/sdk/lib/generated-client/models";
 
+// Cookie security options
+const secureCookieOptions = {
+  httpOnly: true,
+  secure: true,
+  sameSite: "lax" as const,
+};
+
 // --- Types ---
 export interface LoginPreferences {
   username?: string;
@@ -17,6 +24,8 @@ export interface AuthData {
 
 export type SeerrAuthType = "api-key" | "jellyfin-user" | "local-user";
 
+// Note: For local-user auth, the proxy maps 'username' to Seerr's expected 'email' field
+// at app/api/seerr/[...slug]/route.ts:78
 export type SeerrAuthData =
   | { authType: "api-key"; serverUrl: string; apiKey: string }
   | {
@@ -30,7 +39,7 @@ export type SeerrAuthData =
 const SERVER_URL_KEY = "jellyfin-server-url";
 
 export async function setServerUrl(value: string) {
-  (await cookies()).set(SERVER_URL_KEY, value);
+  (await cookies()).set(SERVER_URL_KEY, value, secureCookieOptions);
 }
 
 export async function getServerUrl(): Promise<string | null> {
@@ -47,7 +56,7 @@ export async function removeServerUrl() {
 const PREF_KEY = "login-preferences";
 
 export async function setLoginPreferences(value: LoginPreferences) {
-  (await cookies()).set(PREF_KEY, JSON.stringify(value));
+  (await cookies()).set(PREF_KEY, JSON.stringify(value), secureCookieOptions);
 }
 
 export async function getLoginPreferences(): Promise<LoginPreferences | null> {
@@ -69,7 +78,7 @@ export async function removeLoginPreferences() {
 const AUTH_DATA_KEY = "jellyfin-auth";
 
 export async function setAuthData(value: AuthData) {
-  (await cookies()).set(AUTH_DATA_KEY, JSON.stringify(value));
+  (await cookies()).set(AUTH_DATA_KEY, JSON.stringify(value), secureCookieOptions);
 }
 
 export async function getAuthData(): Promise<AuthData | null> {
@@ -119,7 +128,7 @@ export async function executeClearAuthDataAction(
 const SEERR_DATA_KEY = "seerr-config";
 
 export async function setSeerrData(value: SeerrAuthData) {
-  (await cookies()).set(SEERR_DATA_KEY, JSON.stringify(value));
+  (await cookies()).set(SEERR_DATA_KEY, JSON.stringify(value), secureCookieOptions);
 }
 
 export async function getSeerrData(): Promise<SeerrAuthData | null> {

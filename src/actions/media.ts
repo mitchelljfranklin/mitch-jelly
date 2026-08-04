@@ -3,6 +3,7 @@ import { BaseItemKind } from "@jellyfin/sdk/lib/generated-client/models/base-ite
 import { ItemFields } from "@jellyfin/sdk/lib/generated-client/models/item-fields";
 import { ItemSortBy } from "@jellyfin/sdk/lib/generated-client/models/item-sort-by";
 import { SortOrder } from "@jellyfin/sdk/lib/generated-client/models/sort-order";
+import { ItemFilter } from "@jellyfin/sdk/lib/generated-client/models/item-filter";
 import { UserLibraryApi } from "@jellyfin/sdk/lib/generated-client/api/user-library-api";
 import { getItemsApi } from "@jellyfin/sdk/lib/utils/api/items-api";
 import { getLiveTvApi } from "@jellyfin/sdk/lib/utils/api/live-tv-api";
@@ -15,7 +16,6 @@ import { getTvShowsApi } from "@jellyfin/sdk/lib/utils/api/tv-shows-api";
 import { createJellyfinInstance } from "../lib/utils";
 import { JellyfinUserWithToken } from "../types/jellyfin";
 import { StoreAuthData } from "./store/store-auth-data";
-import { StoreServerURL } from "./store/store-server-url";
 import { LibraryOptions } from "@jellyfin/sdk/lib/generated-client/models";
 
 // Type aliases for easier use
@@ -88,6 +88,7 @@ export async function fetchMovies(
         ItemFields.CanDelete,
         ItemFields.PrimaryImageAspectRatio,
         ItemFields.Overview,
+        ItemFields.UserData,
       ],
     });
     return data.Items || [];
@@ -128,13 +129,12 @@ export async function fetchMovieByCollection(
         ItemFields.CanDelete,
         ItemFields.PrimaryImageAspectRatio,
         ItemFields.Overview,
+        ItemFields.UserData,
       ],
     });
     return data.Items || [];
   } catch (error) {
     console.error("Failed to fetch movies:", error);
-
-    // If it's an authentication error, throw an error with a special flag
     if (isAuthError(error)) {
       const authError = new Error(
         "Authentication expired. Please sign in again.",
@@ -171,6 +171,7 @@ export async function fetchTVShows(
         ItemFields.CanDelete,
         ItemFields.PrimaryImageAspectRatio,
         ItemFields.Overview,
+        ItemFields.UserData,
       ],
     });
     return data.Items || [];
@@ -217,6 +218,7 @@ export async function fetchMediaDetails(
         ItemFields.Studios,
         ItemFields.Trickplay,
         ItemFields.Chapters,
+        ItemFields.UserData,
       ],
     });
     return data.Items?.[0] ?? null;
@@ -291,7 +293,8 @@ export async function fetchPersonFilmography(
         ItemFields.CanDelete,
         ItemFields.PrimaryImageAspectRatio,
         ItemFields.Overview,
-        ItemFields.People,
+        ItemFields.MediaSources,
+        ItemFields.UserData,
       ],
     });
     return data.Items || [];
@@ -329,6 +332,7 @@ export async function fetchResumeItems() {
         ItemFields.CanDelete,
         ItemFields.PrimaryImageAspectRatio,
         ItemFields.Overview,
+        ItemFields.UserData,
       ],
       enableImages: true,
     });
@@ -362,6 +366,7 @@ export async function fetchNextUpItems() {
         ItemFields.CanDelete,
         ItemFields.PrimaryImageAspectRatio,
         ItemFields.Overview,
+        ItemFields.UserData,
       ],
       enableImages: true,
     });
@@ -495,6 +500,9 @@ export async function fetchLibraryItems(
   libraryDetails: { id: string; collectionType?: string | undefined },
   limit: number = 50,
   startIndex: number = 0,
+  sortBy: ItemSortBy = ItemSortBy.SortName,
+  sortOrder: SortOrder = SortOrder.Ascending,
+  filters?: ItemFilter[],
 ): Promise<{ items: JellyfinItem[]; totalRecordCount: number }> {
   try {
     const { serverUrl, user } = await getAuthData();
@@ -513,15 +521,17 @@ export async function fetchLibraryItems(
         BaseItemKind.BoxSet,
       ],
       recursive: true,
-      sortBy: [ItemSortBy.SortName],
-      sortOrder: [SortOrder.Ascending],
+      sortBy: [sortBy],
+      sortOrder: [sortOrder],
       limit,
       startIndex,
+      filters,
       fields: [
         ItemFields.CanDelete,
         ItemFields.PrimaryImageAspectRatio,
         ItemFields.Overview,
         ItemFields.DateCreated,
+        ItemFields.UserData,
       ],
     });
 
@@ -582,6 +592,7 @@ export async function fetchLiveTVItems(
         ItemFields.PrimaryImageAspectRatio,
         ItemFields.Overview,
         ItemFields.DateCreated,
+        ItemFields.UserData,
       ],
     });
 
@@ -847,6 +858,7 @@ export async function fetchHeroItems(): Promise<JellyfinItem[]> {
             "ProductionYear" as ItemFields,
             "CommunityRating" as ItemFields,
             "OfficialRating" as ItemFields,
+            ItemFields.UserData,
           ],
           enableImages: true,
           mediaTypes: [BaseItemKind.Movie, BaseItemKind.Series] as any,
@@ -867,6 +879,7 @@ export async function fetchHeroItems(): Promise<JellyfinItem[]> {
             "ProductionYear" as ItemFields,
             "CommunityRating" as ItemFields,
             "OfficialRating" as ItemFields,
+            ItemFields.UserData,
           ],
           enableImages: true,
         }),
@@ -886,6 +899,7 @@ export async function fetchHeroItems(): Promise<JellyfinItem[]> {
             "ProductionYear" as ItemFields,
             "CommunityRating" as ItemFields,
             "OfficialRating" as ItemFields,
+            ItemFields.UserData,
           ],
           enableImages: true,
         }),
@@ -908,6 +922,7 @@ export async function fetchHeroItems(): Promise<JellyfinItem[]> {
             "ProductionYear" as ItemFields,
             "CommunityRating" as ItemFields,
             "OfficialRating" as ItemFields,
+            ItemFields.UserData,
           ],
           enableImages: true,
         }),
@@ -999,6 +1014,50 @@ export async function unmarkFavorite(itemId: string): Promise<boolean> {
     return response.ok;
   } catch (error) {
     console.error("Failed to unmark favorite:", error);
+    return false;
+  }
+}
+
+export async function markAsPlayed(itemId: string): Promise<boolean> {
+  try {
+    const { serverUrl, user } = await getAuthData();
+    if (!user.AccessToken) throw new Error("No access token found");
+
+    const response = await fetch(
+      `${serverUrl}/Users/${user.Id}/PlayedItems/${itemId}`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `MediaBrowser Token="${user.AccessToken}"`,
+        },
+      },
+    );
+
+    return response.ok;
+  } catch (error) {
+    console.error("Failed to mark as played:", error);
+    return false;
+  }
+}
+
+export async function markAsUnplayed(itemId: string): Promise<boolean> {
+  try {
+    const { serverUrl, user } = await getAuthData();
+    if (!user.AccessToken) throw new Error("No access token found");
+
+    const response = await fetch(
+      `${serverUrl}/Users/${user.Id}/PlayedItems/${itemId}`,
+      {
+        method: "DELETE",
+        headers: {
+          Authorization: `MediaBrowser Token="${user.AccessToken}"`,
+        },
+      },
+    );
+
+    return response.ok;
+  } catch (error) {
+    console.error("Failed to mark as unplayed:", error);
     return false;
   }
 }
@@ -1223,10 +1282,16 @@ export async function fetchSeasons(tvShowId: string): Promise<JellyfinItem[]> {
       recursive: false,
       sortBy: [ItemSortBy.SortName],
       sortOrder: [SortOrder.Ascending],
+      fields: [ItemFields.UserData],
     });
     return data.Items || [];
   } catch (error) {
     console.error("Failed to fetch seasons:", error);
+    if (isAuthError(error)) {
+      const authError = new Error("Authentication expired. Please sign in again.");
+      (authError as any).isAuthError = true;
+      throw authError;
+    }
     return [];
   }
 }
@@ -1253,15 +1318,20 @@ export async function fetchEpisodes(seasonId: string): Promise<JellyfinItem[]> {
         ItemFields.PrimaryImageAspectRatio,
         ItemFields.Overview,
         ItemFields.MediaSources,
+        ItemFields.UserData,
       ],
     });
     return data.Items || [];
   } catch (error) {
     console.error("Failed to fetch episodes:", error);
+    if (isAuthError(error)) {
+      const authError = new Error("Authentication expired. Please sign in again.");
+      (authError as any).isAuthError = true;
+      throw authError;
+    }
     return [];
   }
 }
-
 export async function getNextEpisode(
   seasonId: string,
   episodeNumber: number | null | undefined,
@@ -1309,6 +1379,11 @@ export async function getNextEpisode(
     return null;
   } catch (error) {
     console.error("Failed to fetch next episode:", error);
+    if (isAuthError(error)) {
+      const authError = new Error("Authentication expired. Please sign in again.");
+      (authError as any).isAuthError = true;
+      throw authError;
+    }
     return null;
   }
 }
@@ -1341,6 +1416,7 @@ export async function getPreviousEpisode(
         ItemFields.PrimaryImageAspectRatio,
         ItemFields.Overview,
         ItemFields.MediaSources,
+        ItemFields.UserData,
       ],
     });
 
@@ -1360,6 +1436,11 @@ export async function getPreviousEpisode(
     return null;
   } catch (error) {
     console.error("Failed to fetch previous episode:", error);
+    if (isAuthError(error)) {
+      const authError = new Error("Authentication expired. Please sign in again.");
+      (authError as any).isAuthError = true;
+      throw authError;
+    }
     return null;
   }
 }
@@ -1383,6 +1464,11 @@ export async function fetchTVShowDetails(
     return data;
   } catch (error) {
     console.error("Failed to fetch TV show details:", error);
+    if (isAuthError(error)) {
+      const authError = new Error("Authentication expired. Please sign in again.");
+      (authError as any).isAuthError = true;
+      throw authError;
+    }
     return null;
   }
 }
@@ -1417,6 +1503,11 @@ export async function fetchEpisodeDetails(
     return data.Items?.[0] ?? null;
   } catch (error) {
     console.error("Failed to fetch episode details:", error);
+    if (isAuthError(error)) {
+      const authError = new Error("Authentication expired. Please sign in again.");
+      (authError as any).isAuthError = true;
+      throw authError;
+    }
     return null;
   }
 }
@@ -1447,6 +1538,7 @@ export async function getNextEpisodeForSeries(
         ItemFields.PrimaryImageAspectRatio,
         ItemFields.Overview,
         ItemFields.MediaSources,
+        ItemFields.UserData,
       ],
     });
 
@@ -1480,6 +1572,11 @@ export async function getNextEpisodeForSeries(
     return data.Items[0] || null;
   } catch (error) {
     console.error("Failed to get next episode for series:", error);
+    if (isAuthError(error)) {
+      const authError = new Error("Authentication expired. Please sign in again.");
+      (authError as any).isAuthError = true;
+      throw authError;
+    }
     return null;
   }
 }

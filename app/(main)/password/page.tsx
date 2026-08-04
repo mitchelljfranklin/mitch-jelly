@@ -1,6 +1,6 @@
 "use client";
 import { useState, type SubmitEvent } from "react";
-import { Lock, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { AuroraBackground } from "@/src/components/aurora-background";
 import { Button } from "@/src/components/ui/button";

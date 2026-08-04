@@ -560,6 +560,11 @@ export async function getLibraryById(
     return library || null;
   } catch (error) {
     console.error("Failed to fetch library by ID:", error);
+    if (isAuthError(error)) {
+      const authError = new Error("Authentication expired. Please sign in again.");
+      (authError as any).isAuthError = true;
+      throw authError;
+    }
     return null;
   }
 }
@@ -598,7 +603,8 @@ export async function fetchRemoteImages(
 
   const url = `${serverUrl}/Items/${itemId}/RemoteImages?${params.toString()}`;
 
-  const response = await fetch(url, {
+  try {
+    const response = await fetch(url, {
     headers: {
       Authorization: `MediaBrowser Token="${user.AccessToken}"`,
     },
@@ -609,6 +615,10 @@ export async function fetchRemoteImages(
   }
 
   return response.json();
+  } catch (error) {
+    console.error("Failed to fetch remote images:", error);
+    return { Images: [] };
+  }
 }
 
 export async function downloadRemoteImage(

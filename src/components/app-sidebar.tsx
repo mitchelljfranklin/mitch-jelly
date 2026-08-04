@@ -1,5 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
+import { useAtom } from "jotai";
+import { appNameAtom } from "../lib/atoms";
 import dashboardLinksConfig from "../config/sidebar/dashboard-links.json";
 import {
   Sidebar,
@@ -7,7 +9,6 @@ import {
   SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
-  SidebarGroupLabel,
   SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
@@ -77,6 +78,7 @@ export function AppSidebar() {
   const [isLoading, setIsLoading] = useState(true);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const isAdmin = Boolean(user?.Policy?.IsAdministrator);
+  const [appName] = useAtom(appNameAtom);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -209,14 +211,14 @@ export function AppSidebar() {
                 <div className="text-foreground flex aspect-square size-8 items-center justify-center rounded-lg">
                   <Image
                     src={"/assets/logo/icon.png"}
-                    alt="Apertúre Logo"
+                    alt={`${appName} Logo`}
                     className="rounded"
                     width={32}
                     height={32}
                   />
                 </div>
                 <div className="flex flex-col gap-0.5 leading-none">
-                  <span className="font-semibold">Apertúre</span>
+                  <span className="font-semibold">{appName}</span>
                   <span className="text-xs">
                     {serverUrl &&
                       new URL(serverUrl).hostname.replace(

@@ -182,8 +182,7 @@ export default function SeerrSection() {
                 </button>
             </div>
             <CardDescription className="w-full">
-              Configure your Overseerr or Jellyseerr instance to handle media
-              requests directly.
+              Configure your Seerr instance to handle media requests directly.
             </CardDescription>
           </CardHeader>
         </CollapsibleTrigger>
@@ -266,7 +265,7 @@ export default function SeerrSection() {
                     <div className="mt-4 rounded-lg border border-border/50 bg-background/40 p-4">
                       <TabsContent value="api-key" className="mt-0 space-y-3">
                         <div className="space-y-2">
-                          <Label htmlFor="api-key">Overseerr API Key</Label>
+                          <Label htmlFor="api-key">Seerr API Key</Label>
                           <div className="relative">
                             <Key className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
                             <Input
@@ -313,7 +312,7 @@ export default function SeerrSection() {
                         </div>
                         <p className="text-[11px] text-muted-foreground">
                           Use this if you want to sign in as a specific Jellyfin
-                          user on Overseerr.
+                          user on Seerr.
                         </p>
                       </TabsContent>
 
@@ -345,7 +344,7 @@ export default function SeerrSection() {
                           />
                         </div>
                         <p className="text-[11px] text-muted-foreground">
-                          Sign in using an account created directly in Overseerr
+                          Sign in using an account created directly in Seerr
                           (e.g. admin).
                         </p>
                       </TabsContent>

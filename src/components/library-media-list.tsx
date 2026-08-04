@@ -1,5 +1,5 @@
 "use client";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef, useEffect } from "react";
 import { MediaCard } from "../components/media-card";
 import {
   BaseItemDto,
@@ -31,6 +31,8 @@ import {
   ArrowDown,
   Dices,
   Heart,
+  Eye,
+  EyeOff,
 } from "lucide-react";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
@@ -70,7 +72,7 @@ const sortFields: SortField[] = [
   {
     value: "SortName",
     label: "Name",
-    getSortValue: (item) => item.Name || "",
+    getSortValue: (item) => item.SortName || item.Name || "",
   },
   {
     value: "Random",
@@ -138,6 +140,33 @@ export function LibraryMediaList({
   const [sortOrder, setSortOrder] = useState<SortOrder>("asc");
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [randomSeed, setRandomSeed] = useState<number>(() => Math.random());
+  const [watchFilter, setWatchFilter] = useState<string>("all");
+
+  // Infinite scroll: only render a window of items at a time
+  const BATCH_SIZE = 200;
+  const [visibleCount, setVisibleCount] = useState(BATCH_SIZE);
+  const sentinelRef = useRef<HTMLDivElement>(null);
+
+  // Reset visible count when items, search, or filter changes
+  useEffect(() => {
+    setVisibleCount(BATCH_SIZE);
+  }, [mediaItems.length, searchQuery, watchFilter]);
+
+  // Intersection Observer for infinite scroll
+  useEffect(() => {
+    const sentinel = sentinelRef.current;
+    if (!sentinel) return;
+    const io = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          setVisibleCount((prev) => Math.min(prev + BATCH_SIZE, mediaItems.length));
+        }
+      },
+      { rootMargin: "300px" },
+    );
+    io.observe(sentinel);
+    return () => io.disconnect();
+  }, [mediaItems.length]);
 
   // Function to trigger a reroll for random sorting
   const handleReroll = () => {
@@ -146,9 +175,25 @@ export function LibraryMediaList({
 
   const filteredAndSortedItems = useMemo(() => {
     // First filter by search query
-    const filtered = mediaItems.filter((item) =>
+    let filtered = mediaItems.filter((item) =>
       (item.Name || "").toLowerCase().includes(searchQuery.toLowerCase()),
     );
+
+    // Then filter by watch status
+    if (watchFilter === "watched") {
+      filtered = filtered.filter((item) => item.UserData?.Played === true);
+    } else if (watchFilter === "unwatched") {
+      filtered = filtered.filter((item) => !item.UserData?.Played);
+    }
+
+    // SortName ascending is the default. Items arrive from the server
+    // sorted by SortName (ignoring articles). Re-sort by display Name locally
+    // so "The Dawn of the Witch" appears under T, not D.
+    if (sortField === "SortName" && sortOrder === "asc") {
+      return [...filtered].sort((a, b) =>
+        (a.Name || "").localeCompare(b.Name || ""),
+      );
+    }
 
     // Then sort the filtered results
     const selectedField = sortFields.find((field) => field.value === sortField);
@@ -180,7 +225,7 @@ export function LibraryMediaList({
 
       return sortOrder === "desc" ? -comparison : comparison;
     });
-  }, [mediaItems, sortField, sortOrder, searchQuery, randomSeed]);
+  }, [mediaItems, sortField, sortOrder, searchQuery, randomSeed, watchFilter]);
 
   const selectedFieldLabel =
     sortFields.find((field) => field.value === sortField)?.label || "Name";
@@ -234,6 +279,50 @@ export function LibraryMediaList({
             </DropdownMenuContent>
           </DropdownMenu>
 
+          {/* Watch Status Filter */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="sm" className="gap-2">
+                {watchFilter === "watched" ? (
+                  <Eye className="h-4 w-4" />
+                ) : watchFilter === "unwatched" ? (
+                  <EyeOff className="h-4 w-4" />
+                ) : (
+                  <Eye className="h-4 w-4" />
+                )}
+                {watchFilter === "all"
+                  ? "All Items"
+                  : watchFilter === "watched"
+                    ? "Watched"
+                    : "Unwatched"}
+                <ChevronDown className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-40">
+              <DropdownMenuItem
+                onClick={() => setWatchFilter("all")}
+                className={`gap-2 ${watchFilter === "all" ? "bg-accent" : ""}`}
+              >
+                <Eye className="h-4 w-4" />
+                All Items
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => setWatchFilter("unwatched")}
+                className={`gap-2 ${watchFilter === "unwatched" ? "bg-accent" : ""}`}
+              >
+                <EyeOff className="h-4 w-4" />
+                Unwatched
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => setWatchFilter("watched")}
+                className={`gap-2 ${watchFilter === "watched" ? "bg-accent" : ""}`}
+              >
+                <Eye className="h-4 w-4" />
+                Watched
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+
           {/* Sort Order Button - Hide for Random */}
           {sortField !== "Random" && (
             <Button
@@ -272,12 +361,13 @@ export function LibraryMediaList({
 
       {/* Media Grid */}
       <div className="grid grid-cols-[repeat(auto-fill,minmax(150px,1fr))] gap-4 auto-rows-max">
-        {filteredAndSortedItems.map((item) =>
+        {filteredAndSortedItems.slice(0, visibleCount).map((item) =>
           item.Type !== "TvChannel" ? (
             <MediaCard
               key={item.Id}
               item={item}
               serverUrl={serverUrl}
+              percentageWatched={item.UserData?.PlayedPercentage || 0}
               fullWidth
             />
           ) : (
@@ -285,6 +375,11 @@ export function LibraryMediaList({
           ),
         )}
       </div>
+
+      {/* Sentinel for infinite scroll */}
+      {visibleCount < filteredAndSortedItems.length && (
+        <div ref={sentinelRef} className="h-4" />
+      )}
 
       {/* Empty State */}
       {filteredAndSortedItems.length === 0 && (

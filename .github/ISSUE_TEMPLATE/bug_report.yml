@@ -1,0 +1,68 @@
+name: Bug Report
+description: Report a bug or unexpected behavior
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report a bug! Please fill out this form as completely as possible.
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      description: What version of Mitch-Jelly are you running?
+      placeholder: "2.0.0"
+    validations:
+      required: true
+  - type: dropdown
+    id: deployment
+    attributes:
+      label: Deployment
+      description: How are you running Mitch-Jelly?
+      options:
+        - Docker (ghcr.io)
+        - Docker (local build)
+        - Bun dev
+        - Vercel / other hosting
+    validations:
+      required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: Describe the bug
+      description: A clear description of what the bug is. Include what you expected to happen.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: |
+        1. Go to '...'
+        2. Click on '...'
+        3. See error
+    validations:
+      required: true
+  - type: textarea
+    id: console
+    attributes:
+      label: Browser console output
+      description: If applicable, paste any errors from the browser console (F12 → Console).
+      render: shell
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: Screenshots
+      description: If applicable, add screenshots to help explain the problem.
+  - type: input
+    id: browser
+    attributes:
+      label: Browser
+      description: What browser and version are you using?
+      placeholder: "Chrome 131, Firefox 134, etc."
+  - type: input
+    id: jellyfin
+    attributes:
+      label: Jellyfin version
+      description: What version of Jellyfin are you connecting to?
+      placeholder: "10.10.x"

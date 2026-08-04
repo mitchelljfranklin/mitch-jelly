@@ -1,5 +1,5 @@
 "use client";
-import React, { useRef, useEffect } from "react";
+import React, { useRef } from "react";
 import { Card, CardContent } from "../components/ui/card";
 import { Button } from "../components/ui/button";
 import { MediaCard } from "../components/media-card";
@@ -27,31 +27,20 @@ export function MediaSection({
   hideViewAll = false,
 }: MediaSectionProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
-  const viewportRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
 
-  useEffect(() => {
-    // Find the ScrollArea viewport after component mounts
-    if (scrollRef.current) {
-      const viewport = scrollRef.current
-        .closest('[data-slot="scroll-area"]')
-        ?.querySelector('[data-slot="scroll-area-viewport"]') as HTMLDivElement;
-      if (viewport) {
-        viewportRef.current = viewport;
-      }
-    }
-  }, []);
-
   const scrollLeft = () => {
-    if (viewportRef.current) {
-      viewportRef.current.scrollBy({ left: -300, behavior: "smooth" });
-    }
+    const viewport = scrollRef.current
+      ?.closest('[data-slot="scroll-area"]')
+      ?.querySelector('[data-slot="scroll-area-viewport"]');
+    viewport?.scrollBy({ left: -300, behavior: "smooth" });
   };
 
   const scrollRight = () => {
-    if (viewportRef.current) {
-      viewportRef.current.scrollBy({ left: 300, behavior: "smooth" });
-    }
+    const viewport = scrollRef.current
+      ?.closest('[data-slot="scroll-area"]')
+      ?.querySelector('[data-slot="scroll-area-viewport"]');
+    viewport?.scrollBy({ left: 300, behavior: "smooth" });
   };
 
   const href =

@@ -103,7 +103,7 @@ export function SearchBar({ className = "" }: SearchBarProps) {
               typePriority[b.Type as keyof typeof typePriority] || 5;
             return aPriority - bPriority;
           });
-          setSuggestions(sortedResults.slice(0, 6)); // Limit to 6 suggestions
+          setSuggestions(sortedResults.slice(0, 10)); // Limit to 10 suggestions
 
           if (seerrResults) {
             setSeerrSuggestions(seerrResults.slice(0, 3));

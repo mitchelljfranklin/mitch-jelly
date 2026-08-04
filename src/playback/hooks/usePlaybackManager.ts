@@ -1,4 +1,5 @@
 import { useState, useRef, useCallback, useEffect } from "react";
+import { toast } from "sonner";
 import {
   BaseItemDto,
   SubtitlePlaybackMode,
@@ -12,8 +13,7 @@ import {
   getStreamUrl,
   getDirectStreamUrl,
   getSubtitleTracks,
-  markFavorite,
-  unmarkFavorite,
+  markAsPlayed,
 } from "../../actions";
 import { PlaybackState, Player, PlayOptions, PlayerType } from "../types";
 import { PlayQueueManager } from "../utils/playQueueManager";
@@ -75,6 +75,7 @@ export interface PlaybackContextValue {
   setAudioStreamIndex: (index: number) => void;
   setSubtitleStreamIndex: (index: number) => void;
   setSubtitleUrl: (url: string) => Promise<void>;
+  setSubtitleOffset: (offset: number) => void;
   registerPlayer: (type: PlayerType, player: Player) => void;
   unregisterPlayer: (type: PlayerType) => void;
   reportState: (updates: Partial<PlaybackState>) => void;
@@ -434,7 +435,7 @@ export function usePlaybackManager(): PlaybackContextValue {
           itemToPlay!.Id,
           mediaSource.Id,
           playSessionIdRef.current,
-        ).catch((e) => console.error("Failed to report playback start", e));
+        ).catch((e) => { console.error("Failed to report playback start", e); toast.error("Failed to start playback"); });
       }
 
       try {
@@ -493,8 +494,14 @@ export function usePlaybackManager(): PlaybackContextValue {
 
     if (item?.Id && mediaSource?.Id && sessionId) {
       reportPlaybackStopped(item.Id, mediaSource.Id, sessionId, ticks).catch(
-        (e) => console.error("Failed to report playback stopped", e),
+        (e) => { console.error("Failed to report playback stopped", e); toast.error("Playback session error"); },
       );
+      // Auto-mark as played if watched >= 90%
+      if (item.RunTimeTicks && ticks / item.RunTimeTicks >= 0.9) {
+        markAsPlayed(item.Id).catch(
+          (e) => console.error("Failed to auto-mark as played", e),
+        );
+      }
     }
 
     activePlayerRef.current?.stop(true);
@@ -692,6 +699,13 @@ export function usePlaybackManager(): PlaybackContextValue {
     ],
   );
 
+  const setSubtitleOffset = useCallback(
+    (offset: number) => {
+      updateState({ subtitleOffset: offset });
+    },
+    [updateState],
+  );
+
   const setPreferredQuality = useCallback(
     (quality: string) => {
       updateState({ preferredQuality: quality });
@@ -714,7 +728,7 @@ export function usePlaybackManager(): PlaybackContextValue {
         sessionId,
         Math.floor(state.currentTime * 10000000),
         state.paused,
-      ).catch((e) => console.error("Failed to report progress", e));
+      ).catch((e) => { console.error("Failed to report progress", e); toast.error("Playback tracking error"); });
     };
 
     const interval = setInterval(report, 10000); // 10s interval
@@ -788,6 +802,7 @@ export function usePlaybackManager(): PlaybackContextValue {
     setAudioStreamIndex,
     setSubtitleStreamIndex,
     setSubtitleUrl,
+    setSubtitleOffset,
     registerPlayer,
     unregisterPlayer,
     reportState: updateState,

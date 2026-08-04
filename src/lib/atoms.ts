@@ -1,13 +1,13 @@
 import { atom } from "jotai";
 import { atomWithStorage } from "jotai/utils";
 import { BaseItemDto } from "@jellyfin/sdk/lib/generated-client/models/base-item-dto";
-import { JellyfinItem } from "@/src/types/jellyfin";
+import { JellyfinItem, JellyfinUserWithToken } from "@/src/types/jellyfin";
 
 // Global loading state for dashboard
 export const dashboardLoadingAtom = atom(false);
 
 // Global auth error state
-export const globalAuthErrorAtom = atom<any | null>(null);
+export const globalAuthErrorAtom = atom<Error | null>(null);
 
 // Fullscreen state
 export const isFullscreenAtom = atom(false);
@@ -46,21 +46,34 @@ const defaultThemeSelection: ThemePresetSelection = {
 };
 
 export const themeSelectionAtom = atomWithStorage<ThemePresetSelection>(
-  "aperture-dashboard-theme",
+  "mitch-jelly-dashboard-theme",
   defaultThemeSelection,
 );
 
-// Home page data, to persist navigation state within the session
-export const homeServerUrlAtom = atom<string | null>(null);
-export const homeUserAtom = atom<any | null>(null);
-export const homeResumeItemsAtom = atom<any[]>([]);
-export const homeNextupItemsAtom = atom<JellyfinItem[]>([]);
-export const homeLibrariesAtom = atom<
+// Home page data, persisted to localStorage so returning visitors see instant content
+export const homeServerUrlAtom = atomWithStorage<string | null>("mitch-jelly-home-serverUrl", null);
+export const homeUserAtom = atomWithStorage<JellyfinUserWithToken | null>("mitch-jelly-home-user", null);
+export const homeResumeItemsAtom = atomWithStorage<BaseItemDto[]>("mitch-jelly-home-resume", []);
+export const homeNextupItemsAtom = atomWithStorage<JellyfinItem[]>("mitch-jelly-home-nextup", []);
+export const homeLibrariesAtom = atomWithStorage<
   {
-    library: any;
+    library: BaseItemDto;
     items: BaseItemDto[];
   }[]
->([]);
-export const homeLastVisitedTimeAtom = atom(0); // Last visited time for homepage
-export const heroItemsAtom = atom<BaseItemDto[]>([]);
-export const heroLastVisitedTimeAtom = atom(0); // Last visited time for hero section
+>("mitch-jelly-home-libraries", []);
+export const homeLastVisitedTimeAtom = atomWithStorage<number>("mitch-jelly-home-visitedAt", 0);
+export const heroItemsAtom = atomWithStorage<BaseItemDto[]>("mitch-jelly-hero-items", []);
+export const heroLastVisitedTimeAtom = atomWithStorage<number>("mitch-jelly-hero-visitedAt", 0);
+
+// Customizable app name
+export const appNameAtom = atomWithStorage<string>("mitch-jelly-app-name", "Mitch-Jelly");
+
+// Library page cache — in-memory only (libraries can be too large for localStorage)
+export interface LibraryCacheEntry {
+  items: BaseItemDto[];
+  details: BaseItemDto | null;
+  name: string;
+  serverUrl: string;
+  timestamp: number;
+}
+export const libraryCacheAtom = atom<Record<string, LibraryCacheEntry>>({});

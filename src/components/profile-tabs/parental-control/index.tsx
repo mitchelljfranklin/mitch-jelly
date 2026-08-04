@@ -15,14 +15,13 @@ import { parentalControlFormSchema, ParentalControlFormValues } from "./schema";
 import { RatingSection } from "./rating-section";
 import { UnratedItemsSection } from "./unrated-items-section";
 import { TagsSection } from "./tags-section";
-import { useAtomValue, useSetAtom } from "jotai";
+import { useSetAtom } from "jotai";
 import { dashboardLoadingAtom } from "../../../lib/atoms";
 import { useAuthError } from "@/src/hooks/use-auth-error";
 
 export default function ParentalControlTab({ user }: { user?: UserDto }) {
   const [ratings, setRatings] = useState<ParentalRating[]>([]);
   const setDashboardLoading = useSetAtom(dashboardLoadingAtom);
-  const dashboardLoading = useAtomValue(dashboardLoadingAtom);
   const { handleAuthError } = useAuthError();
 
   useEffect(() => {

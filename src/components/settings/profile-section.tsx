@@ -1,5 +1,7 @@
 "use client";
 import { ChevronDown, ImagePlus, QrCode, Settings2, Lock } from "lucide-react";
+import { useAtomValue } from "jotai";
+import { appNameAtom } from "../../lib/atoms";
 import {
   Card,
   CardContent,
@@ -52,6 +54,7 @@ export default function ProfileSection() {
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [user, setUser] = useState<JellyfinUserWithToken | null>(null);
   const router = useRouter();
+  const appName = useAtomValue(appNameAtom);
 
   const updateAvatarPreview = useCallback((next: string | null) => {
     setAvatarPreview((previous) => {
@@ -220,7 +223,7 @@ export default function ProfileSection() {
   const profileTiles = [
     {
       title: "Password",
-      description: "Change the credentials you use to access Apertúre.",
+      description: `Change the credentials you use to access ${appName}.`,
       icon: Lock,
       cta: "Update password",
       action: () => router.push("/password"),

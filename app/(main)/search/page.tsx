@@ -72,7 +72,11 @@ function Search() {
           ) : item.Type === "Episode" ? (
             <EpisodeCard item={item} serverUrl={serverUrl!} />
           ) : (
-            <MediaCard item={item} serverUrl={serverUrl!} />
+            <MediaCard
+              item={item}
+              serverUrl={serverUrl!}
+              percentageWatched={item.UserData?.PlayedPercentage || 0}
+            />
           )}
         </div>
       ))}

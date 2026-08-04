@@ -128,6 +128,17 @@ export function LogViewerDialog({
     };
   }, [open, logContent, isLiveMode, loadLogContent]);
 
+  const scrollToBottom = () => {
+    if (scrollAreaRef.current) {
+      const scrollContainer = scrollAreaRef.current.querySelector(
+        "[data-radix-scroll-area-viewport]",
+      );
+      if (scrollContainer) {
+        scrollContainer.scrollTop = scrollContainer.scrollHeight;
+      }
+    }
+  };
+
   // Auto-scroll to bottom when content changes and auto-scrolling is enabled
   useEffect(() => {
     if (isAutoScrolling && logContent && !isInitialLoad) {
@@ -172,17 +183,6 @@ export function LogViewerDialog({
     URL.revokeObjectURL(url);
   };
 
-  const scrollToBottom = () => {
-    if (scrollAreaRef.current) {
-      const scrollContainer = scrollAreaRef.current.querySelector(
-        "[data-radix-scroll-area-viewport]",
-      );
-      if (scrollContainer) {
-        scrollContainer.scrollTop = scrollContainer.scrollHeight;
-      }
-    }
-  };
-
   const handleScrollToBottomClick = () => {
     setIsAutoScrolling(true);
     setShowScrollButton(false);
@@ -192,11 +192,9 @@ export function LogViewerDialog({
   const highlightSearchTerm = (text: string) => {
     if (!searchTerm) return text;
 
-    const regex = new RegExp(`(${searchTerm})`, "gi");
-    return text.replace(
-      regex,
-      "<mark class='bg-primary dark:bg-primary/50 text-white'>$1</mark>",
-    );
+    const escaped = searchTerm.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const regex = new RegExp(`(${escaped})`, "gi");
+    return text.replace(regex, (match) => `<mark class='bg-primary dark:bg-primary/50 text-white'>${match}</mark>`);
   };
 
   const filteredContent = React.useMemo(() => {

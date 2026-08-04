@@ -142,7 +142,9 @@ export default function AuroraTransition(props: AuroraTransitionProps) {
     transition = 1.0,
   } = props;
   const propsRef = useRef<AuroraTransitionProps>(props);
-  propsRef.current = props;
+  useEffect(() => {
+    propsRef.current = props;
+  });
 
   const ctnDom = useRef<HTMLDivElement>(null);
 

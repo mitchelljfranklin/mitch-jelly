@@ -56,7 +56,7 @@ async function internalFetch<T>(
       if (errorJson.message) {
         return { success: false, message: errorJson.message };
       }
-    } catch (e) {}
+    } catch {}
 
     return {
       success: false,
@@ -233,7 +233,7 @@ export async function declineSeerrRequest(requestId: number): Promise<boolean> {
 export async function testSeerrConnection(
   config?: SeerrAuthData,
 ): Promise<{ success: boolean; message?: string }> {
-  let headers: HeadersInit = { "Content-Type": "application/json" };
+  const headers: HeadersInit = { "Content-Type": "application/json" };
   let body: any = {};
   const currentConfig = config || (await StoreSeerrData.get());
 

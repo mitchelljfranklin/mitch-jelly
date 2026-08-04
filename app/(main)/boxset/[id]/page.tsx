@@ -7,7 +7,8 @@ import {
   fetchMovieByCollection,
 } from "@/src/actions";
 import { MediaActions } from "@/src/components/media-actions";
-import { Star } from "lucide-react";
+import { Star, Play } from "lucide-react";
+import { Button } from "@/src/components/ui/button";
 import { BaseItemDto } from "@jellyfin/sdk/lib/generated-client/models";
 import { RottenTomatoesIcon } from "@/src/components/icons/rotten-tomatoes";
 import { Badge } from "@/src/components/ui/badge";
@@ -19,6 +20,7 @@ import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import ErrorWindow from "@/src/components/error-window";
 import { useAuthError } from "@/src/hooks/use-auth-error";
+import { usePlayback } from "@/src/hooks/usePlayback";
 
 export default function BoxSet() {
   const { id } = useParams<{ id: string }>();
@@ -32,6 +34,19 @@ export default function BoxSet() {
   const [logoImage, setLogoImage] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(true);
   const { handleAuthError } = useAuthError();
+  const { play } = usePlayback();
+
+  const watchedCount = useMemo(
+    () => collectionMovies.filter((m) => m.UserData?.Played).length,
+    [collectionMovies],
+  );
+
+  const handlePlayAll = () => {
+    const first = collectionMovies[0];
+    if (first) {
+      play({ id: first.Id!, name: first.Name!, type: "Movie", resumePositionTicks: first.UserData?.PlaybackPositionTicks });
+    }
+  };
 
   useEffect(() => {
     async function fetchData() {
@@ -220,22 +235,37 @@ export default function BoxSet() {
       </MediaDetail.Main>
 
       <div className="px-6 mx-auto">
-        <h2 className="text-3xl font-semibold font-poppins text-foreground mt-12 mb-6 text-center md:text-left">
-          Movies
-        </h2>
-        <div className="mt-8 flex flex-row flex-wrap gap-8 justify-center md:justify-start">
-          {collectionMovies.map((movie) => (
-            <MediaCard
-              key={movie.Id}
-              item={{
-                Id: movie.Id,
-                Name: movie.Name || `Movie ${movie.IndexNumber}`,
-                Type: "Movie",
-                ProductionYear: movie.ProductionYear,
-              }}
-              serverUrl={serverUrl}
-            />
-          ))}
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-3xl font-semibold font-poppins text-foreground">
+            Movies
+            {collectionMovies.length > 0 && (
+              <span className="text-base font-normal text-muted-foreground ml-3">
+                {collectionMovies.length} movie{collectionMovies.length !== 1 ? "s" : ""}
+                {watchedCount > 0 && ` — ${watchedCount} watched`}
+              </span>
+            )}
+          </h2>
+          {collectionMovies.length > 0 && (
+            <Button variant="outline" size="sm" onClick={handlePlayAll} className="gap-2">
+              <Play className="h-4 w-4" /> Play All
+            </Button>
+          )}
+        </div>
+        <div className="mt-4 flex flex-row flex-wrap gap-8 justify-center md:justify-start">
+          {collectionMovies.length > 0 ? (
+            collectionMovies.map((movie) => (
+              <MediaCard
+                key={movie.Id}
+                item={movie}
+                serverUrl={serverUrl}
+                percentageWatched={movie.UserData?.PlayedPercentage || 0}
+              />
+            ))
+          ) : (
+            <p className="text-muted-foreground col-span-full text-center py-12">
+              No movies in this collection yet.
+            </p>
+          )}
         </div>
       </div>
 

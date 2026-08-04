@@ -8,7 +8,7 @@ import {
   DropdownMenuTrigger,
   DropdownMenuSeparator,
 } from "../../../components/ui/dropdown-menu";
-import { Captions, Type } from "lucide-react";
+import { Captions, Type, Clock } from "lucide-react";
 import { PlaybackContextValue } from "../../hooks/usePlaybackManager";
 import { getSubtitleTracks } from "../../../actions";
 import { SettingsMenuButton } from "./SettingsMenuButton";
@@ -30,7 +30,7 @@ export const SubtitleTracksMenu: React.FC<SubtitleTracksMenuProps> = ({
 
   const [subtitleSize, setSubtitleSize] = useState<number>(() => {
     if (typeof window !== "undefined") {
-      const saved = localStorage.getItem("aperture-subtitle-size");
+      const saved = localStorage.getItem("mitch-jelly-subtitle-size");
       return saved ? parseInt(saved, 10) : 100;
     }
     return 100;
@@ -55,7 +55,7 @@ export const SubtitleTracksMenu: React.FC<SubtitleTracksMenuProps> = ({
 
   const handleSubtitleSizeChange = (newSize: number) => {
     setSubtitleSize(newSize);
-    localStorage.setItem("aperture-subtitle-size", String(newSize));
+    localStorage.setItem("mitch-jelly-subtitle-size", String(newSize));
     manager.reportState({ subtitleSize: newSize });
 
     window.dispatchEvent(
@@ -142,6 +142,49 @@ export const SubtitleTracksMenu: React.FC<SubtitleTracksMenuProps> = ({
                 }
               }
             />
+          </div>
+
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: "12px",
+              padding: "8px 20px 12px 20px",
+            }}
+          >
+            <Clock
+              size={18}
+              style={{ color: "rgba(255, 255, 255, 0.7)", flexShrink: 0 }}
+            />
+            <input
+              type="range"
+              min="-5000"
+              max="5000"
+              step="100"
+              value={playbackState.subtitleOffset || 0}
+              onChange={(e) => {
+                const val = parseInt(e.target.value, 10);
+                manager.setSubtitleOffset(val);
+              }}
+              style={
+                {
+                  flex: 1,
+                  height: "6px",
+                  borderRadius: "3px",
+                  background: `linear-gradient(to right, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0.2) 50%, white 50%, white ${50 + ((playbackState.subtitleOffset || 0) / 5000) * 50}%, rgba(255, 255, 255, 0.2) ${50 + ((playbackState.subtitleOffset || 0) / 5000) * 50}%, rgba(255, 255, 255, 0.2) 100%)`,
+                  outline: "none",
+                  WebkitAppearance: "none",
+                  appearance: "none",
+                  cursor: "pointer",
+                } as React.CSSProperties & {
+                  WebkitAppearance?: string;
+                }
+              }
+            />
+            <span style={{ color: "rgba(255, 255, 255, 0.7)", fontSize: "11px", minWidth: "40px", textAlign: "center" }}>
+              {(playbackState.subtitleOffset || 0) > 0 ? `+${(playbackState.subtitleOffset! / 1000).toFixed(1)}s` : `${(playbackState.subtitleOffset! / 1000).toFixed(1)}s`}
+            </span>
           </div>
 
           <DropdownMenuSeparator className="bg-white/10" />

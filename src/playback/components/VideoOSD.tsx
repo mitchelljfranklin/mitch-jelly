@@ -121,7 +121,7 @@ export const VideoOSD: React.FC<VideoOSDProps> = ({ manager }) => {
 
         setNextEpisodeData(nextEpisode || null);
         setPreviousEpisodeData(previousEpisode || null);
-      } catch (err) {
+      } catch {
         setNextEpisodeData(null);
         setPreviousEpisodeData(null);
       }

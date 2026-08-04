@@ -1,5 +1,6 @@
 import { AuthProvider } from "../../contexts/AuthContext";
 import { SettingsProvider } from "../../contexts/settings-context";
+import { JotaiProvider } from "../../components/jotai-provider";
 import { Toaster } from "sonner";
 import { ThemeProvider } from "next-themes";
 
@@ -29,9 +30,11 @@ export default function RootProvider({
       ]}
     >
       <Toaster />
-      <AuthProvider>
-        <SettingsProvider>{children}</SettingsProvider>
-      </AuthProvider>
+      <JotaiProvider>
+        <AuthProvider>
+          <SettingsProvider>{children}</SettingsProvider>
+        </AuthProvider>
+      </JotaiProvider>
     </ThemeProvider>
   );
 }

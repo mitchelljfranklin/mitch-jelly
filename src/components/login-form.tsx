@@ -22,7 +22,6 @@ import {
   initiateQuickConnect,
   getQuickConnectStatus,
   authenticateWithQuickConnect,
-  getServerUrl,
 } from "../actions";
 import {
   Loader2,
@@ -38,7 +37,6 @@ import {
   TabsList,
   TabsTrigger,
 } from "../components/ui/tabs";
-import { Checkbox } from "../components/ui/checkbox";
 import { StoreLoginPreferences } from "../actions/store/store-login-preferences";
 
 interface LoginFormProps {

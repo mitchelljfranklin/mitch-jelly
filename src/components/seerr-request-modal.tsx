@@ -211,8 +211,6 @@ export function SeerrRequestModal({
   const mediaStatus = mediaInfo?.status;
 
   const isAvailable = mediaStatus === 5;
-  const isPending = mediaStatus === 2 || mediaStatus === 3;
-  const isPartiallyAvailable = mediaStatus === 4;
 
   const userExistingRequest = requests.find(
     (r: any) =>

@@ -18,7 +18,7 @@ export const SeerrCard = React.memo(function SeerrCard({
   width = "w-36",
   aspectRatio = "aspect-[2/3]",
 }: SeerrCardProps) {
-  const [_, setImageLoaded] = useState(false);
+  const [, setImageLoaded] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const title = item.title || item.name || "Unknown Title";

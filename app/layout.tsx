@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist_Mono, Poppins, Inter } from "next/font/google";
 import RootProvider from "@/src/providers/RootProvider";
+import { AppTitle } from "@/src/components/app-title";
 import Head from "next/head";
 import "./globals.css";
 
@@ -21,8 +22,8 @@ const poppins = Poppins({
 });
 
 export const metadata: Metadata = {
-  title: "Aperture",
-  description: "Glory of cinema, in your browser.",
+  title: "Mitch-Jelly",
+  description: "A modern, streamlined Jellyfin client.",
 };
 
 export default function RootLayout({
@@ -33,7 +34,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <Head>
-        <meta name="apple-mobile-web-app-title" content="Aperture" />
+        <meta name="apple-mobile-web-app-title" content="Mitch-Jelly" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <link
           rel="apple-touch-icon"
@@ -57,7 +58,10 @@ export default function RootLayout({
       <body
         className={`${inter.variable} ${geistMono.variable} ${poppins.variable} antialiased`}
       >
-        <RootProvider>{children}</RootProvider>
+        <RootProvider>
+          <AppTitle />
+          {children}
+        </RootProvider>
       </body>
     </html>
   );

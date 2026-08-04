@@ -75,7 +75,7 @@ export function VibrantAuroraBackground({
         // Keep previous colors on error - they're already in the atom
       }
     },
-    [posterUrl, updateColors, enableAuroraEffect],
+    [updateColors, enableAuroraEffect],
   );
 
   useEffect(() => {

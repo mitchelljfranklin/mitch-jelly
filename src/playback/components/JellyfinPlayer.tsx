@@ -31,7 +31,7 @@ export const JellyfinPlayer: React.FC<JellyfinPlayerProps> = ({
 
   const { playbackState } = manager;
   const [cursorVisible, setCursorVisible] = useState(true);
-  const [playerHovered, setPlayerHovered] = useState(false);
+  const [, setPlayerHovered] = useState(false);
   const cursorTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
@@ -142,6 +142,20 @@ export const JellyfinPlayer: React.FC<JellyfinPlayerProps> = ({
         case "Escape":
           e.preventDefault();
           manager.stop();
+          break;
+        case "f":
+        case "F":
+          e.preventDefault();
+          if (document.fullscreenElement) {
+            document.exitFullscreen();
+          } else {
+            document.documentElement.requestFullscreen();
+          }
+          break;
+        case "m":
+        case "M":
+          e.preventDefault();
+          manager.toggleMute();
           break;
       }
     };

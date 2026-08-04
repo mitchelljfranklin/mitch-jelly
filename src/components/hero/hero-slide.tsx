@@ -1,7 +1,9 @@
 "use client";
 import { BaseItemDto } from "@jellyfin/sdk/lib/generated-client/models/base-item-dto";
-import { Play, Info } from "lucide-react";
+import { Play, Info, Eye, EyeOff } from "lucide-react";
 import { usePlayback } from "../../hooks/usePlayback";
+import { markAsPlayed, markAsUnplayed } from "../../actions/media";
+import { toast } from "sonner";
 import { Button } from "../ui/button";
 import { Badge } from "../ui/badge";
 import { useEffect, useMemo, useState } from "react";
@@ -20,6 +22,10 @@ export function HeroSlide({ item, serverUrl }: HeroSlideProps) {
   const [blurDataUrl, setBlurDataUrl] = useState<string | null>(null);
   const [imageLoaded, setImageLoaded] = useState(false);
   const [logoLoaded, setLogoLoaded] = useState(false);
+  const [togglingWatched, setTogglingWatched] = useState(false);
+  const [isWatchedOverride, setIsWatchedOverride] = useState<boolean | null>(null);
+
+  const isWatched = isWatchedOverride ?? (item.UserData?.Played === true);
 
   const backdropTag = useMemo(() => {
     return item.Type === "Episode"
@@ -36,9 +42,9 @@ export function HeroSlide({ item, serverUrl }: HeroSlideProps) {
       ? `${serverUrl}/Items/${backdropItemId}/Images/Backdrop/0?maxWidth=3840&quality=90`
       : null;
     return (
-      backdropUrl ||
-      `${serverUrl}/Items/${item.Id}/Images/Primary?maxWidth=3840&quality=90`
-    );
+        backdropUrl ||
+        `${serverUrl}/Items/${item.Id}/Images/Primary?maxWidth=3840&quality=90`
+      );
   }, [item]);
 
   const logoTag = item.ImageTags?.Logo || item.ParentLogoImageTag;
@@ -83,12 +89,46 @@ export function HeroSlide({ item, serverUrl }: HeroSlideProps) {
     }
   };
 
+  const hasProgress =
+    item.UserData?.PlaybackPositionTicks &&
+    item.UserData.PlaybackPositionTicks > 0 &&
+    !isWatched;
+
+  const progressPercentage =
+    hasProgress && item.RunTimeTicks
+      ? Math.min(
+          (item.UserData!.PlaybackPositionTicks! / item.RunTimeTicks) * 100,
+          100,
+        )
+      : 0;
+
   const handleDetails = () => {
     const type = item.Type?.toLowerCase();
     if (type === "movie") router.push(`/movie/${item.Id}`);
     else if (type === "series") router.push(`/series/${item.Id}`);
     else if (type === "episode") router.push(`/episode/${item.Id}`);
     else if (type === "season") router.push(`/season/${item.Id}`);
+  };
+
+  const handleToggleWatched = async () => {
+    if (!item.Id || togglingWatched) return;
+    setTogglingWatched(true);
+    const newState = !isWatched;
+    setIsWatchedOverride(newState);
+    try {
+      const success = newState
+        ? await markAsPlayed(item.Id)
+        : await markAsUnplayed(item.Id);
+      if (success) {
+        toast.success(newState ? "Marked as watched" : "Marked as unwatched");
+      } else {
+        setIsWatchedOverride(!newState);
+      }
+    } catch {
+      setIsWatchedOverride(!newState);
+    } finally {
+      setTogglingWatched(false);
+    }
   };
 
   return (
@@ -190,7 +230,20 @@ export function HeroSlide({ item, serverUrl }: HeroSlideProps) {
               className="font-bold px-8 h-10 rounded-lg shadow-md hover:scale-105 transition-all duration-300"
             >
               <Play className="mr-2 h-4 w-4 fill-current" />
-              Play
+              {hasProgress ? "Resume" : "Play"}
+            </Button>
+            <Button
+              size="lg"
+              variant="secondary"
+              onClick={handleToggleWatched}
+              className="border border-border backdrop-blur-md px-4 h-10 rounded-lg hover:bg-secondary/80 hover:scale-105 transition-all duration-300"
+              title={isWatched ? "Mark as Unwatched" : "Mark as Watched"}
+            >
+              {isWatched ? (
+                <EyeOff className="h-4 w-4" />
+              ) : (
+                <Eye className="h-4 w-4" />
+              )}
             </Button>
             <Button
               size="lg"
@@ -202,6 +255,16 @@ export function HeroSlide({ item, serverUrl }: HeroSlideProps) {
               More Info
             </Button>
           </div>
+          {hasProgress && (
+            <div className="w-full max-w-md mt-2">
+              <div className="h-1.5 bg-white/20 rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-primary rounded-full transition-all duration-300"
+                  style={{ width: `${progressPercentage}%` }}
+                ></div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>

@@ -12,6 +12,7 @@ import { VibrantAuroraBackground } from "@/src/components/vibrant-aurora-backgro
 import { VibrantLogo } from "@/src/components/vibrant-logo";
 import { SeasonEpisodes } from "@/src/components/season-episodes";
 import { SeriesPlayButton } from "@/src/components/series-play-button";
+import { MediaActions } from "@/src/components/media-actions";
 import { MediaSection } from "@/src/components/media-section";
 import { Star, TvIcon } from "lucide-react";
 import { CastScrollArea } from "@/src/components/cast-scrollarea";
@@ -163,12 +164,22 @@ export default function SeasonPage() {
                 </Badge>
               )}
               {episodes && episodes.length > 0 && (
-                <Badge
-                  variant="outline"
-                  className="bg-background/90 backdrop-blur-sm"
-                >
-                  {episodes.length} Episode{episodes.length !== 1 ? "s" : ""}
-                </Badge>
+                <>
+                  <Badge
+                    variant="outline"
+                    className="bg-background/90 backdrop-blur-sm"
+                  >
+                    {episodes.length} Episode{episodes.length !== 1 ? "s" : ""}
+                  </Badge>
+                  {episodes.filter((ep) => ep.UserData?.Played).length > 0 && (
+                    <Badge
+                      variant="outline"
+                      className="bg-background/90 backdrop-blur-sm"
+                    >
+                      {episodes.filter((ep) => ep.UserData?.Played).length} watched
+                    </Badge>
+                  )}
+                </>
               )}
               {season.CommunityRating && (
                 <Badge
@@ -184,6 +195,9 @@ export default function SeasonPage() {
             {/* Play button */}
             <div className="flex justify-center md:justify-start md:pl-8 mt-8">
               <SeriesPlayButton series={season} />
+            </div>
+            <div className="md:pl-8 mt-2">
+              <MediaActions show={season} />
             </div>
 
             <div className="px-8 md:pl-8 md:pt-6 md:pr-16 flex flex-col justify-center md:items-start items-center">

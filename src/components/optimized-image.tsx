@@ -37,13 +37,12 @@ export function OptimizedImage({
     onError?.(e);
   };
 
-  if (hasError && isLoaded) {
+  if (hasError) {
     if (fallbackSrc) {
       return (
         <img
           src={fallbackSrc}
           alt={alt}
-          loading="lazy"
           className={cn(
             "transition-opacity duration-500 opacity-100",
             className,
@@ -72,7 +71,6 @@ export function OptimizedImage({
     <img
       src={src}
       alt={alt}
-      loading="lazy"
       className={cn(
         "transition-opacity duration-500",
         isLoaded ? "opacity-100" : "opacity-0",

@@ -1,13 +1,13 @@
 services:
-  aperture:
-    image: akhilmulpuri/aperture-web:latest
+  mitch-jelly:
+    image: ghcr.io/mitchelljfranklin/mitch-jelly:latest
     ports:
       - "3000:3000"
     environment:
       - DEFAULT_SERVER_URL=${DEFAULT_SERVER_URL}
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "wget", "-qO-", "http://localhost:3000"]
+      test: ["CMD", "bun", "run", "-e", "fetch('http://localhost:3000').then(() => process.exit(0)).catch(() => process.exit(1))"]
       interval: 30s
       timeout: 10s
       retries: 3

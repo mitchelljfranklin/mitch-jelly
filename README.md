@@ -1,151 +1,132 @@
-<h1 align="center">
-  <br>
-    <a href="https://github.com/akhilmulpurii/aperture"><img src="https://github.com/akhilmulpurii/aperture/blob/main/public/assets/logo/icon.png?raw=true" alt="APERTÚRE" width="200"></a>
-  <br>
-  APERTÚRE
-  <br>
-</h1>
-<h4 align="center">A Modern, Streamlined Jellyfin Client built with Next.js</h4>
+# Mitch-Jelly
 
-https://github.com/user-attachments/assets/a35d71e2-14bf-475f-9e54-a0cf2c7bc044
+<p align="center">
+  <img src="public/assets/logo/icon.png" alt="Mitch-Jelly Logo" width="128" height="128" />
+</p>
 
-<div align="center">
-  <table>
-    <tr>
-      <td align="center">
-        <img src="screenshots/series/theming.png" alt="Dark Theme" width="500">
-      </td>
-      <td align="center">
-        <img src="screenshots/series/quick_connect.png" alt="Dark Theme" width="500">
-      </td>
-    </tr>
-    <tr>
-      <td align="center">
-        <img src="screenshots/series/light.png" alt="Light Theme" width="500">
-      </td>
-      <td align="center">
-        <img src="screenshots/series/dark.png" alt="Dark Theme" width="500">
-      </td>
-    </tr>
-    <tr>
-      <td align="center">
-        <img src="screenshots/series/collections.png" alt="Dark Theme" width="500">
-      </td>
-      <td align="center">
-        <img src="screenshots/series/player.png" alt="Dark Theme" width="500">
-      </td>
-    </tr>
-    <tr>
-      <td align="center">
-        <img src="screenshots/series/details.png" alt="Dark Theme" width="500">
-      </td>
-      <td align="center">
-        <img src="screenshots/series/profile.png" alt="Dark Theme" width="500">
-      </td>
-    </tr>
-  </table>
-</div>
+**A Modern, Streamlined Jellyfin Client built with Next.js**
 
----
+Mitch-Jelly is a clean, modern Jellyfin client designed for speed, simplicity, and elegance. Born from the solid foundation of Aperture (originally built upon Finetic), Mitch-Jelly extends functionality with improved performance, watch status tracking, library management, and a customizable interface.
 
-## ✨ Overview
+## Features
 
-**APERTÚRE** is a clean, modern Jellyfin client built with **Next.js** — designed for speed, simplicity, and elegance.  
-It builds upon the solid foundation of **[Finetic](https://github.com/AyaanZaveri/finetic)** while introducing extended functionality and removing unnecessary complexity.
+- **Rich Media Experience** — Native support for Video Backdrops, Theme Songs, and Trickplay thumbnails
+- **Smart Connectivity** — Quick Connect login support and intelligent Direct Play/Transcoding selection
+- **Watch Status Tracking** — Mark items watched/unwatched from anywhere: cards, episode lists, hero carousel, and detail pages
+- **Advanced Library Support** — Collections (Box Sets), Live TV, paginated loading with infinite scroll for large libraries
+- **Customizable Branding** — Admins can set a custom app name via Settings
+- **Theming** — Multiple theme variations including "Cinematic Theatre Black", "Neon Grid", and more
+- **Redesigned Playback Engine** — Seamless streaming aligned with Jellyfin best practices
+- **Hero Media Bar** — Visually striking carousel showcasing highlighted content
+- **Smart Episodic Features** — Intro and Outro skipping for effortless binge-watching (requires the Intro Skipper plugin)
+- **Mini Player** — Keep watching while browsing with Picture-in-Picture mode
+- **Seerr Integration** — Built-in support for Seerr for content discovery and requests
+- **Performance** — 5-minute local caching, skeleton loading, paginated fetches, and infinite scroll for snappy UX
 
-Join Discord Community - [Discord Invite](https://discord.gg/8UrJehgqnj)
+## vs Jellyfin Web
 
-Special Thanks to **[@AyaanZaveri](https://github.com/AyaanZaveri)**, this is based on his work on finetic, but I am building it upon my personal preferences.
+| Feature | Jellyfin Web | Mitch-Jelly |
+|---------|-------------|-------------|
+| **Framework** | Vanilla JS + jQuery | Next.js 16 + React 19 + TypeScript |
+| **Performance** | Full page reloads | SPA navigation, instant transitions |
+| **Loading UX** | Basic spinners | Skeleton loading, progressive rendering, infinite scroll |
+| **Caching** | Browser cache only | 5-min localStorage + in-memory cache — instant revisits |
+| **Browse view** | Grid with next/prev buttons | Grid with infinite scroll (200 items at a time) |
+| **Sorting** | Server-side only | Client-side: Name, Date Added, Rating, Year, Runtime, Random |
+| **Search** | Full text search | Type-ahead suggestions, `/` shortcut, 200-result limit + Seerr |
+| **Watched badges** | Checkmark on cards | Checkmark + progress bars + "X left" episode counts |
+| **Mark as watched** | Context menu on card | Hover eye-toggle on every card + episode scroller + hero + detail page |
+| **Auto-mark watched** | Server-side at ~90% | Server-side + client-side fallback at >= 90% |
+| **Themes** | Light + Dark | 11 themes (Cinematic Theatre Black, Neon Grid, Emerald Ember, etc.) |
+| **Backdrops** | Static or blurred | Vibrant color-extracted aurora via WebGL |
+| **Hero carousel** | No | Full-height hero with Ken Burns effect, logo extraction |
+| **Mini player** | No | Picture-in-Picture while browsing |
+| **Seerr integration** | No | Built-in — discover, request, and manage media in-app |
+| **Custom app name** | No | Admin-configurable branding (sidebar, browser tab, all UI text) |
+| **Splash screen** | No | Cinematic splash loader |
+| **Intro/Outro skipping** | Plugin | Built-in support with Intro Skipper plugin |
+| **Docker** | Official image | GHCR image, manual `latest` or versioned release builds |
+| **License** | GPL v2 | AGPL v3 |
 
-### 🔹 Hero Features
+## Built With
 
-- **Rich Media Experience** – Native support for **Video Backdrops**, **Theme Songs**, and **Trickplay** thumbnails.
-- **Smart Connectivity** – **Quick Connect** login support and intelligent **Direct Play/Transcoding** selection.
-- **Advanced Library Support** – Integrated support for **Collections (Box Sets)** and Live TV (WIP).
-- **Theming** – Multiple theme variations including "Cinematic Theatre Black".
-- **Redesigned Playback Engine** – A seamless, rebuilt playback subsystem aligned with Jellyfin best practices for reliable and smooth streaming.
-- **Hero Media Bar** – A new, visually striking "Hero" section at the top of the interface to showcase your highlighted content.
-- **Smart Episodic Features** – Native support for **Intro and Outro skipping** to make binge-watching effortless (requires the [Intro Skipper plugin](https://github.com/intro-skipper/intro-skipper) on your server).
-- **Mini Player** – Keep watching your content while browsing the rest of your library with the new Picture-in-Picture mode.
-- ~~**Better Connectivity** – Added **Local Network Discovery** and saved server preferences to make connecting (and staying connected) easier.~~ **Note: Removed this due to inaccuracy**
-- **Refined Startup** – A proper **Splash Screen** now handles initialization, ensuring the app launches smoothly and efficiently every time.
-- **Seerr Integration** - Built-in support to integrate Jellyseerr or Overseerr, Once connected, requests can be made directly on the discover page or using the existing search component.
-
----
-
-## 🧠 Built With
-
-- **Frontend**: Next.js, TypeScript
+- **Frontend**: Next.js 16, React 19, TypeScript ~5.9
 - **Styling**: Tailwind v4, shadcn/ui, Framer Motion
 - **State Management**: Jotai
+- **Package Manager**: Bun
 - **Media Backend**: Jellyfin Server API, Seerr OpenAPI
 
----
+## Getting Started
 
-## ⚙️ Instructions
-
-### 🐳 Environment Variables
+### Environment Variables
 
 ```env
-DEFAULT_SERVER_URL=your_server_url
+DEFAULT_SERVER_URL=your_jellyfin_server_url
 ```
 
-
-### 🐳 Run with Docker (Recommended)
-
-Docker is the recommended way to run the app. The Docker image is directly available on Docker Hub at `akhilmulpuri/aperture-web`.
-
-**Using Docker Compose (`docker-compose.yml`)**
-
-```yaml
-services:
-  aperture:
-    image: akhilmulpuri/aperture-web:latest
-    ports:
-      - "3000:3000"
-    restart: unless-stopped
-```
+### Local Development
 
 ```bash
-docker-compose up -d
+bun install
+bun dev
 ```
 
-**Using Docker Run**
-
-```bash
-docker run -d -p 3000:3000 --name aperture-web --restart unless-stopped akhilmulpuri/aperture-web:latest
-```
-
-### 💻 Local Development
-
-1. **Install dependencies**
-   ```bash
-   bun install
-   ```
-2. **Start the Next.js dev server**
-   ```bash
-   bun dev
-   ```
-3. Visit `http://localhost:3000` and sign in with your Jellyfin instance credentials.
-
-Hot reloading is enabled by default, so UI changes are reflected immediately.
+Visit `http://localhost:3000` and sign in with your Jellyfin instance credentials. Hot reloading is enabled by default.
 
 ### Production Build
 
-Create an optimized bundle served by any static host (Vercel, Netlify, S3, etc.):
-
 ```bash
 bun build
-bun preview   # optional sanity check
+bun start
 ```
 
-The generated assets live in `dist/`. Configure your host to fall back to `index.html` for SPA routing.
+### Docker
+
+Pre-built images are available from GitHub Container Registry:
+
+```bash
+docker pull ghcr.io/mitchelljfranklin/mitch-jelly:latest
+docker run -d -p 3000:3000 --name mitch-jelly --restart unless-stopped ghcr.io/mitchelljfranklin/mitch-jelly:latest
+```
+
+Or build locally:
+
+```bash
+docker build -t mitch-jelly .
+docker run -d -p 3000:3000 --name mitch-jelly --restart unless-stopped mitch-jelly
+```
+
+Or with docker-compose:
+
+```yaml
+services:
+  mitch-jelly:
+    image: ghcr.io/mitchelljfranklin/mitch-jelly:latest
+    ports:
+      - "3000:3000"
+    environment:
+      - DEFAULT_SERVER_URL=${DEFAULT_SERVER_URL}
+    restart: unless-stopped
+```
 
 ### Public HTTP Jellyfin Servers
 
-The hosted app at `https://aperture.vercel.app` runs over HTTPS. Modern browsers block requests from an HTTPS site to **public** HTTP endpoints for security reasons, which means remote servers such as `http://23.x.x.x:8096` cannot be reached. To use Apertúre with a public server:
+Modern browsers block requests from HTTPS sites to public HTTP endpoints. To use Mitch-Jelly with a public server:
 
-1. Add HTTPS to your Jellyfin instance (Let's Encrypt, Caddy/NGINX reverse proxy, Cloudflare tunnel, etc.), or
-2. Run Apertúre locally (bun dev, Docker) over HTTP.
+1. Add HTTPS to your Jellyfin instance (Let's Encrypt, reverse proxy, Cloudflare tunnel, etc.), or
+2. Run Mitch-Jelly locally (bun dev, Docker) over HTTP
 
-LAN/private IPs (192.168.x.x, 10.x.x.x, etc.) generally still work over HTTP because browsers treat them as “private network” resources, but for anything exposed to the internet you’ll need HTTPS.
+LAN/private IPs (192.168.x.x, 10.x.x.x, etc.) generally work over HTTP.
+
+## Security
+
+See [SECURITY.md](.github/SECURITY.md) for our security policy and vulnerability reporting process.
+
+## Contributing
+
+- [Report a bug](https://github.com/mitchelljfranklin/mitch-jelly/issues/new?template=bug_report.yml)
+- [Request a feature](https://github.com/mitchelljfranklin/mitch-jelly/issues/new?template=feature_request.yml)
+
+## Credits
+
+Mitch-Jelly is based on [Aperture](https://github.com/akhilmulpurii/aperture) by Akhil Mulpuri, which was built upon [Finetic](https://github.com/AyaanZaveri/finetic) by Ayaan Zaveri.

@@ -1,5 +1,4 @@
 "use client";
-import { JotaiProvider } from "@/src/components/jotai-provider";
 import { FullscreenDetector } from "@/src/components/fullscreen-detector";
 import { LayoutContent } from "@/src/components/layout-content";
 import { useAuth } from "@/src/hooks/useAuth";
@@ -24,15 +23,13 @@ export default function MainLayout({
   }, [isLoading, isAuthenticated, router]);
 
   return (
-    <JotaiProvider>
-      <PlaybackProvider>
-        <SeerrProvider>
-          <FullscreenDetector />
-          <AuthErrorHandler>
-            <LayoutContent>{children}</LayoutContent>
-          </AuthErrorHandler>
-        </SeerrProvider>
-      </PlaybackProvider>
-    </JotaiProvider>
+    <PlaybackProvider>
+      <SeerrProvider>
+        <FullscreenDetector />
+        <AuthErrorHandler>
+          <LayoutContent>{children}</LayoutContent>
+        </AuthErrorHandler>
+      </SeerrProvider>
+    </PlaybackProvider>
   );
 }
