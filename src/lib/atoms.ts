@@ -1,13 +1,13 @@
 import { atom } from "jotai";
 import { atomWithStorage } from "jotai/utils";
 import { BaseItemDto } from "@jellyfin/sdk/lib/generated-client/models/base-item-dto";
-import { JellyfinItem } from "@/src/types/jellyfin";
+import { JellyfinItem, JellyfinUserWithToken } from "@/src/types/jellyfin";
 
 // Global loading state for dashboard
 export const dashboardLoadingAtom = atom(false);
 
 // Global auth error state
-export const globalAuthErrorAtom = atom<any | null>(null);
+export const globalAuthErrorAtom = atom<Error | null>(null);
 
 // Fullscreen state
 export const isFullscreenAtom = atom(false);
@@ -52,12 +52,12 @@ export const themeSelectionAtom = atomWithStorage<ThemePresetSelection>(
 
 // Home page data, persisted to localStorage so returning visitors see instant content
 export const homeServerUrlAtom = atomWithStorage<string | null>("mitch-jelly-home-serverUrl", null);
-export const homeUserAtom = atomWithStorage<any | null>("mitch-jelly-home-user", null);
-export const homeResumeItemsAtom = atomWithStorage<any[]>("mitch-jelly-home-resume", []);
+export const homeUserAtom = atomWithStorage<JellyfinUserWithToken | null>("mitch-jelly-home-user", null);
+export const homeResumeItemsAtom = atomWithStorage<BaseItemDto[]>("mitch-jelly-home-resume", []);
 export const homeNextupItemsAtom = atomWithStorage<JellyfinItem[]>("mitch-jelly-home-nextup", []);
 export const homeLibrariesAtom = atomWithStorage<
   {
-    library: any;
+    library: BaseItemDto;
     items: BaseItemDto[];
   }[]
 >("mitch-jelly-home-libraries", []);

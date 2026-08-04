@@ -12,8 +12,7 @@ import {
   getStreamUrl,
   getDirectStreamUrl,
   getSubtitleTracks,
-  markFavorite,
-  unmarkFavorite,
+  markAsPlayed,
 } from "../../actions";
 import { PlaybackState, Player, PlayOptions, PlayerType } from "../types";
 import { PlayQueueManager } from "../utils/playQueueManager";
@@ -495,6 +494,12 @@ export function usePlaybackManager(): PlaybackContextValue {
       reportPlaybackStopped(item.Id, mediaSource.Id, sessionId, ticks).catch(
         (e) => console.error("Failed to report playback stopped", e),
       );
+      // Auto-mark as played if watched >= 90%
+      if (item.RunTimeTicks && ticks / item.RunTimeTicks >= 0.9) {
+        markAsPlayed(item.Id).catch(
+          (e) => console.error("Failed to auto-mark as played", e),
+        );
+      }
     }
 
     activePlayerRef.current?.stop(true);
