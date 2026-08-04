@@ -57,7 +57,7 @@ export async function searchItems(query: string): Promise<JellyfinItem[]> {
         ItemFields.CanDelete,
         ItemFields.PrimaryImageAspectRatio,
         ItemFields.Overview,
-        ItemFields.UserData,
+        ("UserData" as ItemFields),
       ],
     });
 

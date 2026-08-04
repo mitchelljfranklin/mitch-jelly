@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-export function middleware() {
+export default function proxy() {
   const response = NextResponse.next();
 
   response.headers.set("X-Frame-Options", "DENY");

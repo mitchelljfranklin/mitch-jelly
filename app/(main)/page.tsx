@@ -170,7 +170,7 @@ export default function Home() {
           <MediaSection
             key={library.Id}
             library={library}
-            sectionName={library.Name}
+            sectionName={library.Name || "Library"}
             mediaItems={items}
             serverUrl={serverUrl}
           />

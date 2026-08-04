@@ -367,7 +367,6 @@ export const HTMLVideoPlayer = forwardRef<Player, HTMLVideoPlayerProps>(
         className={`w-full h-full bg-black ${className}`}
         crossOrigin="anonymous"
         playsInline
-        // @ts-expect-error - Safari specific attributes
         x-webkit-airplay="allow"
       ></video>
     );

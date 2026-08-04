@@ -9,7 +9,6 @@ import { SeerrSectionSkeleton } from "@/src/components/seerr-section-skeleton";
 export function DiscoverWidgets() {
   const {
     recentRequests,
-    canManageRequests,
     loading: contextLoading,
   } = useSeerr();
   const {
@@ -40,7 +39,6 @@ export function DiscoverWidgets() {
         <SeerrRequestSection
           sectionName="Recent Requests"
           items={recentRequests}
-          canManageRequests={canManageRequests}
         />
       )}
 

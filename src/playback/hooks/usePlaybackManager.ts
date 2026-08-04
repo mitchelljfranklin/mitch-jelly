@@ -13,6 +13,8 @@ import {
   getStreamUrl,
   getDirectStreamUrl,
   getSubtitleTracks,
+  markFavorite,
+  unmarkFavorite,
   markAsPlayed,
 } from "../../actions";
 import { PlaybackState, Player, PlayOptions, PlayerType } from "../types";

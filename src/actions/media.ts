@@ -88,7 +88,7 @@ export async function fetchMovies(
         ItemFields.CanDelete,
         ItemFields.PrimaryImageAspectRatio,
         ItemFields.Overview,
-        ItemFields.UserData,
+        ("UserData" as ItemFields),
       ],
     });
     return data.Items || [];
@@ -129,7 +129,7 @@ export async function fetchMovieByCollection(
         ItemFields.CanDelete,
         ItemFields.PrimaryImageAspectRatio,
         ItemFields.Overview,
-        ItemFields.UserData,
+        ("UserData" as ItemFields),
       ],
     });
     return data.Items || [];
@@ -171,7 +171,7 @@ export async function fetchTVShows(
         ItemFields.CanDelete,
         ItemFields.PrimaryImageAspectRatio,
         ItemFields.Overview,
-        ItemFields.UserData,
+        ("UserData" as ItemFields),
       ],
     });
     return data.Items || [];
@@ -218,7 +218,7 @@ export async function fetchMediaDetails(
         ItemFields.Studios,
         ItemFields.Trickplay,
         ItemFields.Chapters,
-        ItemFields.UserData,
+        ("UserData" as ItemFields),
       ],
     });
     return data.Items?.[0] ?? null;
@@ -294,7 +294,7 @@ export async function fetchPersonFilmography(
         ItemFields.PrimaryImageAspectRatio,
         ItemFields.Overview,
         ItemFields.MediaSources,
-        ItemFields.UserData,
+        ("UserData" as ItemFields),
       ],
     });
     return data.Items || [];
@@ -332,7 +332,7 @@ export async function fetchResumeItems() {
         ItemFields.CanDelete,
         ItemFields.PrimaryImageAspectRatio,
         ItemFields.Overview,
-        ItemFields.UserData,
+        ("UserData" as ItemFields),
       ],
       enableImages: true,
     });
@@ -366,7 +366,7 @@ export async function fetchNextUpItems() {
         ItemFields.CanDelete,
         ItemFields.PrimaryImageAspectRatio,
         ItemFields.Overview,
-        ItemFields.UserData,
+        ("UserData" as ItemFields),
       ],
       enableImages: true,
     });
@@ -531,7 +531,7 @@ export async function fetchLibraryItems(
         ItemFields.PrimaryImageAspectRatio,
         ItemFields.Overview,
         ItemFields.DateCreated,
-        ItemFields.UserData,
+        ("UserData" as ItemFields),
       ],
     });
 
@@ -592,7 +592,7 @@ export async function fetchLiveTVItems(
         ItemFields.PrimaryImageAspectRatio,
         ItemFields.Overview,
         ItemFields.DateCreated,
-        ItemFields.UserData,
+        ("UserData" as ItemFields),
       ],
     });
 
@@ -858,7 +858,7 @@ export async function fetchHeroItems(): Promise<JellyfinItem[]> {
             "ProductionYear" as ItemFields,
             "CommunityRating" as ItemFields,
             "OfficialRating" as ItemFields,
-            ItemFields.UserData,
+            ("UserData" as ItemFields),
           ],
           enableImages: true,
           mediaTypes: [BaseItemKind.Movie, BaseItemKind.Series] as any,
@@ -879,7 +879,7 @@ export async function fetchHeroItems(): Promise<JellyfinItem[]> {
             "ProductionYear" as ItemFields,
             "CommunityRating" as ItemFields,
             "OfficialRating" as ItemFields,
-            ItemFields.UserData,
+            ("UserData" as ItemFields),
           ],
           enableImages: true,
         }),
@@ -899,7 +899,7 @@ export async function fetchHeroItems(): Promise<JellyfinItem[]> {
             "ProductionYear" as ItemFields,
             "CommunityRating" as ItemFields,
             "OfficialRating" as ItemFields,
-            ItemFields.UserData,
+            ("UserData" as ItemFields),
           ],
           enableImages: true,
         }),
@@ -922,7 +922,7 @@ export async function fetchHeroItems(): Promise<JellyfinItem[]> {
             "ProductionYear" as ItemFields,
             "CommunityRating" as ItemFields,
             "OfficialRating" as ItemFields,
-            ItemFields.UserData,
+            ("UserData" as ItemFields),
           ],
           enableImages: true,
         }),
@@ -1282,7 +1282,7 @@ export async function fetchSeasons(tvShowId: string): Promise<JellyfinItem[]> {
       recursive: false,
       sortBy: [ItemSortBy.SortName],
       sortOrder: [SortOrder.Ascending],
-      fields: [ItemFields.UserData],
+      fields: [("UserData" as ItemFields)],
     });
     return data.Items || [];
   } catch (error) {
@@ -1318,7 +1318,7 @@ export async function fetchEpisodes(seasonId: string): Promise<JellyfinItem[]> {
         ItemFields.PrimaryImageAspectRatio,
         ItemFields.Overview,
         ItemFields.MediaSources,
-        ItemFields.UserData,
+        ("UserData" as ItemFields),
       ],
     });
     return data.Items || [];
@@ -1416,7 +1416,7 @@ export async function getPreviousEpisode(
         ItemFields.PrimaryImageAspectRatio,
         ItemFields.Overview,
         ItemFields.MediaSources,
-        ItemFields.UserData,
+        ("UserData" as ItemFields),
       ],
     });
 
@@ -1538,7 +1538,7 @@ export async function getNextEpisodeForSeries(
         ItemFields.PrimaryImageAspectRatio,
         ItemFields.Overview,
         ItemFields.MediaSources,
-        ItemFields.UserData,
+        ("UserData" as ItemFields),
       ],
     });
 
