@@ -46,27 +46,27 @@ const defaultThemeSelection: ThemePresetSelection = {
 };
 
 export const themeSelectionAtom = atomWithStorage<ThemePresetSelection>(
-  "aperture-dashboard-theme",
+  "mitch-jelly-dashboard-theme",
   defaultThemeSelection,
 );
 
 // Home page data, persisted to localStorage so returning visitors see instant content
-export const homeServerUrlAtom = atomWithStorage<string | null>("aperture-home-serverUrl", null);
-export const homeUserAtom = atomWithStorage<any | null>("aperture-home-user", null);
-export const homeResumeItemsAtom = atomWithStorage<any[]>("aperture-home-resume", []);
-export const homeNextupItemsAtom = atomWithStorage<JellyfinItem[]>("aperture-home-nextup", []);
+export const homeServerUrlAtom = atomWithStorage<string | null>("mitch-jelly-home-serverUrl", null);
+export const homeUserAtom = atomWithStorage<any | null>("mitch-jelly-home-user", null);
+export const homeResumeItemsAtom = atomWithStorage<any[]>("mitch-jelly-home-resume", []);
+export const homeNextupItemsAtom = atomWithStorage<JellyfinItem[]>("mitch-jelly-home-nextup", []);
 export const homeLibrariesAtom = atomWithStorage<
   {
     library: any;
     items: BaseItemDto[];
   }[]
->("aperture-home-libraries", []);
-export const homeLastVisitedTimeAtom = atomWithStorage<number>("aperture-home-visitedAt", 0);
-export const heroItemsAtom = atomWithStorage<BaseItemDto[]>("aperture-hero-items", []);
-export const heroLastVisitedTimeAtom = atomWithStorage<number>("aperture-hero-visitedAt", 0);
+>("mitch-jelly-home-libraries", []);
+export const homeLastVisitedTimeAtom = atomWithStorage<number>("mitch-jelly-home-visitedAt", 0);
+export const heroItemsAtom = atomWithStorage<BaseItemDto[]>("mitch-jelly-hero-items", []);
+export const heroLastVisitedTimeAtom = atomWithStorage<number>("mitch-jelly-hero-visitedAt", 0);
 
 // Customizable app name
-export const appNameAtom = atomWithStorage<string>("aperture-app-name", "Mitch-Jelly");
+export const appNameAtom = atomWithStorage<string>("mitch-jelly-app-name", "Mitch-Jelly");
 
 // Library page cache — in-memory only (libraries can be too large for localStorage)
 export interface LibraryCacheEntry {
