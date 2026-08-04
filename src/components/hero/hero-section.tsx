@@ -13,16 +13,20 @@ interface HeroSectionProps {
 export function HeroSection({ serverUrl }: HeroSectionProps) {
   const [items, setItems] = useAtom(heroItemsAtom);
   const [lastVisitedTime, setLastVisitedTime] = useAtom(heroLastVisitedTimeAtom);
-  const [loading, setLoading] = useState(true);
+  const hasCached = items.length > 0;
+  const [loading, setLoading] = useState(!hasCached);
 
   useEffect(() => {
     if (!serverUrl) return;
     const now = Date.now();
-    // Only refetch if 60 seconds have passed since the page was last visited
-    if (now - lastVisitedTime < 60000) {
+    // Only refetch if 5 minutes have passed since the page was last visited
+    if (now - lastVisitedTime < 300000) {
       setLastVisitedTime(Date.now());
       setLoading(false);
       return;
+    }
+    if (!hasCached) {
+      setLoading(true);
     }
     async function loadHeroItems() {
       try {

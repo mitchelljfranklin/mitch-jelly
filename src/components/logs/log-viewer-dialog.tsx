@@ -128,6 +128,17 @@ export function LogViewerDialog({
     };
   }, [open, logContent, isLiveMode, loadLogContent]);
 
+  const scrollToBottom = () => {
+    if (scrollAreaRef.current) {
+      const scrollContainer = scrollAreaRef.current.querySelector(
+        "[data-radix-scroll-area-viewport]",
+      );
+      if (scrollContainer) {
+        scrollContainer.scrollTop = scrollContainer.scrollHeight;
+      }
+    }
+  };
+
   // Auto-scroll to bottom when content changes and auto-scrolling is enabled
   useEffect(() => {
     if (isAutoScrolling && logContent && !isInitialLoad) {
@@ -170,17 +181,6 @@ export function LogViewerDialog({
     a.download = log.Name!;
     a.click();
     URL.revokeObjectURL(url);
-  };
-
-  const scrollToBottom = () => {
-    if (scrollAreaRef.current) {
-      const scrollContainer = scrollAreaRef.current.querySelector(
-        "[data-radix-scroll-area-viewport]",
-      );
-      if (scrollContainer) {
-        scrollContainer.scrollTop = scrollContainer.scrollHeight;
-      }
-    }
   };
 
   const handleScrollToBottomClick = () => {

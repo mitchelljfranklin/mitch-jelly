@@ -12,7 +12,6 @@ interface VideoOSDTimelineProps {
   isScrubbing: boolean;
   scrubbingValue: number | null;
   activeChapter: any;
-  thumbnail: any; // Using any for thumbnail object structure for now
   renderThumbnail: (time: number) => any;
   onScrubStart: (val: number) => void;
   onScrubMove: (val: number) => void;
@@ -28,7 +27,6 @@ export const VideoOSDTimeline: React.FC<VideoOSDTimelineProps> = ({
   isScrubbing,
   scrubbingValue,
   activeChapter,
-  thumbnail,
   renderThumbnail,
   onScrubStart,
   onScrubMove,

@@ -1,5 +1,4 @@
-import Hls from 'hls.js';
-import { MediaSourceInfo } from "@jellyfin/sdk/lib/generated-client/models";
+
 
 // TODO: Replace with actual browser detection or use a library if needed
 const browser = {

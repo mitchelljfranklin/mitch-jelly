@@ -3,8 +3,11 @@ import { Button } from "../ui/button";
 import { Settings2, Globe, Server } from "lucide-react";
 import { motion } from "framer-motion";
 import Link from "next/link";
+import { useAtomValue } from "jotai";
+import { appNameAtom } from "../../lib/atoms";
 
 export function NotConnected() {
+  const appName = useAtomValue(appNameAtom);
   return (
     <div className="flex flex-col items-center justify-center pt-20">
       <motion.div
@@ -34,7 +37,7 @@ export function NotConnected() {
           </h2>
           <p className="text-base text-muted-foreground leading-relaxed">
             Integrate with Overseerr or Jellyseerr to explore, request, and
-            discover new media directly within Aperture.
+            discover new media directly within {appName}.
           </p>
         </div>
 

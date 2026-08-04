@@ -1,5 +1,4 @@
 "use client";
-import { useAtom } from "jotai";
 import { SidebarInset, SidebarProvider } from "../components/ui/sidebar";
 import { AppSidebar } from "../components/app-sidebar";
 

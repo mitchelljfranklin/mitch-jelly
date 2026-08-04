@@ -5,6 +5,7 @@ import SeerrSection from "@/src/components/settings/seerr-section";
 import ProfileSection from "@/src/components/settings/profile-section";
 import ThemeSection from "@/src/components/settings/theme-section";
 import UserPreferenceSection from "@/src/components/settings/user-preference-section";
+import GeneralSection from "@/src/components/settings/general-section";
 
 export default function SettingsPage() {
   return (
@@ -26,6 +27,7 @@ export default function SettingsPage() {
         </div>
 
         <div className="grid gap-6">
+          <GeneralSection />
           <ProfileSection />
           <SeerrSection />
           <UserPreferenceSection />

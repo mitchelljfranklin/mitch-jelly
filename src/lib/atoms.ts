@@ -50,17 +50,30 @@ export const themeSelectionAtom = atomWithStorage<ThemePresetSelection>(
   defaultThemeSelection,
 );
 
-// Home page data, to persist navigation state within the session
-export const homeServerUrlAtom = atom<string | null>(null);
-export const homeUserAtom = atom<any | null>(null);
-export const homeResumeItemsAtom = atom<any[]>([]);
-export const homeNextupItemsAtom = atom<JellyfinItem[]>([]);
-export const homeLibrariesAtom = atom<
+// Home page data, persisted to localStorage so returning visitors see instant content
+export const homeServerUrlAtom = atomWithStorage<string | null>("aperture-home-serverUrl", null);
+export const homeUserAtom = atomWithStorage<any | null>("aperture-home-user", null);
+export const homeResumeItemsAtom = atomWithStorage<any[]>("aperture-home-resume", []);
+export const homeNextupItemsAtom = atomWithStorage<JellyfinItem[]>("aperture-home-nextup", []);
+export const homeLibrariesAtom = atomWithStorage<
   {
     library: any;
     items: BaseItemDto[];
   }[]
->([]);
-export const homeLastVisitedTimeAtom = atom(0); // Last visited time for homepage
-export const heroItemsAtom = atom<BaseItemDto[]>([]);
-export const heroLastVisitedTimeAtom = atom(0); // Last visited time for hero section
+>("aperture-home-libraries", []);
+export const homeLastVisitedTimeAtom = atomWithStorage<number>("aperture-home-visitedAt", 0);
+export const heroItemsAtom = atomWithStorage<BaseItemDto[]>("aperture-hero-items", []);
+export const heroLastVisitedTimeAtom = atomWithStorage<number>("aperture-hero-visitedAt", 0);
+
+// Customizable app name
+export const appNameAtom = atomWithStorage<string>("aperture-app-name", "Mitch-Jelly");
+
+// Library page cache — in-memory only (libraries can be too large for localStorage)
+export interface LibraryCacheEntry {
+  items: BaseItemDto[];
+  details: BaseItemDto | null;
+  name: string;
+  serverUrl: string;
+  timestamp: number;
+}
+export const libraryCacheAtom = atom<Record<string, LibraryCacheEntry>>({});

@@ -2,7 +2,6 @@
 import { useEffect, useMemo, useState, type SubmitEvent } from "react";
 import { toast } from "sonner";
 import {
-  ShieldCheck,
   QrCode,
   Loader2,
   CheckCircle2,

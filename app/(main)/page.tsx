@@ -5,6 +5,7 @@ import {
   fetchLiveTVItems,
   fetchNextUpItems,
 } from "@/src/actions/media";
+import { ItemSortBy, SortOrder, ItemFilter } from "@jellyfin/sdk/lib/generated-client/models";
 import { getAuthData, getUserLibraries } from "@/src/actions/utils";
 import { useAuthError } from "@/src/hooks/use-auth-error";
 import { MediaSection } from "@/src/components/media-section";
@@ -36,30 +37,59 @@ export default function Home() {
   const [lastVisitedTime, setLastVisitedTime] = useAtom(homeLastVisitedTimeAtom);
 
   const { handleAuthError } = useAuthError();
-  const [loading, setLoading] = useState<boolean>(true);
+  const hasCachedData = libraries.length > 0 && !!(serverUrl && user);
+  const [loading, setLoading] = useState<boolean>(!hasCachedData);
 
   useEffect(() => {
     const now = Date.now();
-    // Only refetch if 60 seconds have passed since the page was last visited
-    if (now - lastVisitedTime < 60000) {
+    // Only refetch if 5 minutes have passed since the page was last visited
+    if (now - lastVisitedTime < 300000) {
       setLastVisitedTime(Date.now());
       setLoading(false);
       return;
     }
+
+    if (!hasCachedData) {
+      setLoading(true);
+    }
+
     async function fetchData() {
       try {
-        const authData = await getAuthData();
+        // Fire all fetches in parallel — don't block page render on anything except auth
+        const authPromise = getAuthData();
+        const resumePromise = fetchResumeItems();
+        const nextupPromise = fetchNextUpItems();
+        const librariesPromise = getUserLibraries().then(async (userLibraries) => {
+          const libraryData = await Promise.all(
+            userLibraries.map(async (library) => {
+              const items =
+                library.CollectionType === "livetv"
+                  ? (await fetchLiveTVItems(true)).items
+                  : (await fetchLibraryItems(
+                      { id: library.Id!, collectionType: library.CollectionType },
+                      20,
+                      0,
+                      ItemSortBy.DateCreated,
+                      SortOrder.Descending,
+                      [ItemFilter.IsUnplayed],
+                    )).items;
+              return { library, items };
+            }),
+          );
+          return libraryData;
+        });
+
+        // Show page as soon as auth resolves (user name, search bar, etc.)
+        const authData = await authPromise;
         setServerUrl(authData.serverUrl);
         setUser(authData.user);
+        setLoading(false);
 
-        // Fetch resume items and libraries in parallel
-        const [resumeItemsResult, nextupItemsResult, userLibraries] =
-          await Promise.all([
-            fetchResumeItems(),
-            fetchNextUpItems(),
-            getUserLibraries(),
-          ]);
-
+        // Resume + Next Up populate as soon as they arrive
+        const [resumeItemsResult, nextupItemsResult] = await Promise.all([
+          resumePromise,
+          nextupPromise,
+        ]);
         setResumeItems(resumeItemsResult);
         setNextupItems(
           nextupItemsResult.filter(
@@ -70,17 +100,8 @@ export default function Home() {
           ),
         );
 
-        // Fetch items for each library in parallel
-        const libraryData = await Promise.all(
-          userLibraries.map(async (library) => {
-            const items =
-              library.CollectionType === "livetv"
-                ? (await fetchLiveTVItems(true)).items
-                : (await fetchLibraryItems({ id: library.Id!, collectionType: library.CollectionType }, 12)).items;
-            return { library, items };
-          }),
-        );
-
+        // Libraries load in background and populate when ready
+        const libraryData = await librariesPromise;
         setLibraries(libraryData);
         setLastVisitedTime(Date.now());
       } catch (error: any) {

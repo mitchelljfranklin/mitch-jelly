@@ -1,5 +1,5 @@
 "use client";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef, useEffect } from "react";
 import { MediaCard } from "../components/media-card";
 import {
   BaseItemDto,
@@ -70,7 +70,7 @@ const sortFields: SortField[] = [
   {
     value: "SortName",
     label: "Name",
-    getSortValue: (item) => item.Name || "",
+    getSortValue: (item) => item.SortName || item.Name || "",
   },
   {
     value: "Random",
@@ -139,6 +139,32 @@ export function LibraryMediaList({
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [randomSeed, setRandomSeed] = useState<number>(() => Math.random());
 
+  // Infinite scroll: only render a window of items at a time
+  const BATCH_SIZE = 200;
+  const [visibleCount, setVisibleCount] = useState(BATCH_SIZE);
+  const sentinelRef = useRef<HTMLDivElement>(null);
+
+  // Reset visible count when items or search changes
+  useEffect(() => {
+    setVisibleCount(BATCH_SIZE);
+  }, [mediaItems.length, searchQuery]);
+
+  // Intersection Observer for infinite scroll
+  useEffect(() => {
+    const sentinel = sentinelRef.current;
+    if (!sentinel) return;
+    const io = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          setVisibleCount((prev) => Math.min(prev + BATCH_SIZE, mediaItems.length));
+        }
+      },
+      { rootMargin: "300px" },
+    );
+    io.observe(sentinel);
+    return () => io.disconnect();
+  }, [mediaItems.length]);
+
   // Function to trigger a reroll for random sorting
   const handleReroll = () => {
     setRandomSeed(Math.random());
@@ -149,6 +175,15 @@ export function LibraryMediaList({
     const filtered = mediaItems.filter((item) =>
       (item.Name || "").toLowerCase().includes(searchQuery.toLowerCase()),
     );
+
+    // SortName ascending is the default. Items arrive from the server
+    // sorted by SortName (ignoring articles). Re-sort by display Name locally
+    // so "The Dawn of the Witch" appears under T, not D.
+    if (sortField === "SortName" && sortOrder === "asc") {
+      return [...filtered].sort((a, b) =>
+        (a.Name || "").localeCompare(b.Name || ""),
+      );
+    }
 
     // Then sort the filtered results
     const selectedField = sortFields.find((field) => field.value === sortField);
@@ -272,12 +307,13 @@ export function LibraryMediaList({
 
       {/* Media Grid */}
       <div className="grid grid-cols-[repeat(auto-fill,minmax(150px,1fr))] gap-4 auto-rows-max">
-        {filteredAndSortedItems.map((item) =>
+        {filteredAndSortedItems.slice(0, visibleCount).map((item) =>
           item.Type !== "TvChannel" ? (
             <MediaCard
               key={item.Id}
               item={item}
               serverUrl={serverUrl}
+              percentageWatched={item.UserData?.PlayedPercentage || 0}
               fullWidth
             />
           ) : (
@@ -285,6 +321,11 @@ export function LibraryMediaList({
           ),
         )}
       </div>
+
+      {/* Sentinel for infinite scroll */}
+      {visibleCount < filteredAndSortedItems.length && (
+        <div ref={sentinelRef} className="h-4" />
+      )}
 
       {/* Empty State */}
       {filteredAndSortedItems.length === 0 && (

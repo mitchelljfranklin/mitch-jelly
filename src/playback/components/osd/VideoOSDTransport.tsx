@@ -12,7 +12,6 @@ import {
   StepBack,
   StepForward,
 } from "lucide-react";
-import _ from "lodash";
 import { PlaybackContextValue } from "@/src/playback/hooks/usePlaybackManager";
 import { formatVideoTime } from "@/src/lib/utils";
 import { VideoOSDPlaybackButton } from "./VideoOSDPlaybackButton";

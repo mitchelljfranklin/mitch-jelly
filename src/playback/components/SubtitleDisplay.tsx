@@ -155,7 +155,7 @@ function parseVTT(content: string): SubtitleLine[] {
       const endTime = timeToSeconds(endStr);
 
       // Collect all text lines until next empty line
-      let textLines: string[] = [];
+      const textLines: string[] = [];
       i++;
       while (i < lines.length && lines[i].trim() !== "") {
         textLines.push(lines[i]);

@@ -52,11 +52,12 @@ export async function searchItems(query: string): Promise<JellyfinItem[]> {
         BaseItemKind.Episode,
       ],
       recursive: true,
-      limit: 40, // Reduced limit to make room for person results
+      limit: 200,
       fields: [
         ItemFields.CanDelete,
         ItemFields.PrimaryImageAspectRatio,
         ItemFields.Overview,
+        ItemFields.UserData,
       ],
     });
 
@@ -65,7 +66,7 @@ export async function searchItems(query: string): Promise<JellyfinItem[]> {
     const personSearchPromise = personsApi.getPersons({
       searchTerm: query,
       userId: user.Id,
-      limit: 10, // Limit person results
+      limit: 20, // Limit person results
       fields: [ItemFields.PrimaryImageAspectRatio, ItemFields.Overview],
       enableImages: true,
     });

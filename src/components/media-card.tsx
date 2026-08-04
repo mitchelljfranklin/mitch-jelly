@@ -1,9 +1,10 @@
 "use client";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import type { BaseItemDto } from "@jellyfin/sdk/lib/generated-client/models";
-import { Play } from "lucide-react";
+import { Play, Check, Eye, EyeOff } from "lucide-react";
 import { decode } from "blurhash";
 import { usePlayback } from "../hooks/usePlayback";
+import { markAsPlayed, markAsUnplayed } from "../actions/media";
 import { OptimizedImage } from "./optimized-image";
 import Link from "next/link";
 
@@ -52,6 +53,8 @@ export const MediaCard = React.memo(function MediaCard({
 
   const [imageLoaded, setImageLoaded] = useState(false);
   const [blurDataUrl, setBlurDataUrl] = useState<string | null>(null);
+  const [togglingWatched, setTogglingWatched] = useState(false);
+  const [isWatchedOverride, setIsWatchedOverride] = useState<boolean | null>(null);
 
   const itemId = item.Id ?? "";
   const itemType = item.Type;
@@ -71,26 +74,32 @@ export const MediaCard = React.memo(function MediaCard({
     }
   }, [itemId, itemType]);
 
-  const imageType: "Thumb" | "Primary" = continueWatching ? "Thumb" : "Primary";
+  const hasThumb = continueWatching && !!(
+    itemType === "Episode"
+      ? item.ParentThumbImageTag
+      : item.ImageTags?.Thumb
+  );
+
+  const imageType: "Thumb" | "Primary" = hasThumb ? "Thumb" : "Primary";
   const imageItemId = useMemo(() => {
     if (itemType === "Episode" && continueWatching) {
-      return item.ParentThumbItemId || itemId;
+      return item.ParentThumbItemId || item.SeriesId || itemId;
     }
     return itemId;
-  }, [continueWatching, item.ParentThumbItemId, itemId, itemType]);
+  }, [continueWatching, item.ParentThumbItemId, item.SeriesId, itemId, itemType]);
+
+  const imageTag = hasThumb
+    ? (itemType === "Episode" ? item.ParentThumbImageTag : item.ImageTags?.Thumb)
+    : item.ImageTags?.[imageType];
 
   const imageUrl = useMemo(() => {
     if (!serverUrl || !imageItemId) return "";
     const sizeParams = continueWatching
       ? "maxHeight=324&maxWidth=576"
       : "maxHeight=432&maxWidth=288";
-    return `${serverUrl}/Items/${imageItemId}/Images/${imageType}?${sizeParams}&quality=100`;
-  }, [continueWatching, imageItemId, imageType, serverUrl, item]);
-
-  const imageTag =
-    itemType === "Episode"
-      ? item.ParentThumbImageTag
-      : item.ImageTags?.[imageType];
+    const tagParam = imageTag ? `&tag=${imageTag}` : "";
+    return `${serverUrl}/Items/${imageItemId}/Images/${imageType}?${sizeParams}&quality=100${tagParam}`;
+  }, [continueWatching, imageItemId, imageType, serverUrl, imageTag]);
   const blurHash = imageTag
     ? (item.ImageBlurHashes?.[imageType]?.[imageTag] ?? "")
     : "";
@@ -154,7 +163,11 @@ export const MediaCard = React.memo(function MediaCard({
     [progressPercentage],
   );
 
-  const roundedClass = progressPercentage > 0 ? "rounded-t-md" : "rounded-md";
+  const isWatched = isWatchedOverride ?? (item.UserData?.Played === true);
+  const unplayedCount = (itemType === "Series" || itemType === "Season") ? (item.UserData?.UnplayedItemCount ?? 0) : 0;
+
+  const showProgressBar = progressPercentage > 0 && !isWatched;
+  const roundedClass = showProgressBar ? "rounded-t-md" : "rounded-md";
 
   const cardWidthClass = continueWatching
     ? "w-72"
@@ -212,6 +225,28 @@ export const MediaCard = React.memo(function MediaCard({
     setImageLoaded(true);
   }, []);
 
+  const handleToggleWatched = useCallback(
+    async (e: React.MouseEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      if (!itemId || togglingWatched) return;
+      setTogglingWatched(true);
+      const newState = !isWatched;
+      setIsWatchedOverride(newState);
+      try {
+        const success = newState
+          ? await markAsPlayed(itemId)
+          : await markAsUnplayed(itemId);
+        if (!success) setIsWatchedOverride(!newState);
+      } catch {
+        setIsWatchedOverride(!newState);
+      } finally {
+        setTogglingWatched(false);
+      }
+    },
+    [itemId, isWatched, togglingWatched],
+  );
+
   return (
     <div
       className={`cursor-pointer group overflow-hidden transition select-none ${cardWidthClass}`}
@@ -259,19 +294,30 @@ export const MediaCard = React.memo(function MediaCard({
           <div
             className={`absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-all duration-300 flex items-center justify-center pointer-events-none ${roundedClass}`}
           >
-            <div className="invisible group-hover:visible transition-opacity duration-300 pointer-events-auto">
+            <div className="invisible group-hover:visible transition-opacity duration-300 pointer-events-auto flex gap-2">
               <button
                 onClick={handlePlayClick}
                 className="bg-white/20 backdrop-blur-sm rounded-full p-3 hover:bg-white/30 transition active:scale-[0.97] hover:cursor-pointer"
               >
                 <Play className="h-6 w-6 text-white fill-white" />
               </button>
+              <button
+                onClick={handleToggleWatched}
+                className="bg-white/20 backdrop-blur-sm rounded-full p-3 hover:bg-white/30 transition active:scale-[0.97] hover:cursor-pointer"
+                title={isWatched ? "Mark as Unwatched" : "Mark as Watched"}
+              >
+                {isWatched ? (
+                  <EyeOff className="h-6 w-6 text-white" />
+                ) : (
+                  <Eye className="h-6 w-6 text-white" />
+                )}
+              </button>
             </div>
           </div>
         )}
 
         {/* Progress bar overlay at bottom of image */}
-        {progressPercentage > 0 && (
+        {showProgressBar && (
           <div
             className="absolute bottom-0 left-0 right-0 h-1 bg-black/10 overflow-hidden"
             style={{
@@ -285,6 +331,24 @@ export const MediaCard = React.memo(function MediaCard({
                 width: `${clampedProgressPercentage}%`,
               }}
             ></div>
+          </div>
+        )}
+
+        {/* Watched checkmark badge */}
+        {isWatched && (
+          <div className="absolute top-2 right-2 z-10">
+            <div className="bg-primary rounded-full p-1 shadow-lg">
+              <Check className="h-3 w-3 text-primary-foreground" strokeWidth={3} />
+            </div>
+          </div>
+        )}
+
+        {/* Unplayed episode count badge */}
+        {unplayedCount > 0 && (
+          <div className="absolute bottom-2 left-2 z-10">
+            <div className="bg-black/70 backdrop-blur-sm text-white text-xs px-2 py-0.5 rounded-full shadow-lg font-medium">
+              {unplayedCount} left
+            </div>
           </div>
         )}
       </div>

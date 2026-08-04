@@ -10,17 +10,15 @@ import { StoreSeerrData } from "../actions/store/store-seerr-data";
 interface SeerrRequestSectionProps {
   sectionName: string;
   items: SeerrRequestItem[];
-  canManageRequests?: boolean;
 }
 
 export function SeerrRequestSection({
   sectionName,
   items,
-  canManageRequests,
 }: SeerrRequestSectionProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const viewportRef = useRef<HTMLDivElement>(null);
-  const [seerServerUrl, setSeerServerUrl] = useState<string>("");
+  const [, setSeerServerUrl] = useState<string>("");
 
   useEffect(() => {
     async function getSeerrData() {

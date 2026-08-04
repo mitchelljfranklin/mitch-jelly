@@ -3,6 +3,7 @@ import { BaseItemKind } from "@jellyfin/sdk/lib/generated-client/models/base-ite
 import { ItemFields } from "@jellyfin/sdk/lib/generated-client/models/item-fields";
 import { ItemSortBy } from "@jellyfin/sdk/lib/generated-client/models/item-sort-by";
 import { SortOrder } from "@jellyfin/sdk/lib/generated-client/models/sort-order";
+import { ItemFilter } from "@jellyfin/sdk/lib/generated-client/models/item-filter";
 import { UserLibraryApi } from "@jellyfin/sdk/lib/generated-client/api/user-library-api";
 import { getItemsApi } from "@jellyfin/sdk/lib/utils/api/items-api";
 import { getLiveTvApi } from "@jellyfin/sdk/lib/utils/api/live-tv-api";
@@ -15,7 +16,6 @@ import { getTvShowsApi } from "@jellyfin/sdk/lib/utils/api/tv-shows-api";
 import { createJellyfinInstance } from "../lib/utils";
 import { JellyfinUserWithToken } from "../types/jellyfin";
 import { StoreAuthData } from "./store/store-auth-data";
-import { StoreServerURL } from "./store/store-server-url";
 import { LibraryOptions } from "@jellyfin/sdk/lib/generated-client/models";
 
 // Type aliases for easier use
@@ -217,6 +217,7 @@ export async function fetchMediaDetails(
         ItemFields.Studios,
         ItemFields.Trickplay,
         ItemFields.Chapters,
+        ItemFields.UserData,
       ],
     });
     return data.Items?.[0] ?? null;
@@ -291,7 +292,8 @@ export async function fetchPersonFilmography(
         ItemFields.CanDelete,
         ItemFields.PrimaryImageAspectRatio,
         ItemFields.Overview,
-        ItemFields.People,
+        ItemFields.MediaSources,
+        ItemFields.UserData,
       ],
     });
     return data.Items || [];
@@ -495,6 +497,9 @@ export async function fetchLibraryItems(
   libraryDetails: { id: string; collectionType?: string | undefined },
   limit: number = 50,
   startIndex: number = 0,
+  sortBy: ItemSortBy = ItemSortBy.SortName,
+  sortOrder: SortOrder = SortOrder.Ascending,
+  filters?: ItemFilter[],
 ): Promise<{ items: JellyfinItem[]; totalRecordCount: number }> {
   try {
     const { serverUrl, user } = await getAuthData();
@@ -513,15 +518,17 @@ export async function fetchLibraryItems(
         BaseItemKind.BoxSet,
       ],
       recursive: true,
-      sortBy: [ItemSortBy.SortName],
-      sortOrder: [SortOrder.Ascending],
+      sortBy: [sortBy],
+      sortOrder: [sortOrder],
       limit,
       startIndex,
+      filters,
       fields: [
         ItemFields.CanDelete,
         ItemFields.PrimaryImageAspectRatio,
         ItemFields.Overview,
         ItemFields.DateCreated,
+        ItemFields.UserData,
       ],
     });
 
@@ -1003,6 +1010,50 @@ export async function unmarkFavorite(itemId: string): Promise<boolean> {
   }
 }
 
+export async function markAsPlayed(itemId: string): Promise<boolean> {
+  try {
+    const { serverUrl, user } = await getAuthData();
+    if (!user.AccessToken) throw new Error("No access token found");
+
+    const response = await fetch(
+      `${serverUrl}/Users/${user.Id}/PlayedItems/${itemId}`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `MediaBrowser Token="${user.AccessToken}"`,
+        },
+      },
+    );
+
+    return response.ok;
+  } catch (error) {
+    console.error("Failed to mark as played:", error);
+    return false;
+  }
+}
+
+export async function markAsUnplayed(itemId: string): Promise<boolean> {
+  try {
+    const { serverUrl, user } = await getAuthData();
+    if (!user.AccessToken) throw new Error("No access token found");
+
+    const response = await fetch(
+      `${serverUrl}/Users/${user.Id}/PlayedItems/${itemId}`,
+      {
+        method: "DELETE",
+        headers: {
+          Authorization: `MediaBrowser Token="${user.AccessToken}"`,
+        },
+      },
+    );
+
+    return response.ok;
+  } catch (error) {
+    console.error("Failed to mark as unplayed:", error);
+    return false;
+  }
+}
+
 export async function fetchVirtualFolders(): Promise<VirtualFolderInfo[]> {
   try {
     const { serverUrl, user } = await getAuthData();
@@ -1223,6 +1274,7 @@ export async function fetchSeasons(tvShowId: string): Promise<JellyfinItem[]> {
       recursive: false,
       sortBy: [ItemSortBy.SortName],
       sortOrder: [SortOrder.Ascending],
+      fields: [ItemFields.UserData],
     });
     return data.Items || [];
   } catch (error) {
@@ -1439,14 +1491,15 @@ export async function getNextEpisodeForSeries(
       userId: user.Id,
       parentId: seriesId,
       includeItemTypes: [BaseItemKind.Episode],
-      recursive: true,
-      sortBy: [ItemSortBy.ParentIndexNumber, ItemSortBy.IndexNumber],
-      sortOrder: [SortOrder.Ascending, SortOrder.Ascending],
+      recursive: false,
+      sortBy: [ItemSortBy.SortName],
+      sortOrder: [SortOrder.Ascending],
       fields: [
         ItemFields.CanDelete,
         ItemFields.PrimaryImageAspectRatio,
         ItemFields.Overview,
         ItemFields.MediaSources,
+        ItemFields.UserData,
       ],
     });
 

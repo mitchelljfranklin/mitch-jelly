@@ -3,7 +3,6 @@ import { useAtom } from "jotai";
 import { useSettings } from "../../contexts/settings-context";
 import { useCallback, useEffect, useState } from "react";
 import { themeSelectionAtom } from "../../lib/atoms";
-import { JellyfinUserWithToken } from "../../types/jellyfin";
 import { useTheme } from "next-themes";
 import { cn } from "../../lib/utils";
 import { THEME_VARIANTS } from "../../data/theme-presets";
@@ -24,16 +23,9 @@ import { Badge } from "../ui/badge";
 
 export default function ThemeSection() {
   const { theme, setTheme } = useTheme();
-  const {
-    enableThemeBackdrops,
-    setEnableThemeBackdrops,
-    enableThemeSongs,
-    setEnableThemeSongs,
-  } = useSettings();
+  const {} = useSettings();
   const [selectedTheme, setSelectedTheme] = useAtom(themeSelectionAtom);
-  const [preferencesOpen, setPreferencesOpen] = useState(false);
   const [themesOpen, setThemesOpen] = useState(false);
-  const [user, setUser] = useState<JellyfinUserWithToken | null>(null);
 
   const ThemePreview = ({ themeId }: { themeId: string }) => {
     const Panel = () => (

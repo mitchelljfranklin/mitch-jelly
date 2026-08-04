@@ -18,7 +18,7 @@ export const useSkipSegments = (itemId: string | undefined | null) => {
           setSegments([]);
         }
       })
-      .catch((error) => {
+      .catch(() => {
         setSegments([]);
       });
   }, [itemId]);

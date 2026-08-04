@@ -37,6 +37,8 @@ export {
   scanLibrary,
   markFavorite,
   unmarkFavorite,
+  markAsPlayed,
+  markAsUnplayed,
   fetchVirtualFolders,
   removeVirtualFolder,
   renameVirtualFolder,
