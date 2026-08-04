@@ -81,10 +81,6 @@ export function AppSidebar() {
   const [appName] = useAtom(appNameAtom);
 
   useEffect(() => {
-    document.title = appName;
-  }, [appName]);
-
-  useEffect(() => {
     const fetchData = async () => {
       setIsLoading(true);
       try {

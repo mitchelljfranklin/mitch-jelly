@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist_Mono, Poppins, Inter } from "next/font/google";
 import RootProvider from "@/src/providers/RootProvider";
+import { AppTitle } from "@/src/components/app-title";
 import Head from "next/head";
 import "./globals.css";
 
@@ -57,7 +58,10 @@ export default function RootLayout({
       <body
         className={`${inter.variable} ${geistMono.variable} ${poppins.variable} antialiased`}
       >
-        <RootProvider>{children}</RootProvider>
+        <RootProvider>
+          <AppTitle />
+          {children}
+        </RootProvider>
       </body>
     </html>
   );
