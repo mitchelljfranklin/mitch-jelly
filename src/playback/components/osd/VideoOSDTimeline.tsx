@@ -12,6 +12,7 @@ interface VideoOSDTimelineProps {
   isScrubbing: boolean;
   scrubbingValue: number | null;
   activeChapter: any;
+  thumbnail?: any;
   renderThumbnail: (time: number) => any;
   onScrubStart: (val: number) => void;
   onScrubMove: (val: number) => void;
