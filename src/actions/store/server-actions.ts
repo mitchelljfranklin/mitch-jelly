@@ -8,6 +8,7 @@ const secureCookieOptions = {
   httpOnly: true,
   secure: true,
   sameSite: "lax" as const,
+  maxAge: 315360000, // 10 years
 };
 
 // --- Types ---
