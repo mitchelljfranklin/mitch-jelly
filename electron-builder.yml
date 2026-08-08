@@ -1,5 +1,6 @@
 appId: com.mitchjelly.app
 productName: Mitch-Jelly
+asar: false
 directories:
   output: dist-electron
   buildResources: public/assets/logo
@@ -10,12 +11,6 @@ files:
   - .next/static/**/*
   - public/**/*
   - package.json
-
-extraResources:
-  - from: .next/standalone
-    to: next-server
-    filter:
-      - "**/*"
 
 win:
   target:

@@ -1,5 +1,5 @@
 const { app, BrowserWindow, ipcMain } = require("electron");
-const { spawn } = require("child_process");
+const { fork } = require("child_process");
 const path = require("path");
 const http = require("http");
 
@@ -45,17 +45,17 @@ async function startNextServer() {
   }
 
   const port = await findFreePort();
-  const serverScript = path.join(
-    process.resourcesPath,
-    "next-server",
-    "server.js"
-  );
 
   console.log(`[electron] Starting Next.js server on port ${port}...`);
-  nextServer = spawn(process.execPath, [serverScript], {
-    env: { ...process.env, PORT: String(port), NODE_ENV: "production" },
-    stdio: ["ignore", "pipe", "pipe"],
-  });
+  nextServer = fork(
+    path.join(__dirname, "run-server.js"),
+    [],
+    {
+      cwd: path.dirname(__dirname),
+      env: { ...process.env, PORT: String(port), NODE_ENV: "production" },
+      silent: true,
+    }
+  );
 
   nextServer.stdout.on("data", (d) =>
     console.log(`[next] ${d.toString().trim()}`)
@@ -64,9 +64,10 @@ async function startNextServer() {
     console.error(`[next:err] ${d.toString().trim()}`)
   );
 
-  nextServer.on("error", (err) => {
-    console.error("[electron] Failed to start Next.js:", err);
-    app.quit();
+  nextServer.on("exit", (code) => {
+    if (code !== 0 && !app.isQuitting) {
+      console.error(`[electron] Next.js exited with code ${code}`);
+    }
   });
 
   await waitForServer(`http://localhost:${port}/api/config`);
