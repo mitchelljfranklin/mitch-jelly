@@ -112,22 +112,44 @@ services:
 
 ### Desktop App (Electron)
 
-Mitch-Jelly ships as a native desktop application for Windows, macOS, and Linux.
+Mitch-Jelly ships as a native desktop application for Windows, macOS, and Linux. The desktop app bundles the full Next.js production server — no Docker or external server needed. It runs entirely offline against your Jellyfin instance.
+
+**Prerequisites:** Node.js (Electron ships its own copy, so no global Rust or native toolchains required).
+
+#### Development
 
 ```bash
-# Development (hot reload)
+# Run Next.js dev server + Electron window (hot reload on both)
 bun electron:dev
-
-# Build for current platform
-bun electron:build
-
-# Build for specific platform
-bun electron:build:win
-bun electron:build:mac
-bun electron:build:linux
 ```
 
-Built installers are output to `dist-electron/`. The desktop app bundles the full Next.js production server — no external server needed. Auto-launch on login is supported via `app.setLoginItemSettings()`.
+This starts `bun dev` on port 3000, waits for it to be ready, then opens an Electron window pointing at `http://localhost:3000`. DevTools are detached by default for debugging.
+
+#### Building
+
+```bash
+# Build for your current platform (autodetected)
+bun electron:build
+
+# Build for a specific platform
+bun electron:build:win     # Windows → dist-electron/*.exe (NSIS installer)
+bun electron:build:mac     # macOS → dist-electron/*.dmg
+bun electron:build:linux   # Linux → dist-electron/*.AppImage
+```
+
+Each command first runs `bun run build` (Next.js production build with `output: standalone`), then packages everything with `electron-builder`. Output goes to `dist-electron/`.
+
+#### Installation
+
+| Platform | File | Install |
+|---|---|---|
+| Windows | `dist-electron/Mitch-Jelly Setup x.x.x.exe` | Run the installer. Optional: choose install directory. |
+| macOS | `dist-electron/Mitch-Jelly-x.x.x.dmg` | Open DMG, drag to Applications. |
+| Linux | `dist-electron/Mitch-Jelly-x.x.x.AppImage` | `chmod +x` then run directly. |
+
+#### Auto-Launch
+
+The app can start automatically when you log into your OS. Toggle it from the Settings page inside the app (uses `electronAPI.setAutoLaunch()` IPC, backed by `app.setLoginItemSettings()` in the main process).
 
 ### Public HTTP Jellyfin Servers
 
