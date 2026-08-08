@@ -67,7 +67,7 @@ export default function Home() {
                   ? (await fetchLiveTVItems(true)).items
                   : (await fetchLibraryItems(
                       { id: library.Id!, collectionType: library.CollectionType },
-                      20,
+                      200,
                       0,
                       ItemSortBy.DateCreated,
                       SortOrder.Descending,
@@ -79,7 +79,7 @@ export default function Home() {
                   return (item.UserData?.UnplayedItemCount ?? 0) > 0;
                 }
                 return !item.UserData?.Played;
-              });
+              }).slice(0, 20);
 
               return { library, items };
             }),
