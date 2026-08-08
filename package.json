@@ -2,7 +2,8 @@
   "name": "mitch-jelly",
   "private": true,
   "version": "2.1.0",
-  "description": "A modern, streamlined Jellyfin client built with Next.js — powered by Mitch-Jelly",
+  "description": "A modern, streamlined Jellyfin client built with Next.js - powered by Mitch-Jelly",
+  "author": "Mitchell Franklin",
   "main": "desktop/main.js",
   "scripts": {
     "dev": "bun --bun next dev",

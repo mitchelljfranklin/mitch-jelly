@@ -40,5 +40,3 @@ linux:
 nsis:
   oneClick: false
   allowToChangeInstallationDirectory: true
-  installerIcon: public/assets/logo/icon.png
-  uninstallerIcon: public/assets/logo/icon.png
