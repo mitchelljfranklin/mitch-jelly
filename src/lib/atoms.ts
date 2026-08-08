@@ -51,19 +51,19 @@ export const themeSelectionAtom = atomWithStorage<ThemePresetSelection>(
 );
 
 // Home page data, persisted to localStorage so returning visitors see instant content
-export const homeServerUrlAtom = atomWithStorage<string | null>("mitch-jelly-home-serverUrl", null);
-export const homeUserAtom = atomWithStorage<JellyfinUserWithToken | null>("mitch-jelly-home-user", null);
-export const homeResumeItemsAtom = atomWithStorage<BaseItemDto[]>("mitch-jelly-home-resume", []);
-export const homeNextupItemsAtom = atomWithStorage<JellyfinItem[]>("mitch-jelly-home-nextup", []);
+export const homeServerUrlAtom = atomWithStorage<string | null>("mitch-jelly-home-serverUrl-v2", null);
+export const homeUserAtom = atomWithStorage<JellyfinUserWithToken | null>("mitch-jelly-home-user-v2", null);
+export const homeResumeItemsAtom = atomWithStorage<BaseItemDto[]>("mitch-jelly-home-resume-v2", []);
+export const homeNextupItemsAtom = atomWithStorage<JellyfinItem[]>("mitch-jelly-home-nextup-v2", []);
 export const homeLibrariesAtom = atomWithStorage<
   {
     library: BaseItemDto;
     items: BaseItemDto[];
   }[]
->("mitch-jelly-home-libraries", []);
-export const homeLastVisitedTimeAtom = atomWithStorage<number>("mitch-jelly-home-visitedAt", 0);
-export const heroItemsAtom = atomWithStorage<BaseItemDto[]>("mitch-jelly-hero-items", []);
-export const heroLastVisitedTimeAtom = atomWithStorage<number>("mitch-jelly-hero-visitedAt", 0);
+>("mitch-jelly-home-libraries-v2", []);
+export const homeLastVisitedTimeAtom = atomWithStorage<number>("mitch-jelly-home-visitedAt-v2", 0);
+export const heroItemsAtom = atomWithStorage<BaseItemDto[]>("mitch-jelly-hero-items-v2", []);
+export const heroLastVisitedTimeAtom = atomWithStorage<number>("mitch-jelly-hero-visitedAt-v2", 0);
 
 // Customizable app name
 export const appNameAtom = atomWithStorage<string>("mitch-jelly-app-name", "Mitch-Jelly");

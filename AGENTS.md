@@ -99,3 +99,10 @@ Authentication uses `@jellyfin/sdk`. Credentials stored as cookies via `src/acti
 - Release workflow: triggers on `v*` tags — builds, tags as version + `latest`, creates GitHub Release
 - Manual dispatch: `workflow_dispatch` in Actions builds arbitrary tags (e.g., `latest`, `beta`)
 - No Docker Hub — uses GitHub Container Registry with built-in `GITHUB_TOKEN`
+
+## Repo Info
+
+- Repository: `mitchelljfranklin/mitch-jelly` on GitHub
+- Local folder should be named `mitch-jelly` (not `mitch-aperture`)
+- Originally forked from `akhilmulpurii/aperture` — no longer linked (upstream remote removed)
+- **GitHub CLI:** Always include `--repo mitchelljfranklin/mitch-jelly` with `gh` commands (e.g., `gh pr create --repo mitchelljfranklin/mitch-jelly ...`). Without it, `gh` resolves against the old fork upstream.

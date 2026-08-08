@@ -62,7 +62,7 @@ export default function Home() {
         const librariesPromise = getUserLibraries().then(async (userLibraries) => {
           const libraryData = await Promise.all(
             userLibraries.map(async (library) => {
-              const items =
+              const rawItems =
                 library.CollectionType === "livetv"
                   ? (await fetchLiveTVItems(true)).items
                   : (await fetchLibraryItems(
@@ -73,6 +73,14 @@ export default function Home() {
                       SortOrder.Descending,
                       [ItemFilter.IsUnplayed],
                     )).items;
+
+              const items = rawItems.filter((item) => {
+                if (library.CollectionType === "tvshows") {
+                  return (item.UserData?.UnplayedItemCount ?? 0) > 0;
+                }
+                return !item.UserData?.Played;
+              });
+
               return { library, items };
             }),
           );
