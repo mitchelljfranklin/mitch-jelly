@@ -100,6 +100,22 @@ Authentication uses `@jellyfin/sdk`. Credentials stored as cookies via `src/acti
 - Manual dispatch: `workflow_dispatch` in Actions builds arbitrary tags (e.g., `latest`, `beta`)
 - No Docker Hub — uses GitHub Container Registry with built-in `GITHUB_TOKEN`
 
+## Electron Desktop Client
+
+- **Dev:** `bun electron:dev` — runs `concurrently` with Next.js dev server + Electron window (requires `wait-on` for port 3000)
+- **Build:** `bun electron:build` — builds Next.js (`output: standalone`), then packages with `electron-builder`
+- **Platform-specific builds:** `bun electron:build:win`, `bun electron:build:mac`, `bun electron:build:linux`
+- **Entry point:** `desktop/main.js` (defined in `"main"` field of `package.json`)
+- **Packaging config:** `electron-builder.yml` — outputs installers to `dist-electron/`
+- **Architecture:** Electron main process spawns Next.js standalone server on a random port, waits for it, then creates a BrowserWindow pointing at `localhost:<port>`
+- **Preload:** `desktop/preload.js` exposes `window.electronAPI` via `contextBridge` (IPC handlers for auto-launch toggle, app version)
+- **Auto-launch:** `app.setLoginItemSettings({ openAtLogin: true })` in main process, accessible from renderer via `electronAPI.getAutoLaunch()` / `setAutoLaunch()`
+- **next.config.ts settings:** `output: "standalone"` (self-contained Node.js server), `images.unoptimized: true` (skips `sharp` in bundled app, saves ~15 MB)
+- **Standalone output at:** `.next/standalone/server.js` with pruned `node_modules`
+- **Electron TypeScript types:** `src/types/electron.d.ts` — declares `window.electronAPI` interface
+- **Build output:** `dist-electron/` (gitignored) — contains `.exe` (NSIS), `.dmg`, or `.AppImage` depending on platform
+- **Supports:** Windows (x64), macOS (x64 + arm64), Linux (x64)
+
 ## Repo Info
 
 - Repository: `mitchelljfranklin/mitch-jelly` on GitHub

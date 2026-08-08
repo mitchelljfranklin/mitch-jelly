@@ -109,6 +109,25 @@ services:
     restart: unless-stopped
 ```
 
+### Desktop App (Electron)
+
+Mitch-Jelly ships as a native desktop application for Windows, macOS, and Linux.
+
+```bash
+# Development (hot reload)
+bun electron:dev
+
+# Build for current platform
+bun electron:build
+
+# Build for specific platform
+bun electron:build:win
+bun electron:build:mac
+bun electron:build:linux
+```
+
+Built installers are output to `dist-electron/`. The desktop app bundles the full Next.js production server — no external server needed. Auto-launch on login is supported via `app.setLoginItemSettings()`.
+
 ### Public HTTP Jellyfin Servers
 
 Modern browsers block requests from HTTPS sites to public HTTP endpoints. To use Mitch-Jelly with a public server:
