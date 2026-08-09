@@ -38,14 +38,15 @@ export function HeroSlide({ item, serverUrl }: HeroSlideProps) {
       item.Type === "Episode"
         ? item.ParentBackdropItemId || item.SeriesId || item.Id
         : item.Id;
+    const tagParam = backdropTag ? `&tag=${encodeURIComponent(backdropTag)}` : "";
     const backdropUrl = backdropItemId
-      ? `${serverUrl}/Items/${backdropItemId}/Images/Backdrop/0?maxWidth=3840&quality=90`
+      ? `${serverUrl}/Items/${backdropItemId}/Images/Backdrop/0?maxWidth=3840&quality=90${tagParam}`
       : null;
     return (
         backdropUrl ||
         `${serverUrl}/Items/${item.Id}/Images/Primary?maxWidth=3840&quality=90`
       );
-  }, [item]);
+  }, [item, backdropTag, serverUrl]);
 
   const logoTag = item.ImageTags?.Logo || item.ParentLogoImageTag;
   const logoItemId = item.ImageTags?.Logo ? item.Id : item.ParentLogoItemId;

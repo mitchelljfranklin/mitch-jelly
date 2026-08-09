@@ -1,22 +1,29 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { Button } from "./ui/button";
 import { ArrowUp } from "lucide-react";
 
 export function ScrollToTop() {
   const [visible, setVisible] = useState(false);
+  const scrollContainerRef = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
+    const container = document.querySelector(
+      '[data-slot="sidebar-inset"] > div'
+    ) as HTMLElement | null;
+    if (!container) return;
+    scrollContainerRef.current = container;
+
     const onScroll = () => {
-      setVisible(window.scrollY > 300);
+      setVisible(container.scrollTop > 300);
     };
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
+    container.addEventListener("scroll", onScroll, { passive: true });
+    return () => container.removeEventListener("scroll", onScroll);
   }, []);
 
-  const scrollToTop = () => {
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  };
+  const scrollToTop = useCallback(() => {
+    scrollContainerRef.current?.scrollTo({ top: 0, behavior: "smooth" });
+  }, []);
 
   if (!visible) return null;
 

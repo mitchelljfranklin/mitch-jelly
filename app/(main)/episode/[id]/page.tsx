@@ -35,10 +35,11 @@ export default function Episode() {
 
         setEpisode(episodeDetails);
 
+        const backdropTag = episodeDetails.ParentBackdropImageTags?.[0];
         const [pi, bi, sbi, li, server] = await Promise.all([
           getImageUrl(id, "Primary"),
-          getImageUrl(id, "Backdrop"),
-          getImageUrl(episodeDetails.SeriesId || id, "Backdrop"),
+          getImageUrl(id, "Backdrop", undefined, backdropTag),
+          getImageUrl(episodeDetails.SeriesId || id, "Backdrop", undefined, backdropTag),
           getImageUrl(episodeDetails.SeriesId || id, "Logo"),
           getServerUrl(),
         ]);
