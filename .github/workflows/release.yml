@@ -11,12 +11,13 @@ on:
         required: true
         default: "latest"
 
+permissions:
+  contents: write
+  packages: write
+
 jobs:
   docker-image:
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      packages: write
     outputs:
       tag: ${{ steps.tag.outputs.tag }}
     steps:
