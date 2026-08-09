@@ -6,6 +6,7 @@ import ProfileSection from "@/src/components/settings/profile-section";
 import ThemeSection from "@/src/components/settings/theme-section";
 import UserPreferenceSection from "@/src/components/settings/user-preference-section";
 import GeneralSection from "@/src/components/settings/general-section";
+import pkg from "@/package.json";
 
 export default function SettingsPage() {
   return (
@@ -32,6 +33,10 @@ export default function SettingsPage() {
           <SeerrSection />
           <UserPreferenceSection />
           <ThemeSection />
+        </div>
+
+        <div className="mt-12 text-center text-xs text-muted-foreground/50 pb-4">
+          Mitch-Jelly v{pkg.version}
         </div>
       </div>
     </div>
