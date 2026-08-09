@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { Button } from "../../components/ui/button";
 import { Play, X } from "lucide-react";
 
@@ -25,20 +25,22 @@ export function PostPlayOverlay({
   onCancel,
 }: PostPlayOverlayProps) {
   const [countdown, setCountdown] = useState(COUNTDOWN_SECONDS);
+  const onPlayNowRef = useRef(onPlayNow);
+  onPlayNowRef.current = onPlayNow;
 
   useEffect(() => {
     if (countdown <= 0) {
-      onPlayNow();
+      onPlayNowRef.current();
       return;
     }
     const timer = setTimeout(() => setCountdown(countdown - 1), 1000);
     return () => clearTimeout(timer);
-  }, [countdown, onPlayNow]);
+  }, [countdown]);
 
   const handlePlayNow = useCallback(() => {
     setCountdown(0);
-    onPlayNow();
-  }, [onPlayNow]);
+    onPlayNowRef.current();
+  }, []);
 
   return (
     <div className="absolute inset-0 z-80 bg-black/90 flex flex-col items-center justify-center gap-6 px-4">

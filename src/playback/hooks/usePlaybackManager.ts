@@ -87,6 +87,7 @@ export interface PlaybackContextValue {
   setMiniPlayer: (enabled: boolean) => void;
   playPostPlayEpisode: () => void;
   dismissPostPlay: () => void;
+  checkNearEnd: (time: number, duration: number) => void;
 }
 
 export function usePlaybackManager(): PlaybackContextValue {
@@ -117,6 +118,7 @@ export function usePlaybackManager(): PlaybackContextValue {
 
   const activePlayerRef = useRef<Player | null>(null);
   const playSessionIdRef = useRef<string>("");
+  const postPlayTriggeredRef = useRef(false);
   const latestStateRef = useRef(playbackState);
   useEffect(() => {
     latestStateRef.current = playbackState;
@@ -425,6 +427,7 @@ export function usePlaybackManager(): PlaybackContextValue {
       playSessionIdRef.current = uuidv4();
 
       activePlayerRef.current = player;
+      postPlayTriggeredRef.current = false;
       updateState({
         currentItem: itemToPlay!,
         currentMediaSource: mediaSource || null,
@@ -539,21 +542,29 @@ export function usePlaybackManager(): PlaybackContextValue {
       playQueueManager.setPlaylistIndex(nextInfo.index);
       const item = playQueueManager.getCurrentItem();
       if (item) play(item, { startPositionTicks: 0 });
-    } else {
-      const currentItem = playbackState.currentItem;
-      if (currentItem && currentItem.Type === "Episode" && currentItem.SeriesId) {
-        getNextEpisodeForSeries(currentItem.SeriesId).then((nextEp) => {
-          if (nextEp && nextEp.Id !== currentItem.Id) {
-            updateState({ showPostPlay: true, postPlayEpisode: nextEp, isEnded: true });
-          } else {
-            stop();
-          }
-        }).catch(() => stop());
-      } else {
-        stop();
-      }
+    } else if (!playbackState.showPostPlay) {
+      stop();
     }
-  }, [play, stop, playbackState.currentItem, updateState]);
+  }, [play, stop, playbackState.showPostPlay]);
+
+  const checkNearEnd = useCallback((time: number, duration: number) => {
+    if (duration <= 0 || time <= 0) return;
+    if (postPlayTriggeredRef.current) return;
+    if (playbackState.showPostPlay) return;
+
+    const SECONDS_BEFORE_END = 45;
+    if (duration - time > SECONDS_BEFORE_END) return;
+
+    const item = latestStateRef.current.currentItem;
+    if (!item || item.Type !== "Episode" || !item.SeriesId) return;
+
+    postPlayTriggeredRef.current = true;
+    getNextEpisodeForSeries(item.SeriesId).then((nextEp) => {
+      if (nextEp && nextEp.Id !== item.Id) {
+        updateState({ showPostPlay: true, postPlayEpisode: nextEp });
+      }
+    }).catch(() => {});
+  }, [playbackState.showPostPlay, updateState]);
 
   const playPostPlayEpisode = useCallback(() => {
     const ep = playbackState.postPlayEpisode;
@@ -565,8 +576,7 @@ export function usePlaybackManager(): PlaybackContextValue {
 
   const dismissPostPlay = useCallback(() => {
     updateState({ showPostPlay: false, postPlayEpisode: null });
-    stop();
-  }, [stop, updateState]);
+  }, [updateState]);
 
   const previous = useCallback(() => {
     const currentIndex = playQueueManager.getCurrentPlaylistIndex();
@@ -842,5 +852,6 @@ export function usePlaybackManager(): PlaybackContextValue {
     setMiniPlayer,
     playPostPlayEpisode,
     dismissPostPlay,
+    checkNearEnd,
   };
 }

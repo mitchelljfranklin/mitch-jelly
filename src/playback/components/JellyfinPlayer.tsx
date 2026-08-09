@@ -191,6 +191,7 @@ export const JellyfinPlayer: React.FC<JellyfinPlayerProps> = ({
           subtitleStreamIndex={playbackState.subtitleStreamIndex}
           onTimeUpdate={(time) => {
             manager.reportState({ currentTime: time });
+            manager.checkNearEnd(time, playbackState.duration);
           }}
           onDurationChange={(duration) => {
             manager.reportState({ duration });
@@ -206,6 +207,10 @@ export const JellyfinPlayer: React.FC<JellyfinPlayerProps> = ({
         <HTMLAudioPlayer
           ref={audioRefCallback}
           className={activePlayerType === "Audio" ? "block" : "hidden"}
+          onTimeUpdate={(time) => {
+            manager.reportState({ currentTime: time });
+            manager.checkNearEnd(time, playbackState.duration);
+          }}
           onEnded={() => {
             manager.reportState({ isEnded: true });
             manager.next();
