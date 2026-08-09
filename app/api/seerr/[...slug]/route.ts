@@ -505,6 +505,9 @@ export async function POST(
 
     if (authType === "api-key") {
       endpoint = "/api/v1/auth/me";
+    } else if (authType === "jellyfin-session") {
+      // Per-user mode: verify the server is reachable via auth/me
+      endpoint = "/api/v1/auth/me";
     } else if (authType === "local-user") {
       endpoint = "/api/v1/auth/local";
       method = "POST";

@@ -1,6 +1,6 @@
-import { StoreSeerrData } from "./store/store-seerr-data";
-import { getSeerrSession } from "./store/server-actions";
-import type { SeerrAuthData } from "./store/server-actions";
+import { StoreSeerrData } from "@/src/actions/store/store-seerr-data";
+import { getSeerrSession } from "@/src/actions/store/server-actions";
+import type { SeerrAuthData } from "@/src/actions/store/server-actions";
 import {
   SeerrMediaItem,
   SeerrRequestItem,

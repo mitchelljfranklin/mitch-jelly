@@ -25,7 +25,7 @@ Mitch-Jelly is a clean, modern Jellyfin client designed for speed, simplicity, a
 - **Hero Media Bar** — Visually striking carousel showcasing highlighted content
 - **Smart Episodic Features** — Intro and Outro skipping for effortless binge-watching (requires the Intro Skipper plugin)
 - **Mini Player** — Keep watching while browsing with Picture-in-Picture mode
-- **Seerr Integration** — Built-in support for Jellyseerr/Overseerr for content discovery and requests
+- **Seerr Integration** — Built-in support for Jellyseerr/Overseerr for content discovery and requests. Admin-gated configuration with per-user authentication so requests track under each user's account.
 - **Smart Episode Continuation** — Netflix-style "Up Next" overlay appears 45s before episode ends with auto-play countdown
 - **Metadata Management** — Refresh or replace metadata per-item (movie, episode, season, series) directly from detail pages (admin)
 - **Navigation & Breadcrumbs** — Clickable breadcrumb trail on all media detail pages (Library > Show > Season > Episode). Floating back-to-top button on library pages.
