@@ -9,7 +9,6 @@ import React, {
 } from "react";
 import { getSeerrRecentRequests, getSeerrUser } from "@/src/actions/seerr";
 import { getSeerrConfig } from "@/src/actions/get-seerr-config";
-import { getSeerrSession } from "@/src/actions/store/server-actions";
 import { SeerrRequestItem } from "@/src/types/seerr-types";
 import { getAuthData } from "@/src/actions";
 
@@ -44,21 +43,20 @@ export function SeerrProvider({ children }: { children: React.ReactNode }) {
       const seerrData = await getSeerrConfig();
       if (seerrData && seerrData.serverUrl) {
         if (seerrData.authType === "jellyfin-session") {
-          const session = await getSeerrSession();
           setServerUrl(seerrData.serverUrl);
-          if (session) {
-            setIsSeerrConnected(true);
-            setNeedsSeerrLogin(false);
-            try {
-              const user = await getSeerrUser();
-              if (user) {
-                setCanManageRequests(((user.permissions || 0) & 2) !== 0);
-              }
-            } catch {
+          // Try a real API call — if the browser has a session cookie from
+          // a previous login, it'll be sent via credentials: "include"
+          try {
+            const user = await getSeerrUser();
+            if (user) {
+              setIsSeerrConnected(true);
+              setNeedsSeerrLogin(false);
+              setCanManageRequests(((user.permissions || 0) & 2) !== 0);
+            } else {
               setIsSeerrConnected(false);
               setNeedsSeerrLogin(true);
             }
-          } else {
+          } catch {
             setIsSeerrConnected(false);
             setNeedsSeerrLogin(true);
           }
