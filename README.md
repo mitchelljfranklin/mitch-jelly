@@ -16,8 +16,9 @@ Mitch-Jelly is a clean, modern Jellyfin client designed for speed, simplicity, a
 
 - **Rich Media Experience** — Native support for Video Backdrops, Theme Songs, and Trickplay thumbnails
 - **Smart Connectivity** — Quick Connect login support and intelligent Direct Play/Transcoding selection
-- **Watch Status Tracking** — Mark items watched/unwatched from anywhere: cards, episode lists, hero carousel, and detail pages
-- **Advanced Library Support** — Collections (Box Sets), Live TV, paginated loading with infinite scroll for large libraries
+- **Watch Status Tracking** — Mark items watched/unwatched from anywhere: cards, episode lists, hero carousel, and detail pages. Progress bars and "X left" episode counts on every card. Auto-mark played at >= 90% completion.
+- **Advanced Library Support** — Collections (Box Sets), Live TV, paginated loading with infinite scroll for large libraries. Three scan modes: Scan Files, Refresh Metadata, Replace All Metadata — available per-library and per-item (admin). Client-side watched/unwatched filtering with server-side sort.
+- **Smart Caching** — 5-minute localStorage cache for instant page loads on revisit. Home page, hero items, and library data cached with automatic background refresh. Cache versioned to auto-invalidate when fixes ship.
 - **Customizable Branding** — Admins can set a custom app name via Settings
 - **Theming** — Multiple theme variations including "Cinematic Theatre Black", "Neon Grid", and more
 - **Redesigned Playback Engine** — Seamless streaming aligned with Jellyfin best practices
