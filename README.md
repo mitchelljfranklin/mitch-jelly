@@ -20,14 +20,14 @@ Mitch-Jelly is a clean, modern Jellyfin client designed for speed, simplicity, a
 - **Hero Media Bar** — Visually striking carousel showcasing highlighted content
 - **Smart Episodic Features** — Intro and Outro skipping for effortless binge-watching (requires the Intro Skipper plugin)
 - **Mini Player** — Keep watching while browsing with Picture-in-Picture mode
-- **Seerr Integration** — Built-in support for Seerr for content discovery and requests
+- **Seerr Integration** — Built-in support for Jellyseerr/Overseerr for content discovery and requests
 - **Performance** — 5-minute local caching, skeleton loading, paginated fetches, and infinite scroll for snappy UX
 
 ## vs Jellyfin Web
 
 | Feature | Jellyfin Web | Mitch-Jelly |
 |---------|-------------|-------------|
-| **Framework** | Vanilla JS + jQuery | Next.js 16 + React 19 + TypeScript |
+| **Framework** | React + TypeScript | Next.js 16 + React 19 + TypeScript |
 | **Performance** | Full page reloads | SPA navigation, instant transitions |
 | **Loading UX** | Basic spinners | Skeleton loading, progressive rendering, infinite scroll |
 | **Caching** | Browser cache only | 5-min localStorage + in-memory cache — instant revisits |
@@ -41,10 +41,11 @@ Mitch-Jelly is a clean, modern Jellyfin client designed for speed, simplicity, a
 | **Backdrops** | Static or blurred | Vibrant color-extracted aurora via WebGL |
 | **Hero carousel** | No | Full-height hero with Ken Burns effect, logo extraction |
 | **Mini player** | No | Picture-in-Picture while browsing |
-| **Seerr integration** | No | Built-in — discover, request, and manage media in-app |
+| **Seerr integration** | No | Built-in — discover, request, and manage media via Jellyseerr/Overseerr |
 | **Custom app name** | No | Admin-configurable branding (sidebar, browser tab, all UI text) |
 | **Splash screen** | No | Cinematic splash loader |
 | **Intro/Outro skipping** | Plugin | Built-in support with Intro Skipper plugin |
+| **Desktop app** | Separate apps (MPV Desktop, JMP) | Native Electron app — Windows, macOS, Linux |
 | **Docker** | Official image | GHCR image, manual `latest` or versioned release builds |
 | **License** | GPL v2 | AGPL v3 |
 
@@ -54,7 +55,7 @@ Mitch-Jelly is a clean, modern Jellyfin client designed for speed, simplicity, a
 - **Styling**: Tailwind v4, shadcn/ui, Framer Motion
 - **State Management**: Jotai
 - **Package Manager**: Bun
-- **Media Backend**: Jellyfin Server API, Seerr OpenAPI
+- **Media Backend**: Jellyfin Server API, Jellyseerr/Overseerr API
 
 ## Getting Started
 
@@ -76,7 +77,7 @@ Visit `http://localhost:3000` and sign in with your Jellyfin instance credential
 ### Production Build
 
 ```bash
-bun build
+bun run build
 bun start
 ```
 
@@ -108,6 +109,47 @@ services:
       - DEFAULT_SERVER_URL=${DEFAULT_SERVER_URL}
     restart: unless-stopped
 ```
+
+### Desktop App (Electron)
+
+Mitch-Jelly ships as a native desktop application for Windows, macOS, and Linux. The desktop app bundles the full Next.js production server — no Docker or external server needed. It runs entirely offline against your Jellyfin instance.
+
+**Prerequisites:** Node.js (Electron ships its own copy, so no global Rust or native toolchains required).
+
+#### Development
+
+```bash
+# Run Next.js dev server + Electron window (hot reload on both)
+bun electron:dev
+```
+
+This starts `bun dev` on port 3000, waits for it to be ready, then opens an Electron window pointing at `http://localhost:3000`. DevTools are detached by default for debugging.
+
+#### Building
+
+```bash
+# Build for your current platform (autodetected)
+bun electron:build
+
+# Build for a specific platform
+bun electron:build:win     # Windows → dist-electron/*.exe (NSIS installer)
+bun electron:build:mac     # macOS → dist-electron/*.dmg
+bun electron:build:linux   # Linux → dist-electron/*.AppImage
+```
+
+Each command first runs `bun run build` (Next.js production build with `output: standalone`), then packages everything with `electron-builder`. Output goes to `dist-electron/`.
+
+#### Installation
+
+| Platform | File | Install |
+|---|---|---|
+| Windows | `dist-electron/Mitch-Jelly Setup x.x.x.exe` | Run the installer. Optional: choose install directory. |
+| macOS | `dist-electron/Mitch-Jelly-x.x.x.dmg` | Open DMG, drag to Applications. |
+| Linux | `dist-electron/Mitch-Jelly-x.x.x.AppImage` | `chmod +x` then run directly. |
+
+#### Auto-Launch
+
+The app can start automatically when you log into your OS. Toggle it from the Settings page inside the app (uses `electronAPI.setAutoLaunch()` IPC, backed by `app.setLoginItemSettings()` in the main process).
 
 ### Public HTTP Jellyfin Servers
 

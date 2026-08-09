@@ -1,0 +1,37 @@
+appId: com.mitchjelly.app
+productName: Mitch-Jelly
+asar: false
+directories:
+  output: dist-electron
+  buildResources: public/assets/logo
+
+files:
+  - desktop/**/*
+  - .next/standalone/**/*
+  - .next/static/**/*
+  - public/**/*
+  - package.json
+
+win:
+  target:
+    - target: nsis
+      arch: [x64]
+  icon: public/assets/logo/icon.png
+
+mac:
+  target:
+    - target: dmg
+      arch: [x64, arm64]
+  icon: public/assets/logo/icon.png
+  category: public.app-category.entertainment
+
+linux:
+  target:
+    - target: AppImage
+      arch: [x64]
+  icon: public/assets/logo/icon.png
+  category: Entertainment
+
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true
