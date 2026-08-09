@@ -7,7 +7,8 @@ import React, {
   useCallback,
   useMemo,
 } from "react";
-import { getSeerrRecentRequests, getSeerrUser, getSeerrConfig } from "@/src/actions/seerr";
+import { getSeerrRecentRequests, getSeerrUser } from "@/src/actions/seerr";
+import { getSeerrConfig } from "@/src/actions/get-seerr-config";
 import { getSeerrSession } from "@/src/actions/store/server-actions";
 import { SeerrRequestItem } from "@/src/types/seerr-types";
 import { getAuthData } from "@/src/actions";
