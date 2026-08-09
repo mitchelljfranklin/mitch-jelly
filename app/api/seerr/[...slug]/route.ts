@@ -44,6 +44,7 @@ async function seerrFetch<T>(
   const username = req.headers.get("x-seerr-username");
   const password = req.headers.get("x-seerr-password");
   const authType = req.headers.get("x-seerr-auth-type");
+  const sessionCookie = req.headers.get("x-seerr-session");
 
   // Helper: Perform Request
   const makeRequest = async (cookie?: string) => {
@@ -98,8 +99,9 @@ async function seerrFetch<T>(
   };
 
   try {
-    // 1. Attempt Initial Request
-    let response = await makeRequest(req.headers.get("cookie") || undefined);
+    // 1. Attempt Initial Request — use session cookie if available, otherwise browser cookie
+    const initialCookie = sessionCookie || req.headers.get("cookie") || undefined;
+    let response = await makeRequest(initialCookie);
 
     // 2. Handle 401 with Auto-Login Retry
     if (response.status === 401 && username && password) {

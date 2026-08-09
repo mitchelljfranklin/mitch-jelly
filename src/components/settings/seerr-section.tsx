@@ -37,10 +37,12 @@ import { type SeerrAuthType } from "@/src/actions/store/server-actions";
 import { toast } from "sonner";
 import { testSeerrConnection } from "@/src/actions";
 import { useSeerr } from "@/src/contexts/seerr-context";
+import { getUser } from "@/src/actions";
 
 export default function SeerrSection() {
   const [seerrOpen, setSeerrOpen] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [isAdmin, setIsAdmin] = useState(false);
   const { isSeerrConnected, setIsSeerrConnected } = useSeerr();
 
   // Form State
@@ -52,14 +54,17 @@ export default function SeerrSection() {
 
   const loadSettings = useCallback(async () => {
     try {
-      const data = await StoreSeerrData.get();
+      const [data, user] = await Promise.all([StoreSeerrData.get(), getUser()]);
+      setIsAdmin(user?.Policy?.IsAdministrator || false);
+
       if (data) {
         setServerUrl(data.serverUrl);
 
         if (
           data.serverUrl &&
-          ((data.authType === "api-key" && data.apiKey) ||
-            (data.authType !== "api-key" && data.username && data.password))
+          (data.authType === "jellyfin-session" ||
+            (data.authType === "api-key" && (data as any).apiKey) ||
+            ((data as any).username && (data as any).password))
         ) {
           setIsSeerrConnected(true);
         }
@@ -75,6 +80,8 @@ export default function SeerrSection() {
     loadSettings();
   }, [loadSettings]);
 
+  if (!isAdmin && !loading) return null;
+
   const handleSave = async () => {
     try {
       if (authType === "api-key") {
@@ -82,6 +89,11 @@ export default function SeerrSection() {
           authType: "api-key",
           serverUrl,
           apiKey,
+        });
+      } else if (authType === "jellyfin-session") {
+        await StoreSeerrData.set({
+          authType: "jellyfin-session",
+          serverUrl,
         });
       } else {
         await StoreSeerrData.set({
@@ -118,14 +130,17 @@ export default function SeerrSection() {
     const toastId = toast.loading("Testing connection...");
 
     try {
-      // Save local state first to ensure we test what is currently typed
-      const currentConfig = {
-        serverUrl,
-        authType,
-        apiKey,
-        username,
-        password,
-      };
+      const currentConfig: any = { serverUrl, authType };
+
+      if (authType === "api-key") {
+        currentConfig.apiKey = apiKey;
+      } else if (authType === "jellyfin-session") {
+        // For per-user mode, just verify the server URL is reachable
+        currentConfig.authType = "jellyfin-session";
+      } else {
+        currentConfig.username = username;
+        currentConfig.password = password;
+      }
 
       const result = await testSeerrConnection(currentConfig);
 
@@ -241,7 +256,7 @@ export default function SeerrSection() {
                     onValueChange={(v) => setAuthType(v as SeerrAuthType)}
                     className="w-full"
                   >
-                    <TabsList className="grid w-full grid-cols-3">
+                    <TabsList className="grid w-full grid-cols-4">
                       <TabsTrigger
                         value="api-key"
                         className="text-xs sm:text-sm"
@@ -259,6 +274,12 @@ export default function SeerrSection() {
                         className="text-xs sm:text-sm"
                       >
                         Local User
+                      </TabsTrigger>
+                      <TabsTrigger
+                        value="jellyfin-session"
+                        className="text-xs sm:text-sm"
+                      >
+                        Per-User
                       </TabsTrigger>
                     </TabsList>
 
@@ -347,6 +368,28 @@ export default function SeerrSection() {
                           Sign in using an account created directly in Seerr
                           (e.g. admin).
                         </p>
+                      </TabsContent>
+
+                      <TabsContent
+                        value="jellyfin-session"
+                        className="mt-0 space-y-3"
+                      >
+                        <div className="rounded-lg border border-blue-500/20 bg-blue-500/5 p-4">
+                          <div className="flex items-center gap-3">
+                            <User className="h-5 w-5 text-blue-500" />
+                            <div className="flex-1">
+                              <h4 className="text-sm font-medium text-foreground">
+                                Per-User Authentication
+                              </h4>
+                              <p className="text-xs text-muted-foreground mt-1">
+                                Each user enters their Jellyfin password once per
+                                session. Seerr will track media requests under
+                                their individual account. Passwords are never
+                                stored — only a session cookie is kept.
+                              </p>
+                            </div>
+                          </div>
+                        </div>
                       </TabsContent>
                     </div>
                   </Tabs>

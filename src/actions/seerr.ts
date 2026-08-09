@@ -1,4 +1,5 @@
 import { StoreSeerrData } from "./store/store-seerr-data";
+import { getSeerrSession } from "./store/server-actions";
 import type { SeerrAuthData } from "./store/server-actions";
 import {
   SeerrMediaItem,
@@ -17,6 +18,12 @@ async function getHeaders(): Promise<HeadersInit> {
 
   if (data.authType === "api-key" && data.apiKey) {
     headers["x-api-key"] = data.apiKey;
+  } else if (data.authType === "jellyfin-session") {
+    const session = await getSeerrSession();
+    if (session) {
+      headers["x-seerr-auth-type"] = "jellyfin-session";
+      headers["x-seerr-session"] = session;
+    }
   } else if (
     (data.authType === "local-user" || data.authType === "jellyfin-user") &&
     data.username &&
@@ -248,6 +255,10 @@ export async function testSeerrConnection(
       body = {
         authType: currentConfig.authType,
       };
+    } else if (currentConfig.authType === "jellyfin-session") {
+      body = {
+        authType: currentConfig.authType,
+      };
     } else {
       body = {
         authType: currentConfig.authType,
@@ -275,6 +286,42 @@ export async function testSeerrConnection(
 
     const json = await response.json();
     return { success: false, message: json.message || "Connection failed" };
+    } catch (e) {
+    return {
+      success: false,
+      message: e instanceof Error ? e.message : "Network error",
+    };
+  }
+}
+
+export async function seerrLoginWithPassword(
+  username: string,
+  password: string,
+): Promise<{ success: boolean; message?: string }> {
+  const data = await StoreSeerrData.get();
+  if (!data?.serverUrl) {
+    return { success: false, message: "Seerr not configured" };
+  }
+
+  const headers: HeadersInit = {
+    "Content-Type": "application/json",
+    "x-seerr-url": data.serverUrl,
+  };
+
+  try {
+    const response = await fetch("/api/seerr/login", {
+      method: "POST",
+      headers,
+      body: JSON.stringify({ authType: "jellyfin-user", username, password }),
+      credentials: "include",
+    });
+
+    if (response.ok) {
+      return { success: true };
+    }
+
+    const json = await response.json();
+    return { success: false, message: json.message || "Login failed" };
   } catch (e) {
     return {
       success: false,
