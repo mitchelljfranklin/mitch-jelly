@@ -13,6 +13,7 @@ import {
   getStreamUrl,
   getDirectStreamUrl,
   getSubtitleTracks,
+  getNextEpisodeForSeries,
   markFavorite,
   unmarkFavorite,
   markAsPlayed,
@@ -84,6 +85,8 @@ export interface PlaybackContextValue {
   setPreferredQuality: (quality: string) => void;
   toggleMiniPlayer: () => void;
   setMiniPlayer: (enabled: boolean) => void;
+  playPostPlayEpisode: () => void;
+  dismissPostPlay: () => void;
 }
 
 export function usePlaybackManager(): PlaybackContextValue {
@@ -108,6 +111,8 @@ export function usePlaybackManager(): PlaybackContextValue {
     preferredQuality: "auto",
     isMiniPlayer: false,
     isLoading: true,
+    showPostPlay: false,
+    postPlayEpisode: null,
   });
 
   const activePlayerRef = useRef<Player | null>(null);
@@ -535,9 +540,33 @@ export function usePlaybackManager(): PlaybackContextValue {
       const item = playQueueManager.getCurrentItem();
       if (item) play(item, { startPositionTicks: 0 });
     } else {
-      stop();
+      const currentItem = playbackState.currentItem;
+      if (currentItem && currentItem.Type === "Episode" && currentItem.SeriesId) {
+        getNextEpisodeForSeries(currentItem.SeriesId).then((nextEp) => {
+          if (nextEp && nextEp.Id !== currentItem.Id) {
+            updateState({ showPostPlay: true, postPlayEpisode: nextEp, isEnded: true });
+          } else {
+            stop();
+          }
+        }).catch(() => stop());
+      } else {
+        stop();
+      }
     }
-  }, [play, stop]);
+  }, [play, stop, playbackState.currentItem, updateState]);
+
+  const playPostPlayEpisode = useCallback(() => {
+    const ep = playbackState.postPlayEpisode;
+    if (ep) {
+      play({ ...ep, Type: "Episode" as any } as any, { startPositionTicks: 0 });
+      updateState({ showPostPlay: false, postPlayEpisode: null, isEnded: false });
+    }
+  }, [play, playbackState.postPlayEpisode, updateState]);
+
+  const dismissPostPlay = useCallback(() => {
+    updateState({ showPostPlay: false, postPlayEpisode: null });
+    stop();
+  }, [stop, updateState]);
 
   const previous = useCallback(() => {
     const currentIndex = playQueueManager.getCurrentPlaylistIndex();
@@ -811,5 +840,7 @@ export function usePlaybackManager(): PlaybackContextValue {
     setPreferredQuality,
     toggleMiniPlayer,
     setMiniPlayer,
+    playPostPlayEpisode,
+    dismissPostPlay,
   };
 }

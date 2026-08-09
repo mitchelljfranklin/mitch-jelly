@@ -28,13 +28,18 @@ import {
   Check,
   Eye,
   EyeOff,
+  RefreshCw,
+  ScanSearch,
+  Replace,
 } from "lucide-react";
 import {
   getAuthData,
   getDownloadUrl,
   getUserWithPolicy,
   getUser,
+  scanLibrary,
 } from "../actions";
+import type { ScanMode } from "../actions";
 import { markAsPlayed, markAsUnplayed } from "../actions/media";
 import { getMediaDetailsFromName, formatRuntime } from "../lib/utils";
 import { usePlayback } from "../hooks/usePlayback";
@@ -69,6 +74,7 @@ export function MediaActions({
     media?.UserData?.Played || false,
   );
   const [isTogglingPlayed, setIsTogglingPlayed] = useState(false);
+  const [isScanning, setIsScanning] = useState(false);
 
   // Determine if this is a resume or new play
   const hasProgress =
@@ -223,6 +229,23 @@ export function MediaActions({
       setIsPlayed(!newPlayedState);
     } finally {
       setIsTogglingPlayed(false);
+    }
+  };
+
+  const handleScan = async (mode: ScanMode, label: string) => {
+    if (!media?.Id) return;
+    try {
+      setIsScanning(true);
+      await scanLibrary(media.Id, mode);
+      toast.success(`${label} started!`);
+    } catch (error: any) {
+      if (error?.isAuthError) {
+        toast.error("Authentication expired. Please sign in again.");
+      } else {
+        toast.error(`Failed to start ${label.toLowerCase()}.`);
+      }
+    } finally {
+      setIsScanning(false);
     }
   };
 
@@ -603,6 +626,39 @@ export function MediaActions({
               triggerLabel="Edit"
               triggerLabelClassName="ml-2 text-sm sm:hidden"
             />
+          )}
+
+          {userPolicy?.IsAdministrator && (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={isScanning}
+                  className="flex-1 sm:flex-none sm:h-9 sm:w-9 sm:px-0 sm:gap-0"
+                  title="Refresh metadata"
+                >
+                  <RefreshCw className={`h-4 w-4 ${isScanning ? "animate-spin" : ""}`} />
+                  <span className="ml-2 text-sm sm:hidden">Refresh</span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent side="bottom" align="end">
+                <DropdownMenuItem
+                  onClick={() => handleScan("refresh", "Refreshing Metadata")}
+                  className="flex items-center gap-2 cursor-pointer"
+                >
+                  <ScanSearch className="h-4 w-4" />
+                  Refresh Metadata
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => handleScan("replace", "Replacing All Metadata")}
+                  className="flex items-center gap-2 cursor-pointer"
+                >
+                  <Replace className="h-4 w-4" />
+                  Replace All Metadata
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           )}
         </div>
       </div>

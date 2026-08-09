@@ -51,6 +51,8 @@ export interface PlaybackState {
   preferredQuality: string;
   isMiniPlayer?: boolean;
   isLoading?: boolean;
+  showPostPlay?: boolean;
+  postPlayEpisode?: BaseItemDto | null;
   textTracks?: Array<{
     kind: string;
     label: string;

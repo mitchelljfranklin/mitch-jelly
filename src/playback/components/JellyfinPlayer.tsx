@@ -10,6 +10,8 @@ import {
 import { Player } from "../types";
 import { VideoOSD } from "./VideoOSD";
 import { SubtitleDisplay } from "./SubtitleDisplay";
+import { PostPlayOverlay } from "./PostPlayOverlay";
+import { getServerUrl } from "../../actions";
 
 interface JellyfinPlayerProps {
   className?: string;
@@ -33,6 +35,11 @@ export const JellyfinPlayer: React.FC<JellyfinPlayerProps> = ({
   const [cursorVisible, setCursorVisible] = useState(true);
   const [, setPlayerHovered] = useState(false);
   const cursorTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const [serverUrl, setServerUrl] = useState("");
+
+  useEffect(() => {
+    getServerUrl().then((url) => setServerUrl(url ?? ""));
+  }, []);
 
   useEffect(() => {
     const handleMouseMove = () => {
@@ -199,6 +206,10 @@ export const JellyfinPlayer: React.FC<JellyfinPlayerProps> = ({
         <HTMLAudioPlayer
           ref={audioRefCallback}
           className={activePlayerType === "Audio" ? "block" : "hidden"}
+          onEnded={() => {
+            manager.reportState({ isEnded: true });
+            manager.next();
+          }}
         />
       </div>
 
@@ -228,6 +239,23 @@ export const JellyfinPlayer: React.FC<JellyfinPlayerProps> = ({
             onPrevious={manager.previous}
           />
         </div>
+      )}
+
+      {/* Post Play overlay - shown for both video and audio */}
+      {playbackState.showPostPlay && playbackState.postPlayEpisode && (
+        <PostPlayOverlay
+          episodeName={playbackState.postPlayEpisode.Name || "Next Episode"}
+          seriesName={playbackState.postPlayEpisode.SeriesName || undefined}
+          seasonNumber={playbackState.postPlayEpisode.ParentIndexNumber || undefined}
+          episodeNumber={playbackState.postPlayEpisode.IndexNumber || undefined}
+          episodeImageUrl={
+            serverUrl && playbackState.postPlayEpisode.Id
+              ? `${serverUrl}/Items/${playbackState.postPlayEpisode.Id}/Images/Primary?width=400&height=225&quality=95`
+              : undefined
+          }
+          onPlayNow={manager.playPostPlayEpisode}
+          onCancel={manager.dismissPostPlay}
+        />
       )}
     </div>
   );
