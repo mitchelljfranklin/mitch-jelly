@@ -37,15 +37,23 @@ import { type SeerrAuthType } from "@/src/actions/store/server-actions";
 import { toast } from "sonner";
 import { testSeerrConnection } from "@/src/actions";
 import { useSeerr } from "@/src/contexts/seerr-context";
-import { getUser } from "@/src/actions";
+
+const ENV_AUTH_LABELS: Record<string, string> = {
+  "api-key": "API Key",
+  "jellyfin-user": "Jellyfin User",
+  "local-user": "Local User",
+  "jellyfin-session": "Per-User (Jellyfin Session)",
+};
 
 export default function SeerrSection() {
   const [seerrOpen, setSeerrOpen] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [isAdmin, setIsAdmin] = useState(false);
+  const [envConfigured, setEnvConfigured] = useState(false);
+  const [envUrl, setEnvUrl] = useState("");
+  const [envAuthType, setEnvAuthType] = useState("");
   const { isSeerrConnected, setIsSeerrConnected } = useSeerr();
 
-  // Form State
+  // Form State (only used when env vars are NOT set)
   const [serverUrl, setServerUrl] = useState("");
   const [authType, setAuthType] = useState<SeerrAuthType>("api-key");
   const [apiKey, setApiKey] = useState("");
@@ -54,17 +62,35 @@ export default function SeerrSection() {
 
   const loadSettings = useCallback(async () => {
     try {
-      const [data, user] = await Promise.all([StoreSeerrData.get(), getUser()]);
-      setIsAdmin(user?.Policy?.IsAdministrator || false);
+      // Check for env var configuration first
+      const configResp = await fetch("/api/config");
+      const config = await configResp.json();
+      if (config.seerrServerUrl && config.seerrAuthType) {
+        setEnvConfigured(true);
+        setEnvUrl(config.seerrServerUrl);
+        setEnvAuthType(config.seerrAuthType);
+        setIsSeerrConnected(true);
+        setLoading(false);
+        return;
+      }
 
+      // Fallback to cookie-based settings
+      const data = await StoreSeerrData.get();
       if (data) {
         setServerUrl(data.serverUrl);
+        if (data.authType === "api-key" && "apiKey" in data) {
+          setAuthType("api-key");
+          setApiKey(data.apiKey);
+        } else if ("username" in data) {
+          setAuthType(data.authType as SeerrAuthType);
+          setUsername(data.username);
+          setPassword(data.password);
+        }
 
         if (
           data.serverUrl &&
-          (data.authType === "jellyfin-session" ||
-            (data.authType === "api-key" && (data as any).apiKey) ||
-            ((data as any).username && (data as any).password))
+          ((data.authType === "api-key" && "apiKey" in data && data.apiKey) ||
+            ("username" in data && data.username && data.password))
         ) {
           setIsSeerrConnected(true);
         }
@@ -74,34 +100,18 @@ export default function SeerrSection() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [setIsSeerrConnected]);
 
   useEffect(() => {
     loadSettings();
   }, [loadSettings]);
 
-  if (!isAdmin && !loading) return null;
-
   const handleSave = async () => {
     try {
       if (authType === "api-key") {
-        await StoreSeerrData.set({
-          authType: "api-key",
-          serverUrl,
-          apiKey,
-        });
-      } else if (authType === "jellyfin-session") {
-        await StoreSeerrData.set({
-          authType: "jellyfin-session",
-          serverUrl,
-        });
+        await StoreSeerrData.set({ authType: "api-key", serverUrl, apiKey });
       } else {
-        await StoreSeerrData.set({
-          authType,
-          serverUrl,
-          username,
-          password,
-        });
+        await StoreSeerrData.set({ authType, serverUrl, username, password });
       }
       toast.success("Seerr settings saved successfully");
     } catch (error) {
@@ -131,12 +141,8 @@ export default function SeerrSection() {
 
     try {
       const currentConfig: any = { serverUrl, authType };
-
       if (authType === "api-key") {
         currentConfig.apiKey = apiKey;
-      } else if (authType === "jellyfin-session") {
-        // For per-user mode, just verify the server URL is reachable
-        currentConfig.authType = "jellyfin-session";
       } else {
         currentConfig.username = username;
         currentConfig.password = password;
@@ -145,14 +151,11 @@ export default function SeerrSection() {
       const result = await testSeerrConnection(currentConfig);
 
       if (result.success) {
-        toast.success(result.message || "Connection Successful", {
-          id: toastId,
-        });
-        await handleSave(); // Auto-save on success
+        toast.success(result.message || "Connection Successful", { id: toastId });
+        await handleSave();
         setIsSeerrConnected(true);
       } else {
         toast.error(result.message || "Connection Failed", { id: toastId });
-        setIsSeerrConnected(false);
       }
     } catch (error) {
       console.error(error);
@@ -182,22 +185,24 @@ export default function SeerrSection() {
               <Badge variant="secondary" className="text-[11px]">
                 Beta
               </Badge>
-                <button
-                  type="button"
-                  aria-expanded={seerrOpen}
-                  className="inline-flex items-center gap-1 rounded-full border border-border/60 px-3 py-1 text-xs font-semibold text-muted-foreground transition hover:text-foreground"
-                >
-                  {seerrOpen ? "Hide" : "Show"}
-                  <ChevronDown
-                    className={cn(
-                      "h-3.5 w-3.5 transition-transform duration-200",
-                      seerrOpen ? "rotate-180" : "rotate-0",
-                    )}
-                  />
-                </button>
+              <button
+                type="button"
+                aria-expanded={seerrOpen}
+                className="inline-flex items-center gap-1 rounded-full border border-border/60 px-3 py-1 text-xs font-semibold text-muted-foreground transition hover:text-foreground"
+              >
+                {seerrOpen ? "Hide" : "Show"}
+                <ChevronDown
+                  className={cn(
+                    "h-3.5 w-3.5 transition-transform duration-200",
+                    seerrOpen ? "rotate-180" : "rotate-0",
+                  )}
+                />
+              </button>
             </div>
             <CardDescription className="w-full">
-              Configure your Seerr instance to handle media requests directly.
+              {envConfigured
+                ? "Seerr is configured via environment variables."
+                : "Configure your Seerr instance to handle media requests directly."}
             </CardDescription>
           </CardHeader>
         </CollapsibleTrigger>
@@ -207,6 +212,31 @@ export default function SeerrSection() {
               <div className="flex items-center justify-center py-4 text-muted-foreground">
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 Loading settings...
+              </div>
+            ) : envConfigured ? (
+              <div className="space-y-4">
+                <div className="rounded-lg border border-blue-500/20 bg-blue-500/5 p-4">
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-500/10">
+                      <Server className="h-5 w-5 text-blue-500" />
+                    </div>
+                    <div className="flex-1">
+                      <h4 className="text-sm font-medium text-foreground">
+                        Configured via Environment Variables
+                      </h4>
+                      <p className="text-xs text-muted-foreground break-all mt-1">
+                        {envUrl}
+                      </p>
+                      <p className="text-xs text-muted-foreground mt-0.5">
+                        Auth mode: {ENV_AUTH_LABELS[envAuthType] || envAuthType}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+                <p className="text-[11px] text-muted-foreground">
+                  To change settings, update the SEERR_* environment variables
+                  and restart the server.
+                </p>
               </div>
             ) : isSeerrConnected ? (
               <div className="space-y-4">
@@ -223,11 +253,7 @@ export default function SeerrSection() {
                         {serverUrl}
                       </p>
                     </div>
-                    <Button
-                      size="sm"
-                      variant="destructive"
-                      onClick={handleDisconnect}
-                    >
+                    <Button size="sm" variant="destructive" onClick={handleDisconnect}>
                       Disconnect
                     </Button>
                   </div>
@@ -256,31 +282,10 @@ export default function SeerrSection() {
                     onValueChange={(v) => setAuthType(v as SeerrAuthType)}
                     className="w-full"
                   >
-                    <TabsList className="grid w-full grid-cols-4">
-                      <TabsTrigger
-                        value="api-key"
-                        className="text-xs sm:text-sm"
-                      >
-                        API Key
-                      </TabsTrigger>
-                      <TabsTrigger
-                        value="jellyfin-user"
-                        className="text-xs sm:text-sm"
-                      >
-                        Jellyfin User
-                      </TabsTrigger>
-                      <TabsTrigger
-                        value="local-user"
-                        className="text-xs sm:text-sm"
-                      >
-                        Local User
-                      </TabsTrigger>
-                      <TabsTrigger
-                        value="jellyfin-session"
-                        className="text-xs sm:text-sm"
-                      >
-                        Per-User
-                      </TabsTrigger>
+                    <TabsList className="grid w-full grid-cols-3">
+                      <TabsTrigger value="api-key" className="text-xs sm:text-sm">API Key</TabsTrigger>
+                      <TabsTrigger value="jellyfin-user" className="text-xs sm:text-sm">Jellyfin User</TabsTrigger>
+                      <TabsTrigger value="local-user" className="text-xs sm:text-sm">Local User</TabsTrigger>
                     </TabsList>
 
                     <div className="mt-4 rounded-lg border border-border/50 bg-background/40 p-4">
@@ -304,92 +309,50 @@ export default function SeerrSection() {
                         </div>
                       </TabsContent>
 
-                      <TabsContent
-                        value="jellyfin-user"
-                        className="mt-0 space-y-3"
-                      >
+                      <TabsContent value="jellyfin-user" className="mt-0 space-y-3">
                         <div className="space-y-2">
                           <Label htmlFor="jf-username">Jellyfin Username</Label>
                           <div className="relative">
                             <User className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
                             <Input
-                              id="jf-username"
-                              placeholder="e.g. MyUser"
-                              className="pl-9"
-                              value={username}
-                              onChange={(e) => setUsername(e.target.value)}
+                              id="jf-username" placeholder="e.g. MyUser" className="pl-9"
+                              value={username} onChange={(e) => setUsername(e.target.value)}
                             />
                           </div>
                         </div>
                         <div className="space-y-2">
                           <Label htmlFor="jf-password">Jellyfin Password</Label>
                           <Input
-                            id="jf-password"
-                            type="password"
-                            placeholder="Password"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
+                            id="jf-password" type="password" placeholder="Password"
+                            value={password} onChange={(e) => setPassword(e.target.value)}
                           />
                         </div>
                         <p className="text-[11px] text-muted-foreground">
-                          Use this if you want to sign in as a specific Jellyfin
-                          user on Seerr.
+                          Use this to sign in as a specific Jellyfin user on Seerr.
                         </p>
                       </TabsContent>
 
-                      <TabsContent
-                        value="local-user"
-                        className="mt-0 space-y-3"
-                      >
+                      <TabsContent value="local-user" className="mt-0 space-y-3">
                         <div className="space-y-2">
                           <Label htmlFor="local-username">Local Username</Label>
                           <div className="relative">
                             <User className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
                             <Input
-                              id="local-username"
-                              placeholder="e.g. admin"
-                              className="pl-9"
-                              value={username}
-                              onChange={(e) => setUsername(e.target.value)}
+                              id="local-username" placeholder="e.g. admin" className="pl-9"
+                              value={username} onChange={(e) => setUsername(e.target.value)}
                             />
                           </div>
                         </div>
                         <div className="space-y-2">
                           <Label htmlFor="local-password">Local Password</Label>
                           <Input
-                            id="local-password"
-                            type="password"
-                            placeholder="Password"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
+                            id="local-password" type="password" placeholder="Password"
+                            value={password} onChange={(e) => setPassword(e.target.value)}
                           />
                         </div>
                         <p className="text-[11px] text-muted-foreground">
-                          Sign in using an account created directly in Seerr
-                          (e.g. admin).
+                          Sign in using an account created directly in Seerr.
                         </p>
-                      </TabsContent>
-
-                      <TabsContent
-                        value="jellyfin-session"
-                        className="mt-0 space-y-3"
-                      >
-                        <div className="rounded-lg border border-blue-500/20 bg-blue-500/5 p-4">
-                          <div className="flex items-center gap-3">
-                            <User className="h-5 w-5 text-blue-500" />
-                            <div className="flex-1">
-                              <h4 className="text-sm font-medium text-foreground">
-                                Per-User Authentication
-                              </h4>
-                              <p className="text-xs text-muted-foreground mt-1">
-                                Each user enters their Jellyfin password once per
-                                session. Seerr will track media requests under
-                                their individual account. Passwords are never
-                                stored — only a session cookie is kept.
-                              </p>
-                            </div>
-                          </div>
-                        </div>
                       </TabsContent>
                     </div>
                   </Tabs>
@@ -402,11 +365,7 @@ export default function SeerrSection() {
                     onClick={handleTestConnection}
                     disabled={loading}
                   >
-                    {loading ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : (
-                      <Save className="h-4 w-4" />
-                    )}
+                    {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
                     Connect
                   </Button>
                 </div>

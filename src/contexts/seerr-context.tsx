@@ -7,8 +7,7 @@ import React, {
   useCallback,
   useMemo,
 } from "react";
-import { getSeerrRecentRequests, getSeerrUser } from "@/src/actions/seerr";
-import { StoreSeerrData } from "@/src/actions/store/store-seerr-data";
+import { getSeerrRecentRequests, getSeerrUser, getSeerrConfig } from "@/src/actions/seerr";
 import { getSeerrSession } from "@/src/actions/store/server-actions";
 import { SeerrRequestItem } from "@/src/types/seerr-types";
 import { getAuthData } from "@/src/actions";
@@ -37,71 +36,52 @@ export function SeerrProvider({ children }: { children: React.ReactNode }) {
   const [canManageRequests, setCanManageRequests] = useState(false);
   const [authError, setAuthError] = useState<any | null>(null);
 
-  // Check connection and permissions (Lightweight)
-
   const checkConnection = useCallback(async () => {
     setAuthError(null);
     try {
       await getAuthData();
-      const seerrData = await StoreSeerrData.get();
+      const seerrData = await getSeerrConfig();
       if (seerrData && seerrData.serverUrl) {
         if (seerrData.authType === "jellyfin-session") {
-          // Per-user mode: check if user has a Seerr session cookie
           const session = await getSeerrSession();
+          setServerUrl(seerrData.serverUrl);
           if (session) {
-            setServerUrl(seerrData.serverUrl);
             setIsSeerrConnected(true);
             setNeedsSeerrLogin(false);
-            // Verify session is still valid
             try {
               const user = await getSeerrUser();
               if (user) {
-                const permissions = user.permissions || 0;
-                setCanManageRequests((permissions & 2) !== 0);
+                setCanManageRequests(((user.permissions || 0) & 2) !== 0);
               }
             } catch {
-              // Session may be expired
               setIsSeerrConnected(false);
               setNeedsSeerrLogin(true);
             }
           } else {
-            // No session cookie — show login prompt
-            setServerUrl(seerrData.serverUrl);
             setIsSeerrConnected(false);
             setNeedsSeerrLogin(true);
           }
-        } else if (
-          ((seerrData.authType === "api-key" && seerrData.apiKey) ||
-            ((seerrData.authType === "jellyfin-user" ||
-              seerrData.authType === "local-user") &&
-              seerrData.username &&
-              seerrData.password))
-        ) {
+        } else {
           setIsSeerrConnected(true);
           setServerUrl(seerrData.serverUrl);
           setNeedsSeerrLogin(false);
 
-        // Fetch user permissions & initial requests
-        try {
-          const [user, requestsResult] = await Promise.all([
-            getSeerrUser(),
-            getSeerrRecentRequests(),
-          ]);
+          try {
+            const [user, requestsResult] = await Promise.all([
+              getSeerrUser(),
+              getSeerrRecentRequests(),
+            ]);
 
-          if (user) {
-            const permissions = user.permissions || 0;
-            if ((permissions & 2) !== 0) {
-              setCanManageRequests(true);
-            } else {
-              setCanManageRequests(false);
+            if (user) {
+              setCanManageRequests(((user.permissions || 0) & 2) !== 0);
             }
-          }
 
-          if (requestsResult?.results) {
-            setRecentRequests(requestsResult.results);
+            if (requestsResult?.results) {
+              setRecentRequests(requestsResult.results);
+            }
+          } catch (e) {
+            console.error("Failed to fetch Seerr user info", e);
           }
-        } catch (e) {
-          console.error("Failed to fetch Seerr user info", e);
         }
       } else {
         setIsSeerrConnected(false);
@@ -109,7 +89,6 @@ export function SeerrProvider({ children }: { children: React.ReactNode }) {
         setRecentRequests([]);
         setCanManageRequests(false);
         setNeedsSeerrLogin(false);
-      }
       }
     } catch (error: any) {
       console.error("Failed to check Seerr connection", error);
