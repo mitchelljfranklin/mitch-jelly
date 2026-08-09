@@ -87,11 +87,11 @@ jobs:
       - name: Build Electron
         run: |
           if [ "${{ matrix.os }}" = "windows-latest" ]; then
-            bun x electron-builder --win --config electron-builder.yml
+            bun x electron-builder --win --publish never --config electron-builder.yml
           elif [ "${{ matrix.os }}" = "macos-latest" ]; then
-            bun x electron-builder --mac --config electron-builder.yml
+            bun x electron-builder --mac --publish never --config electron-builder.yml
           else
-            bun x electron-builder --linux --config electron-builder.yml
+            bun x electron-builder --linux --publish never --config electron-builder.yml
           fi
         shell: bash
 
