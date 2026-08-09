@@ -4,6 +4,10 @@
   <img src="public/assets/logo/icon.png" alt="Mitch-Jelly Logo" width="128" height="128" />
 </p>
 
+<p align="center">
+  <img src="https://img.shields.io/badge/version-2.2.0-blue" alt="Version 2.2.0" />
+</p>
+
 **A Modern, Streamlined Jellyfin Client built with Next.js**
 
 Mitch-Jelly is a clean, modern Jellyfin client designed for speed, simplicity, and elegance. Born from the solid foundation of Aperture (originally built upon Finetic), Mitch-Jelly extends functionality with improved performance, watch status tracking, library management, and a customizable interface.
@@ -21,6 +25,8 @@ Mitch-Jelly is a clean, modern Jellyfin client designed for speed, simplicity, a
 - **Smart Episodic Features** — Intro and Outro skipping for effortless binge-watching (requires the Intro Skipper plugin)
 - **Mini Player** — Keep watching while browsing with Picture-in-Picture mode
 - **Seerr Integration** — Built-in support for Jellyseerr/Overseerr for content discovery and requests
+- **Smart Episode Continuation** — Netflix-style "Up Next" overlay appears 45s before episode ends with auto-play countdown
+- **Metadata Management** — Refresh or replace metadata per-item (movie, episode, season, series) directly from detail pages (admin)
 - **Performance** — 5-minute local caching, skeleton loading, paginated fetches, and infinite scroll for snappy UX
 
 ## vs Jellyfin Web
@@ -46,6 +52,8 @@ Mitch-Jelly is a clean, modern Jellyfin client designed for speed, simplicity, a
 | **Splash screen** | No | Cinematic splash loader |
 | **Intro/Outro skipping** | Plugin | Built-in support with Intro Skipper plugin |
 | **Desktop app** | Separate apps (MPV Desktop, JMP) | Native Electron app — Windows, macOS, Linux |
+| **Next episode prompt** | No | "Up Next" overlay 45s before end, countdown, auto-play |
+| **Per-item metadata refresh** | No | Refresh/Replace metadata on any media item detail page |
 | **Docker** | Official image | GHCR image, manual `latest` or versioned release builds |
 | **License** | GPL v2 | AGPL v3 |
 
@@ -55,6 +63,7 @@ Mitch-Jelly is a clean, modern Jellyfin client designed for speed, simplicity, a
 - **Styling**: Tailwind v4, shadcn/ui, Framer Motion
 - **State Management**: Jotai
 - **Package Manager**: Bun
+- **Desktop**: Electron
 - **Media Backend**: Jellyfin Server API, Jellyseerr/Overseerr API
 
 ## Getting Started
@@ -73,6 +82,13 @@ bun dev
 ```
 
 Visit `http://localhost:3000` and sign in with your Jellyfin instance credentials. Hot reloading is enabled by default.
+
+### Desktop Development
+
+```bash
+# Run Next.js dev server + Electron window (hot reload on both)
+bun electron:dev
+```
 
 ### Production Build
 
@@ -114,7 +130,7 @@ services:
 
 Mitch-Jelly ships as a native desktop application for Windows, macOS, and Linux. The desktop app bundles the full Next.js production server — no Docker or external server needed. It runs entirely offline against your Jellyfin instance.
 
-**Prerequisites:** Node.js (Electron ships its own copy, so no global Rust or native toolchains required).
+**Prerequisites:** Bun (for building). Electron ships its own Node.js runtime, so no additional toolchain is needed.
 
 #### Development
 
@@ -166,8 +182,8 @@ See [SECURITY.md](.github/SECURITY.md) for our security policy and vulnerability
 
 ## Contributing
 
-- [Report a bug](https://github.com/mitchelljfranklin/mitch-jelly/issues/new?template=bug_report.yml)
-- [Request a feature](https://github.com/mitchelljfranklin/mitch-jelly/issues/new?template=feature_request.yml)
+- [Report a bug](https://github.com/mitchelljfranklin/mitch-jelly/issues/new)
+- [Request a feature](https://github.com/mitchelljfranklin/mitch-jelly/issues/new)
 
 ## Credits
 

@@ -2,10 +2,12 @@
 
 ## Build & Run
 
-- **Package manager:** Bun only. `bun install`, `bun dev`, `bun build`, `bun lint`
+- **Package manager:** Bun only. `bun install`, `bun run build`, `bun dev`, `bun lint`
 - `bun dev` starts Next.js dev server on port 3000
-- `bun build` produces an optimized build in `.next/`
+- `bun run build` produces an optimized build in `.next/`
 - `bun lint` runs ESLint (eslint-config-next) — expect 0 errors, ~39 intentional warnings
+- `bun electron:dev` runs Next.js dev server + Electron window concurrently
+- `bun electron:build` builds Next.js standalone, then packages with electron-builder
 
 ## Stack
 
@@ -26,10 +28,14 @@
 - `src/actions/` — Server Actions for Jellyfin API calls (auth, media, search, utils)
   - `src/actions/store/` — cookie-based persistent storage via `next/headers` cookies
 - `src/components/` — feature components; `src/components/ui/` holds shadcn primitives
+- `src/components/scroll-to-top.tsx` — floating "back to top" FAB for infinite-scroll pages
 - `src/playback/` — modular playback engine with `HTMLAudioPlayer`, `HTMLVideoPlayer`, context provider
+  - `src/playback/components/PostPlayOverlay.tsx` — Netflix-style "Up Next" overlay (appears 45s before episode end)
 - `src/contexts/` — Auth, Settings, Seerr React contexts
 - `src/hooks/` — custom hooks (useAuth, usePlayback, useSkipSegments, etc.)
 - `src/lib/atoms.ts` — all Jotai atoms: home page cache, hero items, library cache, app name, theme selection
+- `src/lib/logger.ts` — dev-only logging utility (gates `console.log`/`console.warn` on `NODE_ENV === "development"`)
+- `scripts/copy-static.mjs` — copies `.next/static/` and `public/` into standalone for Electron packaging
 - `src/providers/RootProvider/` — wraps ThemeProvider > Toaster > AuthProvider > SettingsProvider
 
 ## Import Alias
@@ -57,6 +63,7 @@ Authentication uses `@jellyfin/sdk`. Credentials stored as cookies via `src/acti
 
 ### Image URLs
 - **Always append `&tag=${imageTag}`** to Jellyfin image URLs — without it, images 404 when server auth is strict.
+- For episodes: use `ParentBackdropImageTags?.[0]` for backdrops and `ParentLogoImageTag` for logos (episodes inherit images from their parent series).
 - For continue-watching Episode cards: use `ParentThumbImageTag` on `ParentThumbItemId || SeriesId`. Fall back to Primary when no thumb tag exists (via `hasThumb` logic in `media-card.tsx`).
 
 ### Mark as watched/unwatched
@@ -71,6 +78,15 @@ Authentication uses `@jellyfin/sdk`. Credentials stored as cookies via `src/acti
 
 ### Continue Watching / Next Up
 - `fetchResumeItems()` and `fetchNextUpItems()` return episodes. They need `ParentThumbItemId` and `ParentThumbImageTag` for images — these are base properties, not field-dependent.
+- `getNextEpisodeForSeries(seriesId)` finds the next episode in a series (priority: resumable → unwatched → first).
+- `checkNearEnd(time, duration)` triggers the post-play "Up Next" overlay at 45 seconds before episode end.
+
+### Metadata Refresh
+- `scanLibrary(itemId?, mode?)` — triggers Jellyfin refresh. Three modes:
+  - `"scan"` — basic file scan (default)
+  - `"refresh"` — refresh metadata using saved providers
+  - `"replace"` — full refresh + replace all images
+- Exported as `scanLibrary` and `type ScanMode` from `src/actions/index.ts`.
 
 ## Caching
 
@@ -122,3 +138,4 @@ Authentication uses `@jellyfin/sdk`. Credentials stored as cookies via `src/acti
 - Local folder should be named `mitch-jelly` (not `mitch-aperture`)
 - Originally forked from `akhilmulpurii/aperture` — no longer linked (upstream remote removed)
 - **GitHub CLI:** Always include `--repo mitchelljfranklin/mitch-jelly` with `gh` commands (e.g., `gh pr create --repo mitchelljfranklin/mitch-jelly ...`). Without it, `gh` resolves against the old fork upstream.
+- **Branch protection:** `main` requires PR with 1 approving review. Admins can bypass with `gh pr merge N --repo mitchelljfranklin/mitch-jelly --merge --admin --delete-branch`
