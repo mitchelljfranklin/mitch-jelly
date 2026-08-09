@@ -28,7 +28,8 @@ Mitch-Jelly is a clean, modern Jellyfin client designed for speed, simplicity, a
 - **Seerr Integration** — Built-in support for Jellyseerr/Overseerr for content discovery and requests
 - **Smart Episode Continuation** — Netflix-style "Up Next" overlay appears 45s before episode ends with auto-play countdown
 - **Metadata Management** — Refresh or replace metadata per-item (movie, episode, season, series) directly from detail pages (admin)
-- **Performance** — 5-minute local caching, skeleton loading, paginated fetches, and infinite scroll for snappy UX
+- **Navigation & Breadcrumbs** — Clickable breadcrumb trail on all media detail pages (Library > Show > Season > Episode). Floating back-to-top button on library pages.
+- **Persistent Sessions** — Stay logged in across browser restarts with 10-year cookie expiry. No re-entry of credentials needed.
 
 ## vs Jellyfin Web
 
@@ -55,6 +56,8 @@ Mitch-Jelly is a clean, modern Jellyfin client designed for speed, simplicity, a
 | **Desktop app** | Separate apps (MPV Desktop, JMP) | Native Electron app — Windows, macOS, Linux |
 | **Next episode prompt** | No | "Up Next" overlay 45s before end, countdown, auto-play |
 | **Per-item metadata refresh** | No | Refresh/Replace metadata on any media item detail page |
+| **Breadcrumbs** | No | Clickable path on movie, series, season, and episode pages |
+| **Session persistence** | Session only | 10-year auth cookies — no re-login on browser restart |
 | **Docker** | Official image | GHCR image, manual `latest` or versioned release builds |
 | **License** | GPL v2 | AGPL v3 |
 
