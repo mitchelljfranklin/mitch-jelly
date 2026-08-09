@@ -1,56 +1,74 @@
 name: Release
 
 on:
+  workflow_dispatch:
   push:
     tags:
-      - 'v*'
-  workflow_dispatch:
-    inputs:
-      tag:
-        description: 'Tag to build (e.g. latest, v2.0.0)'
-        required: true
-        default: 'latest'
+      - "v*"
 
 jobs:
-  docker-image:
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      packages: write
+  build-electron:
+    name: ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set image tag
-        id: tag
-        run: |
-          if [ "${{ github.event_name }}" = "push" ]; then
-            echo "tag=${GITHUB_REF#refs/tags/}" >> "$GITHUB_OUTPUT"
-          else
-            echo "tag=${{ github.event.inputs.tag }}" >> "$GITHUB_OUTPUT"
-          fi
-
-      - name: Log in to GitHub Container Registry
-        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
-
-      - name: Build Docker image
-        run: |
-          docker build -t ghcr.io/${{ github.repository }}:${{ steps.tag.outputs.tag }} .
-
-      - name: Push Docker image
-        run: |
-          docker push ghcr.io/${{ github.repository }}:${{ steps.tag.outputs.tag }}
-
-      - name: Tag and push latest (on versioned tag only)
-        if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
-        run: |
-          docker tag ghcr.io/${{ github.repository }}:${{ steps.tag.outputs.tag }} ghcr.io/${{ github.repository }}:latest
-          docker push ghcr.io/${{ github.repository }}:latest
-
-      - name: Create GitHub Release
-        if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
-        uses: softprops/action-gh-release@v2
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
         with:
-          tag_name: ${{ steps.tag.outputs.tag }}
-          name: Mitch-Jelly ${{ steps.tag.outputs.tag }}
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install
+
+      - name: Build Next.js
+        run: bun run build
+
+      - name: Copy static assets
+        run: bun run scripts/copy-static.mjs
+
+      - name: Build Electron
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if [ "${{ matrix.os }}" = "windows-latest" ]; then
+            bun x electron-builder --win --config electron-builder.yml
+          elif [ "${{ matrix.os }}" = "macos-latest" ]; then
+            bun x electron-builder --mac --config electron-builder.yml
+          else
+            bun x electron-builder --linux --config electron-builder.yml
+          fi
+        shell: bash
+
+      - name: Find installer
+        id: find
+        run: |
+          if [ "${{ matrix.os }}" = "windows-latest" ]; then
+            echo "pattern=dist-electron/Mitch-Jelly Setup *.exe" >> $GITHUB_OUTPUT
+          elif [ "${{ matrix.os }}" = "macos-latest" ]; then
+            echo "pattern=dist-electron/Mitch-Jelly-*.dmg" >> $GITHUB_OUTPUT
+          else
+            echo "pattern=dist-electron/Mitch-Jelly-*.AppImage" >> $GITHUB_OUTPUT
+          fi
+        shell: bash
+
+      - name: Upload to release
+        uses: softprops/action-gh-release@v2
+        if: startsWith(github.ref, 'refs/tags/v')
+        with:
+          files: ${{ steps.find.outputs.pattern }}
           generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload workflow artifact
+        uses: actions/upload-artifact@v4
+        if: ${{ !startsWith(github.ref, 'refs/tags/v') }}
+        with:
+          name: mitch-jelly-${{ matrix.os }}
+          path: ${{ steps.find.outputs.pattern }}
