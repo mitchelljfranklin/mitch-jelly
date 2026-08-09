@@ -185,6 +185,8 @@ See [SECURITY.md](.github/SECURITY.md) for our security policy and vulnerability
 - [Report a bug](https://github.com/mitchelljfranklin/mitch-jelly/issues/new)
 - [Request a feature](https://github.com/mitchelljfranklin/mitch-jelly/issues/new)
 
+While I believe AI can be a powerful tool for development—and I personally use AI to help manage documentation and reviews—it must remain a tool in the hands of a capable developer. In this project, you are the pilot; you are responsible for coding, confirming, and refining your contributions. To help those using AI tools, I've created an AGENTS.md file specifically for your assistants to follow. Please ensure your agent adheres to these guidelines, as non-compliant code will be rejected regardless of how well it functions. Most importantly, please ensure you fully understand the code you are submitting; a 'black box' approach where AI generates code that the human contributor doesn't understand is not permitted here.
+
 ## Credits
 
 Mitch-Jelly is based on [Aperture](https://github.com/akhilmulpurii/aperture) by Akhil Mulpuri, which was built upon [Finetic](https://github.com/AyaanZaveri/finetic) by Ayaan Zaveri.
