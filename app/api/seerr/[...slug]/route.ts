@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import { cookies } from "next/headers";
 import { SeerrMediaItem } from "@/src/types/seerr-types";
 
 // Shared map to track pending logins per user/server
@@ -535,32 +534,20 @@ export async function POST(
         message: "Connection Successful",
       });
 
-      // Persist Seerr session cookie for subsequent API calls
-      if (r.headers && (authType === "jellyfin-user" || path === "login")) {
-        const setCookie = r.headers.getSetCookie
-          ? r.headers.getSetCookie()
-          : r.headers.get("set-cookie");
-        const cookieStr = Array.isArray(setCookie) ? setCookie.join("; ") : setCookie;
-        if (cookieStr) {
-          const match = cookieStr.match(/connect\.sid=([^;]+)/);
-          const sessionValue = match ? match[1] : cookieStr;
-          (await cookies()).set("seerr-session", sessionValue, {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === "production",
-            sameSite: "lax",
-          });
-        }
-      }
-
       if (r.headers) {
         const setCookie = r.headers.getSetCookie
           ? r.headers.getSetCookie()
           : r.headers.get("set-cookie");
 
-        if (Array.isArray(setCookie)) {
-          setCookie.forEach((c) => resp.headers.append("Set-Cookie", c));
-        } else if (setCookie) {
-          resp.headers.set("Set-Cookie", setCookie);
+        if (setCookie) {
+          const cookies = Array.isArray(setCookie) ? setCookie : [setCookie];
+          cookies.forEach((c) => {
+            // Strip Secure flag on non-HTTPS so the cookie works in dev
+            const fixed = process.env.NODE_ENV !== "production"
+              ? c.replace(/;\s*Secure/i, "")
+              : c;
+            resp.headers.append("Set-Cookie", fixed);
+          });
         }
       }
       return resp;

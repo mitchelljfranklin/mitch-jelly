@@ -21,11 +21,8 @@ async function getHeaders(): Promise<HeadersInit> {
   if (data.authType === "api-key" && data.apiKey) {
     headers["x-api-key"] = data.apiKey;
   } else if (data.authType === "jellyfin-session") {
-    const session = await getSeerrSession();
-    if (session) {
-      headers["x-seerr-auth-type"] = "jellyfin-session";
-      headers["x-seerr-session"] = session;
-    }
+    headers["x-seerr-auth-type"] = "jellyfin-session";
+    // No explicit session header needed — the proxy reads cookies from the request
   } else if (
     (data.authType === "local-user" || data.authType === "jellyfin-user") &&
     data.username &&
