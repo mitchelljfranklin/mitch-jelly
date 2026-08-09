@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { SeerrMediaItem } from "@/src/types/seerr-types";
+import { setSeerrSession } from "@/src/actions/store/server-actions";
 
 // Shared map to track pending logins per user/server
 // Note: In serverless environments, this map might be reset frequently.
@@ -529,6 +530,21 @@ export async function POST(
     });
 
     if (r.success) {
+      // For jellyfin-user login, persist the Seerr session cookie server-side
+      // so subsequent API calls can use it without relying on browser cookie forwarding
+      if (r.headers && (authType === "jellyfin-user" || path === "login")) {
+        const setCookie = r.headers.getSetCookie
+          ? r.headers.getSetCookie()
+          : r.headers.get("set-cookie");
+        const cookieStr = Array.isArray(setCookie) ? setCookie.join("; ") : setCookie;
+        if (cookieStr) {
+          // Extract the connect.sid value from the cookie string
+          const match = cookieStr.match(/connect\.sid=([^;]+)/);
+          const sessionValue = match ? match[1] : cookieStr;
+          try { await setSeerrSession(sessionValue); } catch {}
+        }
+      }
+
       const resp = NextResponse.json({
         success: true,
         message: "Connection Successful",

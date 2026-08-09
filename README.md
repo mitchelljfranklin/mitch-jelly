@@ -78,15 +78,17 @@ Mitch-Jelly is a clean, modern Jellyfin client designed for speed, simplicity, a
 # Jellyfin
 DEFAULT_SERVER_URL=your_jellyfin_server_url
 
-# Seerr/Jellyseerr Integration (optional — all 3 SEERR_* variables must be set)
+# Seerr/Jellyseerr Integration (optional)
+# Set all required vars for your auth type to enable globally for all users.
+# When set, Settings shows a read-only view. When unset, users configure via Settings UI.
 SEERR_SERVER_URL=https://requests.yourdomain.com
 SEERR_AUTH_TYPE=api-key                    # api-key | jellyfin-user | local-user | jellyfin-session
-SEERR_API_KEY=your-api-key                # for SEERR_AUTH_TYPE=api-key
-SEERR_USERNAME=your-username              # for SEERR_AUTH_TYPE=jellyfin-user or local-user
-SEERR_PASSWORD=your-password              # for SEERR_AUTH_TYPE=jellyfin-user or local-user
+SEERR_API_KEY=your-api-key                # required for SEERR_AUTH_TYPE=api-key
+SEERR_USERNAME=your-username              # required for SEERR_AUTH_TYPE=jellyfin-user | local-user
+SEERR_PASSWORD=your-password              # required for SEERR_AUTH_TYPE=jellyfin-user | local-user
+# For per-user request tracking, use SEERR_AUTH_TYPE=jellyfin-session with just SEERR_SERVER_URL.
+# Each user enters their Jellyfin password once per browser session — requests tracked per-account.
 ```
-
-Seerr env vars make the integration available to all users globally. When set, the Settings page shows a read-only view. When unset, users can configure Seerr via the Settings UI (stored in browser cookies). Use `SEERR_AUTH_TYPE=jellyfin-session` for per-user authentication — each user enters their password once per browser session.
 
 ### Local Development
 

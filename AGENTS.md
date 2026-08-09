@@ -23,10 +23,11 @@
 - `app/` — Next.js App Router pages and API routes
   - `app/(main)/` — grouped route for all authenticated pages (dashboard, library, movie, series, etc.)
   - `app/login/` — standalone login page
-  - `app/api/config/` — `GET` returns `{ defaultServerUrl }` from env
+  - `app/api/config/` — `GET` returns `{ defaultServerUrl, seerrServerUrl, seerrAuthType }` from env
   - `app/api/seerr/[...slug]/` — server-side proxy for Seerr (Jellyseerr/Overseerr)
 - `src/actions/` — Server Actions for Jellyfin API calls (auth, media, search, utils)
   - `src/actions/store/` — cookie-based persistent storage via `next/headers` cookies
+  - `src/actions/get-seerr-config.ts` — server action that reads Seerr env vars (SEERR_*) or falls back to cookies
 - `src/components/` — feature components; `src/components/ui/` holds shadcn primitives
 - `src/components/scroll-to-top.tsx` — floating "back to top" FAB for infinite-scroll pages
 - `src/playback/` — modular playback engine with `HTMLAudioPlayer`, `HTMLVideoPlayer`, context provider
