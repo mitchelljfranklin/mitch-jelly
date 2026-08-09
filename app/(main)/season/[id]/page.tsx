@@ -136,14 +136,13 @@ export default function SeasonPage() {
 
           {/* Season information */}
           <div className="w-full md:w-2/3 lg:w-3/4 pt-10 md:pt-8 text-center md:text-start mt-6">
-            {/* Back to series button */}
+            {/* Back to series */}
             <div className="mb-4 flex justify-center md:justify-start md:pl-8">
               <Link
                 href={`/series/${season.SeriesId}`}
-                className="flex items-center gap-2 text-foreground/80 hover:underline hover:underline-offset-4"
+                className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors"
               >
-                <TvIcon className="w-4 h-4" />
-                {season.SeriesName}
+                &larr; {season.SeriesName}
               </Link>
             </div>
 

@@ -202,7 +202,7 @@ export const SubtitleDisplay: React.FC<SubtitleDisplayProps> = ({
   const [currentSubtitle, setCurrentSubtitle] = useState<SubtitleLine | null>(
     null,
   );
-  const [subtitleSize, setSubtitleSize] = useState<number>(100);
+  const [subtitleSize, setSubtitleSize] = useState<number>(75);
 
   // Load subtitle size from localStorage
   useEffect(() => {
