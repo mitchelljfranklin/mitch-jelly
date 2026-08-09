@@ -11,7 +11,7 @@ import { useAuth } from "../hooks/useAuth";
 import { SidebarTrigger } from "../components/ui/sidebar";
 import { useIsMobile } from "../hooks/use-mobile";
 import { searchSeerrItems } from "../actions/seerr";
-import { StoreSeerrData } from "../actions/store/store-seerr-data";
+import { useSeerr } from "../contexts/seerr-context";
 import { SeerrRequestModal } from "./seerr-request-modal";
 import { useRouter } from "next/navigation";
 import { Badge } from "./ui/badge";
@@ -24,7 +24,7 @@ export function SearchBar({ className = "" }: SearchBarProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [suggestions, setSuggestions] = useState<any[]>([]);
   const [seerrSuggestions, setSeerrSuggestions] = useState<any[]>([]);
-  const [isSeerrConnected, setIsSeerrConnected] = useState(false);
+  const { isSeerrConnected } = useSeerr();
   const [isLoading, setIsLoading] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const router = useRouter();
@@ -50,23 +50,6 @@ export function SearchBar({ className = "" }: SearchBarProps) {
     ),
     [serverUrl],
   );
-
-  // Check connection on mount
-  useEffect(() => {
-    StoreSeerrData.get().then((data) => {
-      if (
-        data &&
-        data.serverUrl &&
-        ((data.authType === "api-key" && data.apiKey) ||
-          ((data.authType === "jellyfin-user" ||
-            data.authType === "local-user") &&
-            data.username &&
-            data.password))
-      ) {
-        setIsSeerrConnected(true);
-      }
-    });
-  }, []);
 
   // Debounced search
   useEffect(() => {
