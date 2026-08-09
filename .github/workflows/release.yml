@@ -1,14 +1,65 @@
 name: Release
 
 on:
-  workflow_dispatch:
   push:
     tags:
       - "v*"
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Tag to build (e.g. latest, v2.0.0)"
+        required: true
+        default: "latest"
 
 jobs:
+  docker-image:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    outputs:
+      tag: ${{ steps.tag.outputs.tag }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set image tag
+        id: tag
+        run: |
+          if [ "${{ github.event_name }}" = "push" ]; then
+            echo "tag=${GITHUB_REF#refs/tags/}" >> "$GITHUB_OUTPUT"
+          else
+            echo "tag=${{ github.event.inputs.tag }}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Log in to GitHub Container Registry
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
+      - name: Build Docker image
+        run: |
+          docker build -t ghcr.io/${{ github.repository }}:${{ steps.tag.outputs.tag }} .
+
+      - name: Push Docker image
+        run: |
+          docker push ghcr.io/${{ github.repository }}:${{ steps.tag.outputs.tag }}
+
+      - name: Tag and push latest
+        if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
+        run: |
+          docker tag ghcr.io/${{ github.repository }}:${{ steps.tag.outputs.tag }} ghcr.io/${{ github.repository }}:latest
+          docker push ghcr.io/${{ github.repository }}:latest
+
+      - name: Create GitHub Release
+        if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.tag.outputs.tag }}
+          name: Mitch-Jelly ${{ steps.tag.outputs.tag }}
+          generate_release_notes: true
+
   build-electron:
     name: ${{ matrix.os }}
+    needs: docker-image
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -33,8 +84,6 @@ jobs:
         run: bun run scripts/copy-static.mjs
 
       - name: Build Electron
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           if [ "${{ matrix.os }}" = "windows-latest" ]; then
             bun x electron-builder --win --config electron-builder.yml
@@ -62,7 +111,6 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/v')
         with:
           files: ${{ steps.find.outputs.pattern }}
-          generate_release_notes: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
