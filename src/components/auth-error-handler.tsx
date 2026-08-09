@@ -12,7 +12,6 @@ interface AuthErrorHandlerProps {
 export function AuthErrorHandler({ children }: AuthErrorHandlerProps) {
   const router = useRouter();
   const { authError } = useAuthError();
-  console.log("authError", authError);
   useEffect(() => {
     async function handleAuthError() {
       if (authError) {

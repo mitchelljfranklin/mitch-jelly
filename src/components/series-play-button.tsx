@@ -74,16 +74,6 @@ export function SeriesPlayButton({
     !nextEpisode.UserData.Played;
   const buttonText = hasProgress ? "Resume" : "Play";
 
-  // Debug logging
-  console.log("Next episode:", nextEpisode.Name);
-  console.log("Has progress:", hasProgress);
-  console.log("UserData:", nextEpisode.UserData);
-  console.log(
-    "PlaybackPositionTicks:",
-    nextEpisode.UserData?.PlaybackPositionTicks,
-  );
-  console.log("Played:", nextEpisode.UserData?.Played);
-
   return (
     <Button variant="default" onClick={handlePlay} className="gap-2" size="lg">
       <Play className="h-4 w-4" />

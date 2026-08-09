@@ -25,7 +25,7 @@ export async function fetchSystemConfiguration(): Promise<ServerConfiguration> {
     const { data } = await configurationApi.getConfiguration();
     return data;
   } catch (error) {
-    console.log("Error fetching system configuration", error);
+    console.error("Error fetching system configuration", error);
     if (isAuthError(error)) {
       const authError = new Error(
         "Authentication expired. Please sign in again.",

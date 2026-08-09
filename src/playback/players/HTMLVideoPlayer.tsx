@@ -184,8 +184,6 @@ export const HTMLVideoPlayer = forwardRef<Player, HTMLVideoPlayerProps>(
                 manifestLoadingTimeOut: 20000,
               };
 
-          console.log("HLS Config:", hlsConfig);
-
           const hls = new Hls(hlsConfig);
           hls.loadSource(url);
           hls.attachMedia(videoRef.current);
@@ -294,8 +292,7 @@ export const HTMLVideoPlayer = forwardRef<Player, HTMLVideoPlayerProps>(
           if (videoRef.current) videoRef.current.playbackRate = rate;
         },
         getPlaybackRate: () => videoRef.current?.playbackRate || 1,
-        setAudioStreamIndex: (index: number) =>
-          console.log("Set audio index", index),
+        setAudioStreamIndex: () => {},
         setSubtitleStreamIndex: (index: number) => {
           setTextTracks((prev) =>
             prev.map((t) => ({

@@ -80,19 +80,10 @@ export function SearchBar({ className = "" }: SearchBarProps) {
         try {
           const promises: Promise<any>[] = [searchItems(searchQuery.trim())];
           if (isSeerrConnected) {
-            console.log(
-              "[SearchBar] Fetching Seerr results for:",
-              searchQuery.trim(),
-            );
             promises.push(searchSeerrItems(searchQuery.trim()));
           }
 
           const [results, seerrResults] = await Promise.all(promises);
-
-          console.log("[SearchBar] Results:", {
-            library: results?.length,
-            seerr: seerrResults?.length,
-          });
 
           // Sort to prioritize Movies and Series over Episodes and People
           const sortedResults = results.sort((a: any, b: any) => {

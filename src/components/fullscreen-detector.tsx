@@ -10,7 +10,6 @@ export function FullscreenDetector() {
   useEffect(() => {
     const handleFullscreenChange = () => {
       const isFullscreen = !!document.fullscreenElement;
-      console.log("Web API fullscreen changed:", isFullscreen);
       setIsFullscreen(isFullscreen);
     };
 
@@ -20,7 +19,6 @@ export function FullscreenDetector() {
     document.addEventListener("MSFullscreenChange", handleFullscreenChange);
 
     const initialFullscreen = !!document.fullscreenElement;
-    console.log("Initial web API fullscreen state:", initialFullscreen);
     setIsFullscreen(initialFullscreen);
 
     return () => {

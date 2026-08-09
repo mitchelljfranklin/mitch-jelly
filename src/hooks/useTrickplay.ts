@@ -243,14 +243,6 @@ export const useTrickplay = () => {
       const frameWithinTile = frameIndex - tileIndex * tilesPerImage;
       const column = frameWithinTile % config.tileWidth;
       const row = Math.floor(frameWithinTile / config.tileWidth);
-      console.log(
-        "Cache Buster:",
-        cacheBuster,
-        "Tile Index:",
-        tileIndex,
-        "Frame Index:",
-        frameIndex,
-      );
       return {
         src: spriteUrl,
         coords: [

@@ -15,14 +15,10 @@ export function OnboardingFlow() {
   const router = useRouter();
   const [selectedTheme] = useAtom(themeSelectionAtom);
 
-  console.log("OnboardingFlow rendered, currentStep:", currentStep);
-
   useEffect(() => {
     const checkAuthStatus = async () => {
       const authenticated = await isAuthenticated();
       const serverUrl = await getServerUrl();
-
-      console.log("Auth status:", { authenticated, serverUrl });
 
       // Check if user is already authenticated
       if (authenticated && serverUrl) {
