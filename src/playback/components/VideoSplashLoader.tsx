@@ -39,10 +39,15 @@ export const VideoSplashLoader: React.FC<VideoSplashLoaderProps> = ({
         ? (item as any).ParentBackdropImageTags?.[0]
         : (item as any).BackdropImageTags?.[0];
 
+    const logoTag =
+      item?.Type === "Episode"
+        ? (item as any).ParentLogoImageTag
+        : (item as any).ImageTags?.Logo;
+
     setBackdropError(false);
     if (itemId) {
       getImageUrl(itemId, "Backdrop", undefined, backdropTag).then(setBackdropUrl);
-      getImageUrl(itemId, "Logo").then(setLogoUrl);
+      getImageUrl(itemId, "Logo", undefined, logoTag).then(setLogoUrl);
     }
     if (itemId && item?.Type === BaseItemKind.TvChannel) {
       getImageUrl(itemId).then(setLogoUrl);
@@ -86,6 +91,7 @@ export const VideoSplashLoader: React.FC<VideoSplashLoaderProps> = ({
                 src={logoUrl}
                 alt={item.Name || ""}
                 className="h-24 md:h-32 object-contain drop-shadow-2xl"
+                onError={() => setLogoUrl(null)}
               />
             ) : (
               <h1 className="text-3xl md:text-5xl font-bold text-white drop-shadow-2xl">
