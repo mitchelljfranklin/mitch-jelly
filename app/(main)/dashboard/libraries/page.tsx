@@ -9,6 +9,7 @@ import {
   removeVirtualFolder,
   scanLibrary,
 } from "@/src/actions/media";
+import type { ScanMode } from "@/src/actions/media";
 import { VirtualFolderInfo } from "@jellyfin/sdk/lib/generated-client/models";
 import VirtualFolderCard from "@/src/components/virtual-folder-card";
 import Link from "next/link";
@@ -37,10 +38,11 @@ export default function LibrariesPage() {
     loadLibraries();
   }, [loadLibraries, setDashboardLoading]);
 
-  const handleScanLibrary = async (itemId?: string) => {
+  const handleScanLibrary = async (itemId?: string, mode: ScanMode = "scan") => {
     try {
-      await scanLibrary(itemId);
-      toast.success("Library scan started");
+      const labels = { scan: "Library scan", refresh: "Metadata refresh", replace: "Metadata replacement" };
+      await scanLibrary(itemId, mode);
+      toast.success(`${labels[mode]} started`);
     } catch (error) {
       console.error(error);
       if (handleAuthError(error)) return;
@@ -104,7 +106,7 @@ export default function LibrariesPage() {
             key={`library-${library.ItemId}-${index}`}
             library={library}
             icon={getLibraryIcon(library.CollectionType)}
-            onScan={() => handleScanLibrary(library.ItemId || undefined)}
+            onScan={(mode) => handleScanLibrary(library.ItemId || undefined, mode)}
             onRemove={() => handleRemoveLibrary(library.Name || undefined)}
             onRenameSuccess={loadLibraries}
           />

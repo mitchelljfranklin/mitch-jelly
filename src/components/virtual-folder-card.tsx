@@ -9,6 +9,9 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
 import {
@@ -21,8 +24,9 @@ import {
 } from "./ui/dialog";
 import { Label } from "./ui/label";
 import { Input } from "./ui/input";
-import { MoreHorizontal } from "lucide-react";
+import { FolderSearch, Replace, ScanSearch, MoreHorizontal } from "lucide-react";
 import { renameVirtualFolder } from "../actions/media";
+import type { ScanMode } from "../actions";
 import { Card, CardContent } from "./ui/card";
 import { useRouter } from "next/navigation";
 
@@ -35,7 +39,7 @@ export default function VirtualFolderCard({
 }: {
   library: VirtualFolderInfo;
   icon: React.ReactNode;
-  onScan: () => void;
+  onScan: (mode: import("../actions").ScanMode) => void;
   onRemove: () => void;
   onRenameSuccess: () => void;
 }) {
@@ -110,7 +114,25 @@ export default function VirtualFolderCard({
               <DropdownMenuItem onClick={() => setIsRenameOpen(true)}>
                 Rename
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={onScan}>Scan Library</DropdownMenuItem>
+              <DropdownMenuSub>
+                <DropdownMenuSubTrigger>
+                  Scan Library
+                </DropdownMenuSubTrigger>
+                <DropdownMenuSubContent>
+                  <DropdownMenuItem onClick={() => onScan("scan")}>
+                    <FolderSearch className="h-4 w-4 mr-2" />
+                    Scan Library Files
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => onScan("refresh")}>
+                    <ScanSearch className="h-4 w-4 mr-2" />
+                    Refresh Metadata
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => onScan("replace")}>
+                    <Replace className="h-4 w-4 mr-2" />
+                    Replace All Metadata
+                  </DropdownMenuItem>
+                </DropdownMenuSubContent>
+              </DropdownMenuSub>
               <DropdownMenuItem
                 className="text-destructive focus:text-destructive"
                 onClick={onRemove}

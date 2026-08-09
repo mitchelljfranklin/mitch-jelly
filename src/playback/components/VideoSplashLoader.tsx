@@ -22,6 +22,7 @@ export const VideoSplashLoader: React.FC<VideoSplashLoaderProps> = ({
   onClose,
 }) => {
   const [backdropUrl, setBackdropUrl] = useState<string | null>(null);
+  const [backdropError, setBackdropError] = useState(false);
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
 
   useEffect(() => {
@@ -38,6 +39,7 @@ export const VideoSplashLoader: React.FC<VideoSplashLoaderProps> = ({
         ? (item as any).ParentBackdropImageTags?.[0]
         : (item as any).BackdropImageTags?.[0];
 
+    setBackdropError(false);
     if (itemId) {
       getImageUrl(itemId, "Backdrop", undefined, backdropTag).then(setBackdropUrl);
       getImageUrl(itemId, "Logo").then(setLogoUrl);
@@ -64,15 +66,13 @@ export const VideoSplashLoader: React.FC<VideoSplashLoaderProps> = ({
           </div>
 
           {/* Backdrop */}
-          {backdropUrl && (
+          {backdropUrl && !backdropError && (
             <div className="absolute inset-0 z-0">
               <img
                 src={backdropUrl}
                 alt=""
                 className="w-full h-full object-cover opacity-40 blur-sm scale-105"
-                onError={(e) => {
-                  (e.target as HTMLImageElement).style.display = "none";
-                }}
+                onError={() => setBackdropError(true)}
               />
               <div className="absolute inset-0 bg-linear-to-t from-black via-black/50 to-transparent" />
               <div className="absolute inset-0 bg-radial-gradient from-transparent to-black" />
