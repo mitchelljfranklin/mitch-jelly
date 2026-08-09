@@ -9,6 +9,7 @@ import React, {
 } from "react";
 import { getSeerrRecentRequests, getSeerrUser } from "@/src/actions/seerr";
 import { StoreSeerrData } from "@/src/actions/store/store-seerr-data";
+import { getSeerrSession } from "@/src/actions/store/server-actions";
 import { SeerrRequestItem } from "@/src/types/seerr-types";
 import { getAuthData } from "@/src/actions";
 
@@ -18,6 +19,7 @@ interface SeerrContextType {
   loading: boolean;
   isSeerrConnected: boolean;
   setIsSeerrConnected: (connected: boolean) => void;
+  needsSeerrLogin: boolean;
   authError: any | null;
   addRequest: (request: SeerrRequestItem) => void;
   removeRequest: (requestId: number) => void;
@@ -29,6 +31,7 @@ const SeerrContext = createContext<SeerrContextType | undefined>(undefined);
 export function SeerrProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
   const [isSeerrConnected, setIsSeerrConnected] = useState(false);
+  const [needsSeerrLogin, setNeedsSeerrLogin] = useState(false);
   const [serverUrl, setServerUrl] = useState<string | null>(null);
   const [recentRequests, setRecentRequests] = useState<SeerrRequestItem[]>([]);
   const [canManageRequests, setCanManageRequests] = useState(false);
@@ -41,17 +44,42 @@ export function SeerrProvider({ children }: { children: React.ReactNode }) {
     try {
       await getAuthData();
       const seerrData = await StoreSeerrData.get();
-      if (
-        seerrData &&
-        seerrData.serverUrl &&
-        ((seerrData.authType === "api-key" && seerrData.apiKey) ||
-          ((seerrData.authType === "jellyfin-user" ||
-            seerrData.authType === "local-user") &&
-            seerrData.username &&
-            seerrData.password))
-      ) {
-        setIsSeerrConnected(true);
-        setServerUrl(seerrData.serverUrl);
+      if (seerrData && seerrData.serverUrl) {
+        if (seerrData.authType === "jellyfin-session") {
+          // Per-user mode: check if user has a Seerr session cookie
+          const session = await getSeerrSession();
+          if (session) {
+            setServerUrl(seerrData.serverUrl);
+            setIsSeerrConnected(true);
+            setNeedsSeerrLogin(false);
+            // Verify session is still valid
+            try {
+              const user = await getSeerrUser();
+              if (user) {
+                const permissions = user.permissions || 0;
+                setCanManageRequests((permissions & 2) !== 0);
+              }
+            } catch {
+              // Session may be expired
+              setIsSeerrConnected(false);
+              setNeedsSeerrLogin(true);
+            }
+          } else {
+            // No session cookie — show login prompt
+            setServerUrl(seerrData.serverUrl);
+            setIsSeerrConnected(false);
+            setNeedsSeerrLogin(true);
+          }
+        } else if (
+          ((seerrData.authType === "api-key" && seerrData.apiKey) ||
+            ((seerrData.authType === "jellyfin-user" ||
+              seerrData.authType === "local-user") &&
+              seerrData.username &&
+              seerrData.password))
+        ) {
+          setIsSeerrConnected(true);
+          setServerUrl(seerrData.serverUrl);
+          setNeedsSeerrLogin(false);
 
         // Fetch user permissions & initial requests
         try {
@@ -80,6 +108,8 @@ export function SeerrProvider({ children }: { children: React.ReactNode }) {
         setServerUrl(null);
         setRecentRequests([]);
         setCanManageRequests(false);
+        setNeedsSeerrLogin(false);
+      }
       }
     } catch (error: any) {
       console.error("Failed to check Seerr connection", error);
@@ -112,6 +142,7 @@ export function SeerrProvider({ children }: { children: React.ReactNode }) {
       canManageRequests,
       loading,
       isSeerrConnected,
+      needsSeerrLogin,
       authError,
       addRequest,
       removeRequest,
@@ -123,6 +154,7 @@ export function SeerrProvider({ children }: { children: React.ReactNode }) {
     canManageRequests,
     loading,
     isSeerrConnected,
+    needsSeerrLogin,
     authError,
     addRequest,
     removeRequest,

@@ -23,10 +23,11 @@ export interface AuthData {
   timestamp: number;
 }
 
-export type SeerrAuthType = "api-key" | "jellyfin-user" | "local-user";
+export type SeerrAuthType = "api-key" | "jellyfin-user" | "local-user" | "jellyfin-session";
 
 // Note: For local-user auth, the proxy maps 'username' to Seerr's expected 'email' field
 // at app/api/seerr/[...slug]/route.ts:78
+// For jellyfin-session, no credentials are stored server-side — each user authenticates via their Jellyfin password
 export type SeerrAuthData =
   | { authType: "api-key"; serverUrl: string; apiKey: string }
   | {
@@ -34,6 +35,10 @@ export type SeerrAuthData =
       serverUrl: string;
       username: string;
       password: string;
+    }
+  | {
+      authType: "jellyfin-session";
+      serverUrl: string;
     };
 
 // --- StoreServerURL actions ---
@@ -147,4 +152,26 @@ export async function getSeerrData(): Promise<SeerrAuthData | null> {
 
 export async function removeSeerrData() {
   (await cookies()).delete(SEERR_DATA_KEY);
+}
+
+// --- Per-user Seerr session (jellyfin-session mode) ---
+const SEERR_SESSION_KEY = "seerr-session";
+
+export async function setSeerrSession(value: string) {
+  // Session-only cookie (no maxAge) — cleared on browser close
+  (await cookies()).set(SEERR_SESSION_KEY, value, {
+    httpOnly: true,
+    secure: true,
+    sameSite: "lax" as const,
+  });
+}
+
+export async function getSeerrSession(): Promise<string | null> {
+  const cookieStore = await cookies();
+  const val = cookieStore.get(SEERR_SESSION_KEY);
+  return val ? val.value : null;
+}
+
+export async function removeSeerrSession() {
+  (await cookies()).delete(SEERR_SESSION_KEY);
 }
