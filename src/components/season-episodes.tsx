@@ -1,7 +1,8 @@
 "use client";
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { Badge } from "../components/ui/badge";
 import { Skeleton } from "../components/ui/skeleton";
+import { Button } from "../components/ui/button";
 import {
   Select,
   SelectContent,
@@ -12,9 +13,10 @@ import {
 import { fetchSeasons, fetchEpisodes } from "../actions";
 import { markAsPlayed, markAsUnplayed } from "../actions/media";
 import { toast } from "sonner";
-import { Play, Star, Check, Eye, EyeOff } from "lucide-react";
+import { Play, Star, Check, Eye, EyeOff, ChevronLeft, ChevronRight } from "lucide-react";
 import { formatRuntime } from "../lib/utils";
 import { useAuth } from "../hooks/useAuth";
+import { usePlayback } from "../hooks/usePlayback";
 import { ScrollArea, ScrollBar } from "./ui/scroll-area";
 import { OptimizedImage } from "./optimized-image";
 import { useRouter } from "next/navigation";
@@ -113,6 +115,21 @@ export const SeasonEpisodes = React.memo(function SeasonEpisodes({
   const { serverUrl } = useAuth();
   const pathname = usePathname();
   const router = useRouter();
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  const scrollLeft = () => {
+    const viewport = scrollRef.current
+      ?.closest('[data-slot="scroll-area"]')
+      ?.querySelector('[data-slot="scroll-area-viewport"]');
+    viewport?.scrollBy({ left: -300, behavior: "smooth" });
+  };
+
+  const scrollRight = () => {
+    const viewport = scrollRef.current
+      ?.closest('[data-slot="scroll-area"]')
+      ?.querySelector('[data-slot="scroll-area-viewport"]');
+    viewport?.scrollBy({ left: 300, behavior: "smooth" });
+  };
 
   // Extract current episode ID from pathname if we're on an episode page
   const currentEpisodeId = pathname.startsWith("/episode/")
@@ -366,19 +383,39 @@ export const SeasonEpisodes = React.memo(function SeasonEpisodes({
           No episodes found for this season
         </div>
       ) : (
-        <ScrollArea className="w-full rounded-md">
-          <div className="flex w-max space-x-4 mb-8 pl-1 pr-1">
-            {episodes.map((episode) => (
-              <EpisodeCard
-                key={episode.Id}
-                episode={episode}
-                serverUrl={serverUrl!}
-                currentEpisodeId={currentEpisodeId}
-              />
-            ))}
+        <>
+          <div className="flex items-center justify-end gap-2 mb-2">
+            <Button
+              variant="outline"
+              size="sm"
+              className="bg-background/10 border-border text-foreground hover:bg-accent p-2"
+              onClick={scrollLeft}
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              className="bg-background/10 border-border text-foreground hover:bg-accent p-2"
+              onClick={scrollRight}
+            >
+              <ChevronRight className="h-4 w-4" />
+            </Button>
           </div>
-          <ScrollBar orientation="horizontal" />
-        </ScrollArea>
+          <ScrollArea className="w-full rounded-md">
+            <div className="flex w-max space-x-4 mb-8 pl-1 pr-1" ref={scrollRef}>
+              {episodes.map((episode) => (
+                <EpisodeCard
+                  key={episode.Id}
+                  episode={episode}
+                  serverUrl={serverUrl!}
+                  currentEpisodeId={currentEpisodeId}
+                />
+              ))}
+            </div>
+            <ScrollBar orientation="horizontal" />
+          </ScrollArea>
+        </>
       )}
     </div>
   );
@@ -399,6 +436,7 @@ const EpisodeCard = React.memo(function EpisodeCard({
   const [togglingWatched, setTogglingWatched] = useState(false);
   const [isWatchedOverride, setIsWatchedOverride] = useState<boolean | null>(null);
   const isWatchedEffective = isWatchedOverride ?? isWatched;
+  const { play } = usePlayback();
   const progressPercentage =
     episode.UserData?.PlaybackPositionTicks && episode.RunTimeTicks
       ? Math.min(
@@ -442,6 +480,20 @@ const EpisodeCard = React.memo(function EpisodeCard({
     });
   }, []);
 
+  const handlePlayClick = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (episode) {
+      play({
+        id: episode.Id!,
+        name: episode.Name || "Episode",
+        type: "Episode",
+        resumePositionTicks:
+          episode.UserData?.PlaybackPositionTicks,
+      });
+    }
+  };
+
   return (
     <div className={`shrink-0 w-72 group`} data-episode-id={episode.Id}>
       <Link href={`/episode/${episode.Id}`} className="block" draggable={false}>
@@ -470,7 +522,10 @@ const EpisodeCard = React.memo(function EpisodeCard({
             {/* Play button overlay */}
             <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-all duration-300 flex items-center justify-center">
               <div className="invisible group-hover:visible transition-opacity duration-300 flex gap-2">
-                <div className="bg-white/20 backdrop-blur-sm rounded-full p-3 hover:bg-white/30 transition-colors">
+                <div
+                  className="bg-white/20 backdrop-blur-sm rounded-full p-3 hover:bg-white/30 transition-colors cursor-pointer"
+                  onClick={handlePlayClick}
+                >
                   <Play className="h-6 w-6 text-white fill-white" />
                 </div>
                 <button

@@ -32,11 +32,17 @@ export const VideoSplashLoader: React.FC<VideoSplashLoaderProps> = ({
     ].includes(item?.Type as any)
       ? item?.SeriesId
       : item?.Id;
+
+    const backdropTag =
+      item?.Type === "Episode"
+        ? (item as any).ParentBackdropImageTags?.[0]
+        : (item as any).BackdropImageTags?.[0];
+
     if (itemId) {
-      getImageUrl(itemId, "Backdrop").then(setBackdropUrl);
+      getImageUrl(itemId, "Backdrop", undefined, backdropTag).then(setBackdropUrl);
       getImageUrl(itemId, "Logo").then(setLogoUrl);
     }
-    if(itemId && item?.Type === BaseItemKind.TvChannel) {
+    if (itemId && item?.Type === BaseItemKind.TvChannel) {
       getImageUrl(itemId).then(setLogoUrl);
     }
   }, [item?.Id, item?.SeriesId, item?.Type]);
@@ -64,6 +70,9 @@ export const VideoSplashLoader: React.FC<VideoSplashLoaderProps> = ({
                 src={backdropUrl}
                 alt=""
                 className="w-full h-full object-cover opacity-40 blur-sm scale-105"
+                onError={(e) => {
+                  (e.target as HTMLImageElement).style.display = "none";
+                }}
               />
               <div className="absolute inset-0 bg-linear-to-t from-black via-black/50 to-transparent" />
               <div className="absolute inset-0 bg-radial-gradient from-transparent to-black" />

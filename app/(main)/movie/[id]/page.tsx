@@ -131,6 +131,12 @@ export default function Movie() {
         <MediaDetail.Poster />
         <MediaDetail.Content>
           <MediaDetail.Info>
+            <Link
+              href="/"
+              className="text-sm text-muted-foreground hover:text-foreground transition-colors md:pl-8 mb-2 inline-block"
+            >
+              &larr; Home
+            </Link>
             <div className="flex flex-col">
               <h1 className="text-4xl md:text-5xl font-semibold font-poppins text-foreground md:pl-8 drop-shadow-xl mb-4">
                 {movie.Name}

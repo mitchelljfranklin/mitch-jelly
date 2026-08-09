@@ -735,7 +735,12 @@ export async function fetchTrickplayTileImageUrl(
   }
 }
 
-export async function scanLibrary(libraryId?: string): Promise<void> {
+export type ScanMode = "scan" | "refresh" | "replace";
+
+export async function scanLibrary(
+  libraryId?: string,
+  mode: ScanMode = "scan",
+): Promise<void> {
   try {
     const { serverUrl, user } = await getAuthData();
 
@@ -744,6 +749,20 @@ export async function scanLibrary(libraryId?: string): Promise<void> {
     // If libraryId is provided, scan only that specific library
     if (libraryId) {
       url = `${serverUrl}/Items/${libraryId}/Refresh`;
+    }
+
+    // Append query params based on mode
+    const params = new URLSearchParams();
+    if (mode === "refresh") {
+      params.set("MetadataRefreshMode", "Default");
+    } else if (mode === "replace") {
+      params.set("MetadataRefreshMode", "FullRefresh");
+      params.set("ImageRefreshMode", "FullRefresh");
+      params.set("ReplaceAllMetadata", "true");
+    }
+    const queryString = params.toString();
+    if (queryString) {
+      url += `?${queryString}`;
     }
 
     // Use direct API call to trigger library scan

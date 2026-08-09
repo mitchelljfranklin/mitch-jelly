@@ -4,6 +4,7 @@ import { getAuthData } from "@/src/actions/utils";
 import { LibraryMediaList } from "@/src/components/library-media-list";
 import { SearchBar } from "@/src/components/search-component";
 import { ScanLibraryButton } from "@/src/components/scan-library-button";
+import { ScrollToTop } from "@/src/components/scroll-to-top";
 import { AuroraBackground } from "@/src/components/aurora-background";
 import { useEffect, useState, useRef } from "react";
 import { useAtom } from "jotai";
@@ -178,6 +179,7 @@ export default function LibraryPage() {
           </span>
         </div>
         <LibraryMediaList mediaItems={libraryItems} serverUrl={serverUrl} />
+        <ScrollToTop />
       </div>
     </div>
   );

@@ -43,6 +43,8 @@ export {
   getNextEpisodeForSeries,
 } from "./media";
 
+export type { ScanMode } from "./media";
+
 // Search actions
 export { searchItems } from "./search";
 

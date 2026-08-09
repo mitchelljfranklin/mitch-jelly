@@ -31,9 +31,9 @@ export const SubtitleTracksMenu: React.FC<SubtitleTracksMenuProps> = ({
   const [subtitleSize, setSubtitleSize] = useState<number>(() => {
     if (typeof window !== "undefined") {
       const saved = localStorage.getItem("mitch-jelly-subtitle-size");
-      return saved ? parseInt(saved, 10) : 100;
+      return saved ? parseInt(saved, 10) : 75;
     }
-    return 100;
+    return 75;
   });
 
   useEffect(() => {
@@ -85,7 +85,7 @@ export const SubtitleTracksMenu: React.FC<SubtitleTracksMenuProps> = ({
       <DropdownMenuContent
         sideOffset={8}
         side="top"
-        className="w-48 rounded-2xl overflow-hidden text-sm z-100 max-h-[60vh] overflow-y-auto"
+        className="w-56 rounded-2xl overflow-hidden text-sm z-100 max-h-[60vh] overflow-y-auto"
         style={{
           background: "rgba(30, 30, 30, 0.65)",
           backdropFilter: "blur(40px)",

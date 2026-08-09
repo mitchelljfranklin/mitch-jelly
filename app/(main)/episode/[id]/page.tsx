@@ -10,6 +10,7 @@ import LoadingSpinner from "@/src/components/loading-spinner";
 import { MediaDetail } from "@/src/components/media-page/MediaDetail";
 import { SeasonEpisodes } from "@/src/components/season-episodes";
 import { useParams, useRouter } from "next/navigation";
+import Link from "next/link";
 import ErrorWindow from "@/src/components/error-window";
 import { useAuthError } from "@/src/hooks/use-auth-error";
 
@@ -124,6 +125,33 @@ export default function Episode() {
         <MediaDetail.Poster />
         <MediaDetail.Content>
           <MediaDetail.Info>
+            <div className="flex items-center gap-1 text-sm text-muted-foreground md:pl-8 mb-2 flex-wrap">
+              {episode.SeriesId && (
+                <>
+                  <Link
+                    href={`/series/${episode.SeriesId}`}
+                    className="hover:text-foreground transition-colors"
+                  >
+                    {episode.SeriesName}
+                  </Link>
+                  <span className="mx-1">&rsaquo;</span>
+                </>
+              )}
+              {episode.SeasonId && (
+                <>
+                  <Link
+                    href={`/season/${episode.SeasonId}`}
+                    className="hover:text-foreground transition-colors"
+                  >
+                    Season {episode.ParentIndexNumber}
+                  </Link>
+                  <span className="mx-1">&rsaquo;</span>
+                </>
+              )}
+              <span className="text-foreground/60">
+                E{episode.IndexNumber}
+              </span>
+            </div>
             <div className="flex flex-col">
               <h2 className="text-xl md:text-2xl font-medium text-muted-foreground md:pl-8 mb-1">
                 {episode.SeriesName} — S{episode.ParentIndexNumber} E
