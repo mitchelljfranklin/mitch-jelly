@@ -4,6 +4,8 @@ import {
   getImageUrl,
   fetchSimilarItems,
   getServerUrl,
+  getUserLibraries,
+  getAuthData,
 } from "@/src/actions";
 import { MediaActions } from "@/src/components/media-actions";
 import { Star } from "lucide-react";
@@ -55,18 +57,38 @@ export default function Movie() {
         setSimilarItems(simItems);
         setServerUrl(server);
 
-        // Fetch parent library: go up hierarchy to find the actual library view
-        if (movieDetails.ParentId) {
-          try {
-            const folder = await fetchMediaDetails(movieDetails.ParentId);
-            if (folder?.ParentId) {
-              const library = await fetchMediaDetails(folder.ParentId);
-              if (library?.Id) {
-                setLibraryId(library.Id);
-                setLibraryName(library.Name || "Movies");
+        // Find which library this item belongs to
+        const libraries = await getUserLibraries();
+        const typeToMatch = movieDetails.Type === "Movie" ? "movies" : "tvshows";
+        const candidates = libraries.filter((l) => l.CollectionType === typeToMatch);
+
+        if (candidates.length === 1) {
+          setLibraryId(candidates[0].Id || "");
+          setLibraryName(candidates[0].Name || "Library");
+        } else if (candidates.length > 1) {
+          // Multiple libraries of same type — query each to find the item
+          const { user, serverUrl } = await getAuthData();
+          const { createJellyfinInstance } = await import("@/src/lib/utils");
+          const { getItemsApi } = await import("@jellyfin/sdk/lib/utils/api/items-api");
+          const jellyfin = createJellyfinInstance();
+          const api = jellyfin.createApi(serverUrl);
+          api.accessToken = user.AccessToken!;
+          const itemsApi = getItemsApi(api);
+
+          for (const lib of candidates) {
+            try {
+              const { data } = await itemsApi.getItems({
+                userId: user.Id,
+                ids: [id],
+                parentId: lib.Id!,
+              });
+              if (data.Items?.length) {
+                setLibraryId(lib.Id!);
+                setLibraryName(lib.Name || "Library");
+                break;
               }
-            }
-          } catch {}
+            } catch {}
+          }
         }
       } catch (err: any) {
         console.error(err);

@@ -4,6 +4,8 @@ import {
   getImageUrl,
   fetchSimilarItems,
   getServerUrl,
+  getUserLibraries,
+  getAuthData,
 } from "@/src/actions";
 import { MediaActions } from "@/src/components/media-actions";
 import { SeriesPlayButton } from "@/src/components/series-play-button";
@@ -61,18 +63,36 @@ export default function Show() {
         const simItems = await fetchSimilarItems(id, 12);
         setSimilarItems(simItems);
 
-        // Fetch parent library: go up hierarchy to find the actual library view
-        if (showData.ParentId) {
-          try {
-            const folder = await fetchMediaDetails(showData.ParentId);
-            if (folder?.ParentId) {
-              const library = await fetchMediaDetails(folder.ParentId);
-              if (library?.Id) {
-                setLibraryId(library.Id);
-                setLibraryName(library.Name || "TV Shows");
+        // Find which library this item belongs to
+        const libraries = await getUserLibraries();
+        const candidates = libraries.filter((l) => l.CollectionType === "tvshows");
+
+        if (candidates.length === 1) {
+          setLibraryId(candidates[0].Id || "");
+          setLibraryName(candidates[0].Name || "TV Shows");
+        } else if (candidates.length > 1) {
+          const { user, serverUrl } = await getAuthData();
+          const { createJellyfinInstance } = await import("@/src/lib/utils");
+          const { getItemsApi } = await import("@jellyfin/sdk/lib/utils/api/items-api");
+          const jellyfin = createJellyfinInstance();
+          const api = jellyfin.createApi(serverUrl);
+          api.accessToken = user.AccessToken!;
+          const itemsApi = getItemsApi(api);
+
+          for (const lib of candidates) {
+            try {
+              const { data } = await itemsApi.getItems({
+                userId: user.Id,
+                ids: [id],
+                parentId: lib.Id!,
+              });
+              if (data.Items?.length) {
+                setLibraryId(lib.Id!);
+                setLibraryName(lib.Name || "TV Shows");
+                break;
               }
-            }
-          } catch {}
+            } catch {}
+          }
         }
       } catch (err: any) {
         console.error(err);
