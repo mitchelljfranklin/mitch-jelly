@@ -55,13 +55,16 @@ export default function Movie() {
         setSimilarItems(simItems);
         setServerUrl(server);
 
-        // Fetch the parent library details for breadcrumb
+        // Fetch parent library: go up hierarchy to find the actual library view
         if (movieDetails.ParentId) {
           try {
-            const parent = await fetchMediaDetails(movieDetails.ParentId);
-            if (parent?.Id) {
-              setLibraryId(parent.Id);
-              setLibraryName(parent.Name || "Movies");
+            const folder = await fetchMediaDetails(movieDetails.ParentId);
+            if (folder?.ParentId) {
+              const library = await fetchMediaDetails(folder.ParentId);
+              if (library?.Id) {
+                setLibraryId(library.Id);
+                setLibraryName(library.Name || "Movies");
+              }
             }
           } catch {}
         }

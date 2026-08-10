@@ -61,13 +61,16 @@ export default function Show() {
         const simItems = await fetchSimilarItems(id, 12);
         setSimilarItems(simItems);
 
-        // Fetch the parent library details for breadcrumb
+        // Fetch parent library: go up hierarchy to find the actual library view
         if (showData.ParentId) {
           try {
-            const parent = await fetchMediaDetails(showData.ParentId);
-            if (parent?.Id) {
-              setLibraryId(parent.Id);
-              setLibraryName(parent.Name || "TV Shows");
+            const folder = await fetchMediaDetails(showData.ParentId);
+            if (folder?.ParentId) {
+              const library = await fetchMediaDetails(folder.ParentId);
+              if (library?.Id) {
+                setLibraryId(library.Id);
+                setLibraryName(library.Name || "TV Shows");
+              }
             }
           } catch {}
         }
