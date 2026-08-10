@@ -59,8 +59,9 @@ export default function Movie() {
         // Find parent library via /Items/{id}/Ancestors
         try {
           const { user, serverUrl: srv } = await getAuthData();
+          const base = srv.replace(/\/+$/, "");
           const resp = await fetch(
-            `${srv}/Users/${user.Id}/Items/${id}/Ancestors`,
+            `${base}/Items/${id}/Ancestors?userId=${user.Id}`,
             { headers: { Authorization: `MediaBrowser Token="${user.AccessToken}"` } },
           );
           if (resp.ok) {
