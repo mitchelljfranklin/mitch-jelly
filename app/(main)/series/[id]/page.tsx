@@ -70,20 +70,13 @@ export default function Show() {
             { headers: { Authorization: `MediaBrowser Token="${user.AccessToken}"` } },
           );
           if (resp.ok) {
-            const item = await resp.json();
-            const libraryId = item.AncestorIds?.length
-              ? item.AncestorIds[item.AncestorIds.length - 1]
-              : null;
-            if (libraryId) {
-              const libResp = await fetch(
-                `${srv}/Users/${user.Id}/Items/${libraryId}`,
-                { headers: { Authorization: `MediaBrowser Token="${user.AccessToken}"` } },
-              );
-              if (libResp.ok) {
-                const library = await libResp.json();
-                setLibraryId(library.Id || libraryId);
-                setLibraryName(library.Name || "TV Shows");
-              }
+            const ancestors = await resp.json();
+            const library = ancestors.find(
+              (a: any) => a.Type === "CollectionFolder",
+            );
+            if (library?.Id) {
+              setLibraryId(library.Id);
+              setLibraryName(library.Name || "TV Shows");
             }
           }
         } catch {}
