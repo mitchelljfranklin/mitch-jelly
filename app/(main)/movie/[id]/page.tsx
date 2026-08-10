@@ -29,6 +29,7 @@ export default function Movie() {
   const [similarItems, setSimilarItems] = useState<any[]>([]);
   const [serverUrl, setServerUrl] = useState<string | null>(null);
   const [libraryId, setLibraryId] = useState<string>("");
+  const [libraryName, setLibraryName] = useState<string>("Home");
   const [loading, setLoading] = useState<boolean>(true);
   const { handleAuthError } = useAuthError();
 
@@ -55,12 +56,15 @@ export default function Movie() {
         setSimilarItems(simItems);
         setServerUrl(server);
 
-        // Find the Movies library for breadcrumb
+        // Find the item's parent library for breadcrumb
         const libraries = await getUserLibraries();
-        const movieLibrary = libraries.find(
-          (l) => l.CollectionType === "movies",
+        const parentLibrary = libraries.find(
+          (l) => l.Id === movieDetails.ParentId,
         );
-        if (movieLibrary?.Id) setLibraryId(movieLibrary.Id);
+        if (parentLibrary?.Id) {
+          setLibraryId(parentLibrary.Id);
+          setLibraryName(parentLibrary.Name || "Library");
+        }
       } catch (err: any) {
         console.error(err);
         if (handleAuthError(err)) return;
@@ -144,7 +148,7 @@ export default function Movie() {
               href={libraryId ? `/library/${libraryId}` : "/"}
               className="text-sm text-muted-foreground hover:text-foreground transition-colors md:pl-8 mb-2 inline-block"
             >
-              &larr; Movies
+              &larr; {libraryName}
             </Link>
             <div className="flex flex-col">
               <h1 className="text-4xl md:text-5xl font-semibold font-poppins text-foreground md:pl-8 drop-shadow-xl mb-4">
