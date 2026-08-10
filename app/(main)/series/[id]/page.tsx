@@ -63,12 +63,12 @@ export default function Show() {
         setSimilarItems(simItems);
 
         const libraries = await getUserLibraries();
-        const parentLibrary = libraries.find(
-          (l) => l.Id === showData.ParentId,
-        );
+        const parentLibrary =
+          libraries.find((l) => l.Id === showData.ParentId) ||
+          libraries.find((l) => l.CollectionType === "tvshows");
         if (parentLibrary?.Id) {
           setLibraryId(parentLibrary.Id);
-          setLibraryName(parentLibrary.Name || "Library");
+          setLibraryName(parentLibrary.Name || "TV Shows");
         }
       } catch (err: any) {
         console.error(err);

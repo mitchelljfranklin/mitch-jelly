@@ -58,12 +58,12 @@ export default function Movie() {
 
         // Find the item's parent library for breadcrumb
         const libraries = await getUserLibraries();
-        const parentLibrary = libraries.find(
-          (l) => l.Id === movieDetails.ParentId,
-        );
+        const parentLibrary =
+          libraries.find((l) => l.Id === movieDetails.ParentId) ||
+          libraries.find((l) => l.CollectionType === "movies");
         if (parentLibrary?.Id) {
           setLibraryId(parentLibrary.Id);
-          setLibraryName(parentLibrary.Name || "Library");
+          setLibraryName(parentLibrary.Name || "Movies");
         }
       } catch (err: any) {
         console.error(err);
