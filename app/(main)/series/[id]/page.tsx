@@ -4,7 +4,6 @@ import {
   getImageUrl,
   fetchSimilarItems,
   getServerUrl,
-  getUserLibraries,
 } from "@/src/actions";
 import { MediaActions } from "@/src/components/media-actions";
 import { SeriesPlayButton } from "@/src/components/series-play-button";
@@ -62,13 +61,15 @@ export default function Show() {
         const simItems = await fetchSimilarItems(id, 12);
         setSimilarItems(simItems);
 
-        const libraries = await getUserLibraries();
-        const parentLibrary =
-          libraries.find((l) => l.Id === showData.ParentId) ||
-          libraries.find((l) => l.CollectionType === "tvshows");
-        if (parentLibrary?.Id) {
-          setLibraryId(parentLibrary.Id);
-          setLibraryName(parentLibrary.Name || "TV Shows");
+        // Fetch the parent library details for breadcrumb
+        if (showData.ParentId) {
+          try {
+            const parent = await fetchMediaDetails(showData.ParentId);
+            if (parent?.Id) {
+              setLibraryId(parent.Id);
+              setLibraryName(parent.Name || "TV Shows");
+            }
+          } catch {}
         }
       } catch (err: any) {
         console.error(err);

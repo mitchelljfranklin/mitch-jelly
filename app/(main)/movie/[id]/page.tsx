@@ -4,7 +4,6 @@ import {
   getImageUrl,
   fetchSimilarItems,
   getServerUrl,
-  getUserLibraries,
 } from "@/src/actions";
 import { MediaActions } from "@/src/components/media-actions";
 import { Star } from "lucide-react";
@@ -56,14 +55,15 @@ export default function Movie() {
         setSimilarItems(simItems);
         setServerUrl(server);
 
-        // Find the item's parent library for breadcrumb
-        const libraries = await getUserLibraries();
-        const parentLibrary =
-          libraries.find((l) => l.Id === movieDetails.ParentId) ||
-          libraries.find((l) => l.CollectionType === "movies");
-        if (parentLibrary?.Id) {
-          setLibraryId(parentLibrary.Id);
-          setLibraryName(parentLibrary.Name || "Movies");
+        // Fetch the parent library details for breadcrumb
+        if (movieDetails.ParentId) {
+          try {
+            const parent = await fetchMediaDetails(movieDetails.ParentId);
+            if (parent?.Id) {
+              setLibraryId(parent.Id);
+              setLibraryName(parent.Name || "Movies");
+            }
+          } catch {}
         }
       } catch (err: any) {
         console.error(err);
