@@ -4,6 +4,7 @@ import {
   getImageUrl,
   fetchSimilarItems,
   getServerUrl,
+  getUserLibraries,
 } from "@/src/actions";
 import { MediaActions } from "@/src/components/media-actions";
 import { Star } from "lucide-react";
@@ -27,6 +28,7 @@ export default function Movie() {
   const [logoImage, setLogoImage] = useState<string>("");
   const [similarItems, setSimilarItems] = useState<any[]>([]);
   const [serverUrl, setServerUrl] = useState<string | null>(null);
+  const [libraryId, setLibraryId] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(true);
   const { handleAuthError } = useAuthError();
 
@@ -52,6 +54,13 @@ export default function Movie() {
         setLogoImage(li);
         setSimilarItems(simItems);
         setServerUrl(server);
+
+        // Find the Movies library for breadcrumb
+        const libraries = await getUserLibraries();
+        const movieLibrary = libraries.find(
+          (l) => l.CollectionType === "movies",
+        );
+        if (movieLibrary?.Id) setLibraryId(movieLibrary.Id);
       } catch (err: any) {
         console.error(err);
         if (handleAuthError(err)) return;
@@ -132,10 +141,10 @@ export default function Movie() {
         <MediaDetail.Content>
           <MediaDetail.Info>
             <Link
-              href="/"
+              href={libraryId ? `/library/${libraryId}` : "/"}
               className="text-sm text-muted-foreground hover:text-foreground transition-colors md:pl-8 mb-2 inline-block"
             >
-              &larr; Home
+              &larr; Movies
             </Link>
             <div className="flex flex-col">
               <h1 className="text-4xl md:text-5xl font-semibold font-poppins text-foreground md:pl-8 drop-shadow-xl mb-4">

@@ -4,6 +4,7 @@ import {
   getImageUrl,
   fetchSimilarItems,
   getServerUrl,
+  getUserLibraries,
 } from "@/src/actions";
 import { MediaActions } from "@/src/components/media-actions";
 import { SeriesPlayButton } from "@/src/components/series-play-button";
@@ -31,6 +32,7 @@ export default function Show() {
   const [logoImage, setLogoImage] = useState<string>("");
   const [similarItems, setSimilarItems] = useState<BaseItemDto[]>([]);
   const [serverUrl, setServerUrl] = useState<string | null>(null);
+  const [libraryId, setLibraryId] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(true);
   const { handleAuthError } = useAuthError();
 
@@ -42,9 +44,7 @@ export default function Show() {
         setServerUrl(url);
 
         const showData = await fetchMediaDetails(id);
-        console.log("Show data:", showData);
         const seasonsData = await fetchSeasons(id);
-        console.log("Seasons data:", seasonsData);
         if (!showData || !seasonsData) return;
 
         setShow(showData);
@@ -60,6 +60,12 @@ export default function Show() {
 
         const simItems = await fetchSimilarItems(id, 12);
         setSimilarItems(simItems);
+
+        const libraries = await getUserLibraries();
+        const tvLibrary = libraries.find(
+          (l) => l.CollectionType === "tvshows",
+        );
+        if (tvLibrary?.Id) setLibraryId(tvLibrary.Id);
       } catch (err: any) {
         console.error(err);
         if (handleAuthError(err)) return;
@@ -131,10 +137,10 @@ export default function Show() {
         <MediaDetail.Content>
           <MediaDetail.Info>
             <Link
-              href="/"
+              href={libraryId ? `/library/${libraryId}` : "/"}
               className="text-sm text-muted-foreground hover:text-foreground transition-colors md:pl-8 mb-2 inline-block"
             >
-              &larr; Home
+              &larr; TV Shows
             </Link>
             <div className="flex flex-col">
               <h1 className="text-4xl md:text-5xl font-semibold font-poppins text-foreground md:pl-8 drop-shadow-xl mb-4">
