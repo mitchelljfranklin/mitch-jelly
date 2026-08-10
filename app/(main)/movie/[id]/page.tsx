@@ -64,12 +64,21 @@ export default function Movie() {
             { headers: { Authorization: `MediaBrowser Token="${user.AccessToken}"` } },
           );
           if (resp.ok) {
-            const ancestors = await resp.json();
-            // Ancestors are ordered closest-first; the last one is the library root
-            const library = ancestors.length ? ancestors[ancestors.length - 1] : null;
-            if (library?.Id) {
-              setLibraryId(library.Id);
-              setLibraryName(library.Name || "Library");
+            const item = await resp.json();
+            const libraryId = item.AncestorIds?.length
+              ? item.AncestorIds[item.AncestorIds.length - 1]
+              : null;
+            if (libraryId) {
+              // Fetch the library item to get its Name
+              const libResp = await fetch(
+                `${srv}/Users/${user.Id}/Items/${libraryId}`,
+                { headers: { Authorization: `MediaBrowser Token="${user.AccessToken}"` } },
+              );
+              if (libResp.ok) {
+                const library = await libResp.json();
+                setLibraryId(library.Id || libraryId);
+                setLibraryName(library.Name || "Library");
+              }
             }
           }
         } catch {}
