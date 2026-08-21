@@ -5,7 +5,7 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-2.2.0-blue" alt="Version 2.2.0" />
+  <img src="https://img.shields.io/github/v/release/mitchelljfranklin/mitch-jelly" alt="GitHub release" />
 </p>
 
 **A Modern, Streamlined Jellyfin Client built with Next.js**
