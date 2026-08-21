@@ -8,7 +8,7 @@ import { NotConnected } from "@/src/components/discover/not-connected";
 import { DiscoverWidgets } from "@/src/components/discover-widgets";
 
 export default function DiscoverPage() {
-  const { loading, isSeerrConnected, authError } = useSeerr();
+  const { loading, isSeerrConnected, needsSeerrLogin, authError } = useSeerr();
 
   const { handleAuthError } = useAuthError();
 
@@ -26,7 +26,7 @@ export default function DiscoverPage() {
           <div className="mb-6">
             <SearchBar />
           </div>
-          {!loading && !isSeerrConnected ? (
+          {!loading && !isSeerrConnected && !needsSeerrLogin ? (
             <NotConnected />
           ) : (
             <DiscoverWidgets />

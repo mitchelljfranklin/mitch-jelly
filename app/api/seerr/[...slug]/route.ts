@@ -505,6 +505,9 @@ export async function POST(
 
     if (authType === "api-key") {
       endpoint = "/api/v1/auth/me";
+    } else if (authType === "jellyfin-session") {
+      // Per-user mode: just verify the server is reachable — auth happens per-user later
+      endpoint = "/api/v1/settings/public";
     } else if (authType === "local-user") {
       endpoint = "/api/v1/auth/local";
       method = "POST";
@@ -536,10 +539,15 @@ export async function POST(
           ? r.headers.getSetCookie()
           : r.headers.get("set-cookie");
 
-        if (Array.isArray(setCookie)) {
-          setCookie.forEach((c) => resp.headers.append("Set-Cookie", c));
-        } else if (setCookie) {
-          resp.headers.set("Set-Cookie", setCookie);
+        if (setCookie) {
+          const cookies = Array.isArray(setCookie) ? setCookie : [setCookie];
+          cookies.forEach((c) => {
+            // Strip Secure flag on non-HTTPS so the cookie works in dev
+            const fixed = process.env.NODE_ENV !== "production"
+              ? c.replace(/;\s*Secure/i, "")
+              : c;
+            resp.headers.append("Set-Cookie", fixed);
+          });
         }
       }
       return resp;

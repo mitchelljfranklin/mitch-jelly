@@ -218,6 +218,7 @@ export async function fetchMediaDetails(
         ItemFields.Studios,
         ItemFields.Trickplay,
         ItemFields.Chapters,
+        ("ParentId" as ItemFields),
         ("UserData" as ItemFields),
       ],
     });

@@ -29,6 +29,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "../components/ui/collapsible";
+import { Avatar, AvatarImage, AvatarFallback } from "../components/ui/avatar";
 import {
   getUser,
   getServerUrl,
@@ -400,11 +401,16 @@ export function AppSidebar() {
                   tabIndex={0}
                 >
                   {avatarUrl ? (
-                    <img
-                      src={avatarUrl}
-                      alt="Avatar"
-                      className="aspect-square object-cover size-8 rounded-lg border"
-                    />
+                    <Avatar className="aspect-square size-8 rounded-lg border">
+                      <AvatarImage
+                        src={avatarUrl}
+                        alt="Avatar"
+                        className="object-cover"
+                      />
+                      <AvatarFallback className="text-sm font-medium">
+                        {(user?.Name?.[0] ?? "U").toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
                   ) : (
                     <div className="text-foreground flex aspect-square size-8 items-center justify-center rounded-lg bg-primary p-2">
                       <User className="size-6 text-white" />

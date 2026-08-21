@@ -158,10 +158,9 @@ export async function removeSeerrData() {
 const SEERR_SESSION_KEY = "seerr-session";
 
 export async function setSeerrSession(value: string) {
-  // Session-only cookie (no maxAge) — cleared on browser close
   (await cookies()).set(SEERR_SESSION_KEY, value, {
     httpOnly: true,
-    secure: true,
+    secure: process.env.NODE_ENV === "production",
     sameSite: "lax" as const,
   });
 }

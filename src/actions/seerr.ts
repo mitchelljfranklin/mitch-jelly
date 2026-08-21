@@ -1,6 +1,8 @@
-import { StoreSeerrData } from "./store/store-seerr-data";
-import { getSeerrSession } from "./store/server-actions";
-import type { SeerrAuthData } from "./store/server-actions";
+import { StoreSeerrData } from "@/src/actions/store/store-seerr-data";
+import { getSeerrSession } from "@/src/actions/store/server-actions";
+import { getSeerrConfig } from "@/src/actions/get-seerr-config";
+export { getSeerrConfig } from "@/src/actions/get-seerr-config";
+import type { SeerrAuthData, SeerrAuthType } from "@/src/actions/store/server-actions";
 import {
   SeerrMediaItem,
   SeerrRequestItem,
@@ -8,7 +10,7 @@ import {
 } from "@/src/types/seerr-types";
 
 async function getHeaders(): Promise<HeadersInit> {
-  const data = await StoreSeerrData.get();
+  const data = await getSeerrConfig();
   if (!data?.serverUrl) return {};
 
   const headers: HeadersInit = {
@@ -19,11 +21,8 @@ async function getHeaders(): Promise<HeadersInit> {
   if (data.authType === "api-key" && data.apiKey) {
     headers["x-api-key"] = data.apiKey;
   } else if (data.authType === "jellyfin-session") {
-    const session = await getSeerrSession();
-    if (session) {
-      headers["x-seerr-auth-type"] = "jellyfin-session";
-      headers["x-seerr-session"] = session;
-    }
+    headers["x-seerr-auth-type"] = "jellyfin-session";
+    // No explicit session header needed — the proxy reads cookies from the request
   } else if (
     (data.authType === "local-user" || data.authType === "jellyfin-user") &&
     data.username &&
@@ -242,7 +241,7 @@ export async function testSeerrConnection(
 ): Promise<{ success: boolean; message?: string }> {
   const headers: HeadersInit = { "Content-Type": "application/json" };
   let body: any = {};
-  const currentConfig = config || (await StoreSeerrData.get());
+  const currentConfig = config || (await getSeerrConfig());
 
   if (currentConfig) {
     if (currentConfig.serverUrl)
@@ -298,7 +297,7 @@ export async function seerrLoginWithPassword(
   username: string,
   password: string,
 ): Promise<{ success: boolean; message?: string }> {
-  const data = await StoreSeerrData.get();
+  const data = await getSeerrConfig();
   if (!data?.serverUrl) {
     return { success: false, message: "Seerr not configured" };
   }
