@@ -1,6 +1,7 @@
 import { SystemApi } from "@jellyfin/sdk/lib/generated-client/api/system-api";
 import { getUserApi } from "@jellyfin/sdk/lib/utils/api/user-api";
 import { getQuickConnectApi } from "@jellyfin/sdk/lib/utils/api/quick-connect-api";
+import { logger } from "@/src/lib/logger";
 import { Configuration } from "@jellyfin/sdk/lib/generated-client/configuration";
 import type { UserDto } from "@jellyfin/sdk/lib/generated-client/models/user-dto";
 import { createJellyfinInstance } from "../lib/utils";
@@ -67,7 +68,7 @@ export async function checkServerHealth(
       const { data } = await systemApi.getPublicSystemInfo();
       return Boolean(data.ServerName);
     } catch (error) {
-      console.log(`Connection failed for ${testUrl}:`, error);
+      logger.log(`Connection failed for ${testUrl}:`, error);
       return false;
     }
   };
@@ -124,14 +125,14 @@ export async function authenticateUser(
     const api = jellyfinInstance.createApi(serverUrl);
 
     // Log the request details for debugging (without PII)
-    console.log("Authentication request:", { serverUrl, clientInfo: jellyfinInstance.clientInfo });
+    logger.log("Authentication request:", { serverUrl, clientInfo: jellyfinInstance.clientInfo });
 
     const { data: result } = await api.authenticateUserByName(
       username,
       password,
     );
 
-    console.log("Authentication successful, received result:", {
+    logger.log("Authentication successful, received result:", {
       hasAccessToken: !!result.AccessToken,
       hasUser: !!result.User,
       userId: result.User?.Id,
@@ -172,7 +173,7 @@ export async function authenticateUser(
     }
 
     // Try alternative authentication method with direct fetch
-    console.log("Trying alternative authentication method...");
+    logger.log("Trying alternative authentication method...");
 
     try {
       const response = await fetch(`${serverUrl}/Users/AuthenticateByName`, {
@@ -187,7 +188,7 @@ export async function authenticateUser(
         }),
       });
 
-      console.log("Alternative auth response:", {
+      logger.log("Alternative auth response:", {
         status: response.status,
         statusText: response.statusText,
         headers: Object.fromEntries(response.headers.entries()),
@@ -195,7 +196,7 @@ export async function authenticateUser(
 
       if (response.ok) {
         const result = await response.json();
-        console.log("Alternative authentication successful:", {
+        logger.log("Alternative authentication successful:", {
           hasAccessToken: !!result.AccessToken,
           hasUser: !!result.User,
           userId: result.User?.Id,
@@ -567,13 +568,13 @@ export async function debugServerConnection(): Promise<void> {
     return;
   }
 
-  console.log(`Testing connection to: ${serverUrl}`);
+  logger.log(`Testing connection to: ${serverUrl}`);
 
   try {
     const systemApi = new SystemApi(new Configuration({ basePath: serverUrl }));
     const { data: systemInfo } = await systemApi.getPublicSystemInfo();
 
-    console.log("Server connection successful!", {
+    logger.log("Server connection successful!", {
       serverName: systemInfo.ServerName,
       version: systemInfo.Version,
       id: systemInfo.Id,
@@ -592,7 +593,7 @@ export async function debugServerConnection(): Promise<void> {
       }),
     });
 
-    console.log("Auth endpoint test response:", {
+    logger.log("Auth endpoint test response:", {
       status: response.status,
       statusText: response.statusText,
       headers: Object.fromEntries(response.headers.entries()),
@@ -600,7 +601,7 @@ export async function debugServerConnection(): Promise<void> {
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.log("Auth endpoint error response body:", errorText);
+      logger.log("Auth endpoint error response body:", errorText);
     }
   } catch (error: any) {
     console.error("Server connection failed:", {

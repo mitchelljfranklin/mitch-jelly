@@ -1,5 +1,4 @@
 import { StoreSeerrData } from "@/src/actions/store/store-seerr-data";
-import { getSeerrSession } from "@/src/actions/store/server-actions";
 import { getSeerrConfig } from "@/src/actions/get-seerr-config";
 export { getSeerrConfig } from "@/src/actions/get-seerr-config";
 import type { SeerrAuthData, SeerrAuthType } from "@/src/actions/store/server-actions";

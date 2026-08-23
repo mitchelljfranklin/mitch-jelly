@@ -58,19 +58,28 @@ export default function Show() {
           }
         };
 
-        const [url, showData, seasonsData, pi, bi, li, simItems, library] =
+        const [url, showData, seasonsData, simItems, library] =
           await Promise.all([
             getServerUrl(),
             fetchMediaDetails(id),
             fetchSeasons(id),
-            getImageUrl(id, "Primary"),
-            getImageUrl(id, "Backdrop"),
-            getImageUrl(id, "Logo"),
             fetchSimilarItems(id, 12),
             fetchParentLibrary(),
           ]);
 
         if (!showData || !seasonsData) return;
+
+        // Images need the loaded item's tags for strict-auth servers
+        const [pi, bi, li] = await Promise.all([
+          getImageUrl(id, "Primary", undefined, showData.ImageTags?.Primary),
+          getImageUrl(
+            id,
+            "Backdrop",
+            undefined,
+            showData.BackdropImageTags?.[0],
+          ),
+          getImageUrl(id, "Logo", undefined, showData.ImageTags?.Logo),
+        ]);
 
         setServerUrl(url);
         setShow(showData);

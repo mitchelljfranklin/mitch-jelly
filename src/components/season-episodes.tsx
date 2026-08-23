@@ -60,6 +60,11 @@ interface Episode {
     UnplayedItemCount?: number;
     PlayCount?: number;
   };
+  ImageTags?: {
+    Primary?: string;
+    Thumb?: string;
+    Logo?: string;
+  };
 }
 
 // Global cache for episodes and seasons data to prevent refetching when switching between episodes
@@ -230,8 +235,9 @@ export const SeasonEpisodes = React.memo(function SeasonEpisodes({
     if (!seasonId) return;
 
     // Check cache first
-    if (episodesCache.has(seasonId)) {
-      setEpisodes(episodesCache.get(seasonId)!);
+    const cached = episodesCache.get(seasonId);
+    if (cached) {
+      setEpisodes(cached);
       return;
     }
 
@@ -430,7 +436,9 @@ const EpisodeCard = React.memo(function EpisodeCard({
   serverUrl: string;
   currentEpisodeId: string | null;
 }) {
-  const imageUrl = `${serverUrl}/Items/${episode.Id}/Images/Primary?width=576&height=324&quality=95`;
+  const primaryTag = episode.ImageTags?.Primary;
+  const tagParam = primaryTag ? `&tag=${primaryTag}` : "";
+  const imageUrl = `${serverUrl}/Items/${episode.Id}/Images/Primary?width=576&height=324&quality=95${tagParam}`;
   const isCurrentEpisode = currentEpisodeId === episode.Id;
   const isWatched = episode.UserData?.Played === true;
   const [togglingWatched, setTogglingWatched] = useState(false);

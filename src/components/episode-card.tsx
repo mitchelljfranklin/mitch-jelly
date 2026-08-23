@@ -25,7 +25,11 @@ export function EpisodeCard({
 
   // Use thumbnail image for episodes (16:9 aspect ratio)
   const imageItemId = item.ParentThumbItemId || item.Id;
-  const imageUrl = `${serverUrl}/Items/${imageItemId}/Images/Thumb?fillHeight=270&fillWidth=480&quality=50`;
+  const thumbTag =
+    (item.Type === "Episode" ? item.ParentThumbImageTag : undefined) ||
+    item.ImageTags?.Thumb;
+  const tagParam = thumbTag ? `&tag=${thumbTag}` : "";
+  const imageUrl = `${serverUrl}/Items/${imageItemId}/Images/Thumb?fillHeight=270&fillWidth=480&quality=50${tagParam}`;
 
   // Calculate progress percentage from resume position
   let progressPercentage = percentageWatched;

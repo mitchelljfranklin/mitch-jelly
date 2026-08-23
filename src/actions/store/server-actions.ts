@@ -153,24 +153,3 @@ export async function getSeerrData(): Promise<SeerrAuthData | null> {
 export async function removeSeerrData() {
   (await cookies()).delete(SEERR_DATA_KEY);
 }
-
-// --- Per-user Seerr session (jellyfin-session mode) ---
-const SEERR_SESSION_KEY = "seerr-session";
-
-export async function setSeerrSession(value: string) {
-  (await cookies()).set(SEERR_SESSION_KEY, value, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax" as const,
-  });
-}
-
-export async function getSeerrSession(): Promise<string | null> {
-  const cookieStore = await cookies();
-  const val = cookieStore.get(SEERR_SESSION_KEY);
-  return val ? val.value : null;
-}
-
-export async function removeSeerrSession() {
-  (await cookies()).delete(SEERR_SESSION_KEY);
-}

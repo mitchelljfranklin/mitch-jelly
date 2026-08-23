@@ -1,5 +1,6 @@
 "use client";
 import { useFormContext, useWatch } from "react-hook-form";
+import { logger } from "@/src/lib/logger";
 import {
   FormControl,
   FormDescription,
@@ -71,7 +72,7 @@ export function GeneralSection({
               className="text-destructive hover:text-destructive/90 hover:bg-destructive/10"
               onClick={() => {
                 // TODO: Implement delete image action
-                console.log("Delete image");
+                logger.log("Delete image");
               }}
             >
               <X className="h-4 w-4 mr-1" /> Remove Image

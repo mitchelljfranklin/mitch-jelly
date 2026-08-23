@@ -10,8 +10,11 @@ interface PersonCardProps {
 }
 
 export function PersonCard({ person, serverUrl }: PersonCardProps) {
+  const personTag = person.ImageTags?.Primary;
   const imageUrl = person.Id
-    ? `${serverUrl}/Items/${person.Id}/Images/Primary`
+    ? `${serverUrl}/Items/${person.Id}/Images/Primary${
+        personTag ? `?tag=${personTag}` : ""
+      }`
     : null;
 
   // Get initials for fallback

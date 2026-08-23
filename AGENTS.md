@@ -32,6 +32,7 @@
 - `src/components/scroll-to-top.tsx` — floating "back to top" FAB for infinite-scroll pages
 - `src/playback/` — modular playback engine with `HTMLAudioPlayer`, `HTMLVideoPlayer`, context provider
   - `src/playback/components/PostPlayOverlay.tsx` — Netflix-style "Up Next" overlay (appears 45s before episode end)
+  - **Two playback contexts:** volatile `PlaybackContext` (full state incl. currentTime — re-renders ~4×/sec during playback) and stable `PlaybackActionsContext` (memoized callbacks only). Leaf components (cards, buttons) MUST use `usePlayback()` from `src/hooks/usePlayback.ts` (actions-backed); never subscribe leaves to the full context.
 - `src/contexts/` — Auth, Settings, Seerr React contexts
 - `src/hooks/` — custom hooks (useAuth, usePlayback, useSkipSegments, etc.)
 - `src/lib/atoms.ts` — all Jotai atoms: home page cache, hero items, library cache, app name, theme selection
@@ -107,7 +108,8 @@ Authentication uses `@jellyfin/sdk`. Credentials stored as cookies via `src/acti
 - No test suite or test scripts configured.
 - The `ignoreScripts` in package.json suppresses native build scripts for `sharp` and `unrs-resolver`.
 - `scripts/bump-version.mjs` bumps version via `bun run scripts/bump-version.mjs -- --level=patch|minor|major`.
-- The `app/(main)/` layout has a 60-second home page cache window that was extended to 5 minutes. Always include `handleAuthError` in try/catch for API calls in page `useEffect` blocks, but **do NOT add it to useEffect dependency arrays** — it would cause infinite re-render loops. The linter warns about this (~25 instances), which is intentional.
+- The `app/(main)/` home page caches data in localStorage with a 5-minute TTL (`homeLastVisitedTimeAtom`). Always include `handleAuthError` in try/catch for API calls in page `useEffect` blocks, but **do NOT add it to useEffect dependency arrays** — it would cause infinite re-render loops. The linter warns about this (~25 instances), which is intentional.
+- **Dev-mode stale builds:** if changes don't appear in `bun dev`, stop the server, delete `.next/turbopack/`, and restart. Turbopack occasionally serves stale chunks after branch switches or large refactors. Browser hard-refresh (Ctrl+Shift+R) may also be needed.
 - When using `OptimizedImage`, avoid `loading="lazy"` — it causes cancelled image loads during DOM reordering.
 
 ## Docker / CI

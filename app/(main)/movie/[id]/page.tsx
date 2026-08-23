@@ -54,18 +54,26 @@ export default function Movie() {
           }
         };
 
-        const [movieDetails, pi, bi, li, simItems, server, library] =
-          await Promise.all([
-            fetchMediaDetails(id),
-            getImageUrl(id, "Primary"),
-            getImageUrl(id, "Backdrop"),
-            getImageUrl(id, "Logo"),
-            fetchSimilarItems(id, 12),
-            getServerUrl(),
-            fetchParentLibrary(),
-          ]);
+        const [movieDetails, simItems, server, library] = await Promise.all([
+          fetchMediaDetails(id),
+          fetchSimilarItems(id, 12),
+          getServerUrl(),
+          fetchParentLibrary(),
+        ]);
 
         if (!movieDetails) return;
+
+        // Images need the loaded item's tags for strict-auth servers
+        const [pi, bi, li] = await Promise.all([
+          getImageUrl(id, "Primary", undefined, movieDetails.ImageTags?.Primary),
+          getImageUrl(
+            id,
+            "Backdrop",
+            undefined,
+            movieDetails.BackdropImageTags?.[0],
+          ),
+          getImageUrl(id, "Logo", undefined, movieDetails.ImageTags?.Logo),
+        ]);
 
         setMovie(movieDetails);
         setPrimaryImage(pi);
@@ -172,12 +180,7 @@ export default function Movie() {
           </MediaDetail.Info>
 
           <MediaDetail.Actions>
-            <MediaActions
-              movie={movie}
-              onBeforePlay={
-                MediaDetail.Backdrop.name === "Backdrop" ? undefined : undefined
-              }
-            />
+            <MediaActions movie={movie} />
             <MediaDetail.Overview />
 
             <MediaDetail.Metadata>

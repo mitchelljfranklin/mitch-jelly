@@ -1,5 +1,6 @@
 "use client";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { logger } from "@/src/lib/logger";
 import { useForm } from "react-hook-form";
 import {
   Form,
@@ -73,7 +74,7 @@ export default function LibrariesMetadataPage() {
         ]);
         setCultures(culturesData);
         setCountries(countriesData);
-        console.log(config);
+        logger.log(config);
         form.reset({
           PreferredMetadataLanguage: config.PreferredMetadataLanguage,
           MetadataCountryCode: config.MetadataCountryCode,

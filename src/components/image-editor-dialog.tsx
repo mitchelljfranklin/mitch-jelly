@@ -1,5 +1,6 @@
 "use client";
 import React, { useState, useEffect, useCallback } from "react";
+import { logger } from "@/src/lib/logger";
 import {
   Dialog,
   DialogContent,
@@ -114,7 +115,7 @@ export function ImageEditorDialog({
 
         duration: 2000, // Give user a moment to see the success message
       });
-      console.log(`Downloaded ${image.Type} image:`, image);
+      logger.log(`Downloaded ${image.Type} image:`, image);
     } catch (error) {
       console.error("Failed to download image:", error);
       toast.error("Failed to download image");

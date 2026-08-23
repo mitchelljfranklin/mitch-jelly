@@ -93,7 +93,8 @@ export function MediaActions({
       setSelectedVersion(defaultSource);
 
       // Select default audio stream
-      if (defaultSource.MediaStreams) {
+      const sourceStreams = defaultSource.MediaStreams;
+      if (sourceStreams) {
         let defaultAudio: MediaStream | undefined;
         getAuthData()
           .then(({ user }) => {
@@ -102,13 +103,13 @@ export function MediaActions({
                 !user.Configuration.PlayDefaultAudioTrack &&
                 user.Configuration.AudioLanguagePreference
               )
-                defaultAudio = defaultSource.MediaStreams!.find(
+                defaultAudio = sourceStreams.find(
                   (s) =>
                     s.Type === "Audio" &&
                     s.Language === user.Configuration!.AudioLanguagePreference,
                 );
               else
-                defaultAudio = defaultSource!.MediaStreams!.find(
+                defaultAudio = sourceStreams.find(
                   (s) => s.Type === "Audio" && s.IsDefault,
                 );
               if (defaultAudio) setSelectedAudioStreamIndex(defaultAudio.Index);
@@ -117,7 +118,7 @@ export function MediaActions({
           .finally(() => {
             if (defaultAudio === undefined) {
               // Fallback to first audio stream
-              const firstAudio = defaultSource!.MediaStreams!.find(
+              const firstAudio = sourceStreams.find(
                 (s) => s.Type === "Audio",
               );
               setSelectedAudioStreamIndex(firstAudio?.Index);

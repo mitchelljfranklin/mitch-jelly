@@ -1,5 +1,6 @@
 "use client";
 import { useEffect } from "react";
+import { logger } from "@/src/lib/logger";
 import { executeClearAuthDataAction } from "../actions/store/server-actions";
 import { useAuthError } from "../hooks/use-auth-error";
 import { useRouter } from "next/navigation";
@@ -15,7 +16,7 @@ export function AuthErrorHandler({ children }: AuthErrorHandlerProps) {
   useEffect(() => {
     async function handleAuthError() {
       if (authError) {
-        console.log("Handling authentication error, clearing auth data...");
+        logger.log("Handling authentication error, clearing auth data...");
         try {
           await executeClearAuthDataAction();
         } catch (clearError) {

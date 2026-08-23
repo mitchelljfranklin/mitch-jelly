@@ -1,5 +1,6 @@
 "use client";
 import React, { useEffect, useState } from "react";
+import { logger } from "@/src/lib/logger";
 import {
   Card,
   CardContent,
@@ -100,24 +101,24 @@ export function ServerSetup({ onNext }: ServerSetupProps) {
     setError("");
     setDetectedUrl("");
 
-    console.log("URL:", url);
+    logger.log("URL:", url);
 
     try {
       const cleanedUrl = cleanUrl(url);
-      console.log("Cleaned URL:", cleanedUrl);
+      logger.log("Cleaned URL:", cleanedUrl);
       const result = await checkServerHealth(cleanedUrl);
-      console.log("Health check result:", result);
+      logger.log("Health check result:", result);
       if (result.success && result.finalUrl) {
         setConnectionStatus("success");
         setDetectedUrl(result.finalUrl);
         await setServerUrl(result.finalUrl);
-        console.log("Server URL set to:", result.finalUrl);
+        logger.log("Server URL set to:", result.finalUrl);
         // Small delay to show success state
         setTimeout(() => {
           onNext();
         }, 800);
       } else {
-        console.log("Health check failed:", result.error);
+        logger.log("Health check failed:", result.error);
         setConnectionStatus("error");
         setError(
           result.error ||
