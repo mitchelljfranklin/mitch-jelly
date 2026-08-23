@@ -189,12 +189,27 @@ export function LogViewerDialog({
     scrollToBottom();
   };
 
+  const escapeHtml = (str: string) =>
+    str
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#39;");
+
   const highlightSearchTerm = (text: string) => {
-    if (!searchTerm) return text;
+    if (!searchTerm) return escapeHtml(text);
 
     const escaped = searchTerm.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
     const regex = new RegExp(`(${escaped})`, "gi");
-    return text.replace(regex, (match) => `<mark class='bg-primary dark:bg-primary/50 text-white'>${match}</mark>`);
+    return text
+      .split(regex)
+      .map((part, i) =>
+        i % 2 === 1
+          ? `<mark class='bg-primary dark:bg-primary/50 text-white'>${escapeHtml(part)}</mark>`
+          : escapeHtml(part),
+      )
+      .join("");
   };
 
   const filteredContent = React.useMemo(() => {
