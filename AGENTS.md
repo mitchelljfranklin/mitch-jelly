@@ -5,7 +5,7 @@
 - **Package manager:** Bun only. `bun install`, `bun run build`, `bun dev`, `bun lint`
 - `bun dev` starts Next.js dev server on port 3000
 - `bun run build` produces an optimized build in `.next/`
-- `bun lint` runs ESLint (eslint-config-next) — expect 0 errors, ~39 intentional warnings
+- `bun lint` runs ESLint (eslint-config-next) — expect 0 errors, ~42 intentional warnings
 - `bun electron:dev` runs Next.js dev server + Electron window concurrently
 - `bun electron:build` builds Next.js standalone, then packages with electron-builder
 
@@ -24,7 +24,7 @@
   - `app/(main)/` — grouped route for all authenticated pages (dashboard, library, movie, series, etc.)
   - `app/login/` — standalone login page
   - `app/api/config/` — `GET` returns `{ defaultServerUrl, seerrServerUrl, seerrAuthType }` from env
-  - `app/api/seerr/[...slug]/` — server-side proxy for Seerr (Jellyseerr/Overseerr)
+  - `app/api/seerr/[...slug]/` — server-side proxy for Seerr (Jellyseerr/Overseerr). **Auth-gated:** requires a valid Jellyfin session cookie; SSRF-hardened (private-IP blocklist incl. DNS resolution, fail-closed)
 - `src/actions/` — Server Actions for Jellyfin API calls (auth, media, search, utils)
   - `src/actions/store/` — cookie-based persistent storage via `next/headers` cookies
   - `src/actions/get-seerr-config.ts` — server action that reads Seerr env vars (SEERR_*) or falls back to cookies
@@ -104,7 +104,7 @@ Authentication uses `@jellyfin/sdk`. Credentials stored as cookies via `src/acti
 
 ## Key Conventions
 
-- ESLint disables `@typescript-eslint/no-explicit-any`, `@next/next/no-img-element`, `react-hooks/set-state-in-effect`, `react-hooks/static-components`.
+- ESLint disables `@typescript-eslint/no-explicit-any`, `@next/next/no-img-element`, `react-hooks/set-state-in-effect`, `react-hooks/static-components`. Global ignores cover `desktop/` and `dist-electron/` (Electron CommonJS files are not linted).
 - No test suite or test scripts configured.
 - The `ignoreScripts` in package.json suppresses native build scripts for `sharp` and `unrs-resolver`.
 - `scripts/bump-version.mjs` bumps version via `bun run scripts/bump-version.mjs -- --level=patch|minor|major`.
@@ -115,7 +115,8 @@ Authentication uses `@jellyfin/sdk`. Credentials stored as cookies via `src/acti
 ## Docker / CI
 
 - Docker image: `ghcr.io/mitchelljfranklin/mitch-jelly:latest`
-- Release workflow: triggers on `v*` tags — builds, tags as version + `latest`, creates GitHub Release
+- **CI workflow** (`.github/workflows/ci.yml`): runs lint + production build on every PR to `main`
+- Release workflow (`.github/workflows/release.yml`): triggers on `v*` tags — builds Docker image (tagged version + `latest`), creates GitHub Release, and matrix-builds Electron installers (Windows NSIS, macOS DMG, Linux AppImage) attached to the release
 - Manual dispatch: `workflow_dispatch` in Actions builds arbitrary tags (e.g., `latest`, `beta`)
 - No Docker Hub — uses GitHub Container Registry with built-in `GITHUB_TOKEN`
 
