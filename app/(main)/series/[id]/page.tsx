@@ -41,46 +41,49 @@ export default function Show() {
     async function fetchData() {
       if (!id) return;
       try {
-        const url = await getServerUrl();
-        setServerUrl(url);
+        // Fetch the parent library view for breadcrumbs.
+        const fetchParentLibrary = async () => {
+          try {
+            const { user, serverUrl: srv } = await getAuthData();
+            const base = srv.replace(/\/+$/, "");
+            const resp = await fetch(
+              `${base}/Items/${id}/Ancestors?userId=${user.Id}`,
+              { headers: { Authorization: `MediaBrowser Token="${user.AccessToken}"` } },
+            );
+            if (!resp.ok) return null;
+            const ancestors = await resp.json();
+            return ancestors.find((a: any) => a.Type === "CollectionFolder") ?? null;
+          } catch {
+            return null;
+          }
+        };
 
-        const showData = await fetchMediaDetails(id);
-        const seasonsData = await fetchSeasons(id);
+        const [url, showData, seasonsData, pi, bi, li, simItems, library] =
+          await Promise.all([
+            getServerUrl(),
+            fetchMediaDetails(id),
+            fetchSeasons(id),
+            getImageUrl(id, "Primary"),
+            getImageUrl(id, "Backdrop"),
+            getImageUrl(id, "Logo"),
+            fetchSimilarItems(id, 12),
+            fetchParentLibrary(),
+          ]);
+
         if (!showData || !seasonsData) return;
 
+        setServerUrl(url);
         setShow(showData);
         setSeasons(seasonsData);
-
-        const pi = await getImageUrl(id, "Primary");
-        const bi = await getImageUrl(id, "Backdrop");
-        const li = await getImageUrl(id, "Logo");
-
         setPrimaryImage(pi);
         setBackdropImage(bi);
         setLogoImage(li);
-
-        const simItems = await fetchSimilarItems(id, 12);
         setSimilarItems(simItems);
 
-        // Find parent library via /Items/{id}/Ancestors
-        try {
-          const { user, serverUrl: srv } = await getAuthData();
-          const base = srv.replace(/\/+$/, "");
-          const resp = await fetch(
-            `${base}/Items/${id}/Ancestors?userId=${user.Id}`,
-            { headers: { Authorization: `MediaBrowser Token="${user.AccessToken}"` } },
-          );
-          if (resp.ok) {
-            const ancestors = await resp.json();
-            const library = ancestors.find(
-              (a: any) => a.Type === "CollectionFolder",
-            );
-            if (library?.Id) {
-              setLibraryId(library.Id);
-              setLibraryName(library.Name || "TV Shows");
-            }
-          }
-        } catch {}
+        if (library?.Id) {
+          setLibraryId(library.Id);
+          setLibraryName(library.Name || "TV Shows");
+        }
       } catch (err: any) {
         console.error(err);
         if (handleAuthError(err)) return;

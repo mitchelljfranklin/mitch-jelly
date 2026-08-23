@@ -8,7 +8,6 @@ import { useTrickplay } from "../../hooks/useTrickplay";
 import { useSkipSegments } from "../../hooks/useSkipSegments";
 import { VideoSplashLoader } from "./VideoSplashLoader";
 import { getNextEpisode, getPreviousEpisode } from "@/src/actions/media";
-import _ from "lodash";
 import { VideoOSDHeader } from "./osd/VideoOSDHeader";
 import { VideoOSDPlayButton } from "./osd/VideoOSDPlayButton";
 import { VideoOSDSkipButtons } from "./osd/VideoOSDSkipButtons";
@@ -79,8 +78,9 @@ export const VideoOSD: React.FC<VideoOSDProps> = ({ manager }) => {
   const [previousEpisodeData, setPreviousEpisodeData] =
     useState<BaseItemDto | null>(null);
 
-  const hasNextEpisode = !_.isEmpty(nextEpisodeData);
-  const hasPreviousEpisode = !_.isEmpty(previousEpisodeData);
+  const hasNextEpisode = !!nextEpisodeData && Object.keys(nextEpisodeData).length > 0;
+  const hasPreviousEpisode =
+    !!previousEpisodeData && Object.keys(previousEpisodeData).length > 0;
 
   useEffect(() => {
     const checkEpisodes = async () => {

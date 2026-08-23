@@ -37,44 +37,47 @@ export default function Movie() {
     async function fetchData() {
       if (!id) return;
       try {
-        const movieDetails = await fetchMediaDetails(id);
+        // Fetch the parent library view for breadcrumbs.
+        const fetchParentLibrary = async () => {
+          try {
+            const { user, serverUrl: srv } = await getAuthData();
+            const base = srv.replace(/\/+$/, "");
+            const resp = await fetch(
+              `${base}/Items/${id}/Ancestors?userId=${user.Id}`,
+              { headers: { Authorization: `MediaBrowser Token="${user.AccessToken}"` } },
+            );
+            if (!resp.ok) return null;
+            const ancestors = await resp.json();
+            return ancestors.find((a: any) => a.Type === "CollectionFolder") ?? null;
+          } catch {
+            return null;
+          }
+        };
+
+        const [movieDetails, pi, bi, li, simItems, server, library] =
+          await Promise.all([
+            fetchMediaDetails(id),
+            getImageUrl(id, "Primary"),
+            getImageUrl(id, "Backdrop"),
+            getImageUrl(id, "Logo"),
+            fetchSimilarItems(id, 12),
+            getServerUrl(),
+            fetchParentLibrary(),
+          ]);
+
         if (!movieDetails) return;
 
         setMovie(movieDetails);
-
-        const [pi, bi, li, simItems, server] = await Promise.all([
-          getImageUrl(id, "Primary"),
-          getImageUrl(id, "Backdrop"),
-          getImageUrl(id, "Logo"),
-          fetchSimilarItems(id, 12),
-          getServerUrl(),
-        ]);
-
         setPrimaryImage(pi);
         setBackdropImage(bi);
         setLogoImage(li);
         setSimilarItems(simItems);
         setServerUrl(server);
 
-        // Find parent library via /Items/{id}/Ancestors
-        try {
-          const { user, serverUrl: srv } = await getAuthData();
-          const base = srv.replace(/\/+$/, "");
-          const resp = await fetch(
-            `${base}/Items/${id}/Ancestors?userId=${user.Id}`,
-            { headers: { Authorization: `MediaBrowser Token="${user.AccessToken}"` } },
-          );
-          if (resp.ok) {
-            const ancestors = await resp.json();
-            const library = ancestors.find(
-              (a: any) => a.Type === "CollectionFolder",
-            );
-            if (library?.Id) {
-              setLibraryId(library.Id);
-              setLibraryName(library.Name || "Library");
-            }
-          }
-        } catch {}
+        if (library?.Id) {
+          setLibraryId(library.Id);
+          setLibraryName(library.Name || "Library");
+        }
       } catch (err: any) {
         console.error(err);
         if (handleAuthError(err)) return;

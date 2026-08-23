@@ -1,4 +1,4 @@
-import { usePlaybackContext } from "../playback/context/PlaybackContext";
+import { usePlaybackActionsContext } from "../playback/context/PlaybackActionsContext";
 import { fetchMediaDetails, getNextEpisodeForSeries } from "../actions";
 import { BaseItemDto } from "@jellyfin/sdk/lib/generated-client/models";
 
@@ -12,7 +12,9 @@ export interface PlayOptions {
 }
 
 export function usePlayback() {
-  const manager = usePlaybackContext();
+  // Subscribe ONLY to stable actions — never to volatile playbackState.
+  // This keeps card components from re-rendering on every timeupdate.
+  const manager = usePlaybackActionsContext();
 
   const play = async (options: PlayOptions) => {
     try {
