@@ -198,7 +198,12 @@ export function MediaActions({
         </div>
       );
     }
-    return null;
+    return (
+      <div className="mb-4 flex items-center rounded-lg border border-border/60 bg-background/50 px-4 py-3 text-sm text-muted-foreground">
+        This item has no playable sources. It may be missing from disk or not
+        yet scanned by the server.
+      </div>
+    );
   }
 
   if (!selectedVersion) {
