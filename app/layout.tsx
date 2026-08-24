@@ -21,8 +21,10 @@ const poppins = Poppins({
   weight: ["100", "200", "300", "400", "500", "600", "700", "800", "900"],
 });
 
+const APP_NAME = process.env.APP_NAME || "Mitch-Jelly";
+
 export const metadata: Metadata = {
-  title: "Mitch-Jelly",
+  title: APP_NAME,
   description: "A modern, streamlined Jellyfin client.",
 };
 
@@ -34,7 +36,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <Head>
-        <meta name="apple-mobile-web-app-title" content="Mitch-Jelly" />
+        <meta name="apple-mobile-web-app-title" content={APP_NAME} />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <link
           rel="apple-touch-icon"

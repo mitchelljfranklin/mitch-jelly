@@ -1,11 +1,10 @@
 "use client";
 import { useEffect } from "react";
-import { useAtomValue } from "jotai";
 import { usePathname } from "next/navigation";
-import { appNameAtom } from "@/src/lib/atoms";
+import { useAppName } from "@/src/hooks/use-app-name";
 
 export function AppTitle() {
-  const appName = useAtomValue(appNameAtom);
+  const { appName } = useAppName();
   const pathname = usePathname();
 
   useEffect(() => {

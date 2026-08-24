@@ -78,6 +78,9 @@ Mitch-Jelly is a clean, modern Jellyfin client designed for speed, simplicity, a
 # Jellyfin
 DEFAULT_SERVER_URL=your_jellyfin_server_url
 
+# Branding (optional)
+APP_NAME=Your App Name   # sets the app name globally for all users; Settings field becomes read-only
+
 # Seerr/Jellyseerr Integration (optional)
 # Set all required vars for your auth type to enable globally for all users.
 # When set, Settings shows a read-only view. When unset, users configure via Settings UI.
