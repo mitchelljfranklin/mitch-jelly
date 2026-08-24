@@ -132,7 +132,7 @@ docker build -t mitch-jelly .
 docker run -d -p 3000:3000 --name mitch-jelly --restart unless-stopped mitch-jelly
 ```
 
-Or with docker-compose:
+Or with docker-compose (all optional environment variables shown commented out — see [`docker-compose.yml`](docker-compose.yml)):
 
 ```yaml
 services:
@@ -141,9 +141,25 @@ services:
     ports:
       - "3000:3000"
     environment:
+      # Jellyfin server URL (optional) — pre-fills the login screen
       - DEFAULT_SERVER_URL=${DEFAULT_SERVER_URL}
+
+      # Branding (optional) — sets the app name globally for all users;
+      # the Settings > General field becomes read-only while set.
+      # - APP_NAME=Mitch-Jelly
+
+      # Seerr/Jellyseerr integration (optional) — set all vars for your chosen
+      # auth type to enable Discover + requests globally for all users.
+      # - SEERR_SERVER_URL=https://requests.yourdomain.com
+      # - SEERR_AUTH_TYPE=api-key            # api-key | jellyfin-user | local-user | jellyfin-session
+      # - SEERR_API_KEY=your-api-key         # required for SEERR_AUTH_TYPE=api-key
+      # - SEERR_USERNAME=your-username       # required for SEERR_AUTH_TYPE=jellyfin-user | local-user
+      # - SEERR_PASSWORD=your-password       # required for SEERR_AUTH_TYPE=jellyfin-user | local-user
+
     restart: unless-stopped
 ```
+
+Use `SEERR_AUTH_TYPE=jellyfin-session` with just `SEERR_SERVER_URL` for per-user request tracking — each user signs in once with their Jellyfin password and requests are tracked under their individual account.
 
 ### Desktop App (Electron)
 
