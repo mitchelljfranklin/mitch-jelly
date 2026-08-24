@@ -23,7 +23,7 @@
 - `app/` — Next.js App Router pages and API routes
   - `app/(main)/` — grouped route for all authenticated pages (dashboard, library, movie, series, etc.)
   - `app/login/` — standalone login page
-  - `app/api/config/` — `GET` returns `{ defaultServerUrl, seerrServerUrl, seerrAuthType }` from env
+  - `app/api/config/` — `GET` returns `{ defaultServerUrl, seerrServerUrl, seerrAuthType, appName }` from env
   - `app/api/seerr/[...slug]/` — server-side proxy for Seerr (Jellyseerr/Overseerr)
 - `src/actions/` — Server Actions for Jellyfin API calls (auth, media, search, utils)
   - `src/actions/store/` — cookie-based persistent storage via `next/headers` cookies
@@ -33,7 +33,7 @@
 - `src/playback/` — modular playback engine with `HTMLAudioPlayer`, `HTMLVideoPlayer`, context provider
   - `src/playback/components/PostPlayOverlay.tsx` — Netflix-style "Up Next" overlay (appears 45s before episode end)
 - `src/contexts/` — Auth, Settings, Seerr React contexts
-- `src/hooks/` — custom hooks (useAuth, usePlayback, useSkipSegments, etc.)
+- `src/hooks/` — custom hooks (`useAuth`, `usePlayback`, `useAppName`, `useSkipSegments`, etc.)
 - `src/lib/atoms.ts` — all Jotai atoms: home page cache, hero items, library cache, app name, theme selection
 - `src/lib/logger.ts` — dev-only logging utility (gates `console.log`/`console.warn` on `NODE_ENV === "development"`)
 - `scripts/copy-static.mjs` — copies `.next/static/` and `public/` into standalone for Electron packaging
@@ -109,7 +109,7 @@ Authentication uses `@jellyfin/sdk`. Credentials stored as cookies via `src/acti
 - No test suite or test scripts configured.
 - The `ignoreScripts` in package.json suppresses native build scripts for `sharp` and `unrs-resolver`.
 - `scripts/bump-version.mjs` bumps version via `bun run scripts/bump-version.mjs -- --level=patch|minor|major`.
-- The `app/(main)/` layout has a 60-second home page cache window that was extended to 5 minutes. Always include `handleAuthError` in try/catch for API calls in page `useEffect` blocks, but **do NOT add it to useEffect dependency arrays** — it would cause infinite re-render loops. The linter warns about this (~25 instances), which is intentional.
+- The `app/(main)/` home page caches data in localStorage with a 5-minute TTL (`homeLastVisitedTimeAtom`). Always include `handleAuthError` in try/catch for API calls in page `useEffect` blocks, but **do NOT add it to useEffect dependency arrays** — it would cause infinite re-render loops. The linter warns about this (~25 instances), which is intentional.
 - When using `OptimizedImage`, avoid `loading="lazy"` — it causes cancelled image loads during DOM reordering.
 
 ## Docker / CI

@@ -19,7 +19,7 @@ Mitch-Jelly is a clean, modern Jellyfin client designed for speed, simplicity, a
 - **Watch Status Tracking** — Mark items watched/unwatched from anywhere: cards, episode lists, hero carousel, and detail pages. Progress bars and "X left" episode counts on every card. Auto-mark played at >= 90% completion.
 - **Advanced Library Support** — Collections (Box Sets), Live TV, paginated loading with infinite scroll for large libraries. Three scan modes: Scan Files, Refresh Metadata, Replace All Metadata — available per-library and per-item (admin). Client-side watched/unwatched filtering with server-side sort.
 - **Smart Caching** — 5-minute localStorage cache for instant page loads on revisit. Home page, hero items, and library data cached with automatic background refresh. Cache versioned to auto-invalidate when fixes ship.
-- **Customizable Branding** — Admins can set a custom app name via Settings
+- **Customizable Branding** — Admins can set a custom app name via Settings, or globally for all users via the `APP_NAME` environment variable (locks the Settings field)
 - **Theming** — Multiple theme variations including "Cinematic Theatre Black", "Neon Grid", and more
 - **Redesigned Playback Engine** — Seamless streaming aligned with Jellyfin best practices
 - **Hero Media Bar** — Visually striking carousel showcasing highlighted content
@@ -50,7 +50,7 @@ Mitch-Jelly is a clean, modern Jellyfin client designed for speed, simplicity, a
 | **Hero carousel** | No | Full-height hero with Ken Burns effect, logo extraction |
 | **Mini player** | No | Picture-in-Picture while browsing |
 | **Seerr integration** | No | Built-in — discover, request, and manage media via Jellyseerr/Overseerr |
-| **Custom app name** | No | Admin-configurable branding (sidebar, browser tab, all UI text) |
+| **Custom app name** | No | Admin-configurable branding (sidebar, browser tab, all UI text), or global via `APP_NAME` env var |
 | **Splash screen** | No | Cinematic splash loader |
 | **Intro/Outro skipping** | Plugin | Built-in support with Intro Skipper plugin |
 | **Desktop app** | Separate apps (MPV Desktop, JMP) | Native Electron app — Windows, macOS, Linux |
