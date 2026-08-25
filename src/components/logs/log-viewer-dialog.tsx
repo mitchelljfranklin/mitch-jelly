@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { logger } from "@/src/lib/logger";
 import { useState, useEffect, useCallback } from "react";
 import { Download, Copy, Search, ChevronDown } from "lucide-react";
 import { Button } from "../../components/ui/button";
@@ -55,10 +56,10 @@ export function LogViewerDialog({
         setIsLoading(true);
         setIsInitialLoad(true);
       }
-      console.log("Loading log content for:", log.Name);
+      logger.log("Loading log content for:", log.Name);
       try {
         const content = await fetchLogContent(log.Name!);
-        console.log("Log content loaded:", content);
+        logger.log("Log content loaded:", content);
         setLogContent(content);
         if (isInitial) {
           setIsInitialLoad(false);
@@ -95,7 +96,7 @@ export function LogViewerDialog({
 
   // Handle loading content when dialog opens
   useEffect(() => {
-    console.log("Dialog open state changed via useEffect:", open);
+    logger.log("Dialog open state changed via useEffect:", open);
     if (open && !logContent) {
       loadLogContent(true); // Initial load
     }
@@ -162,7 +163,7 @@ export function LogViewerDialog({
   }, [isAutoScrolling, handleScroll]);
 
   const handleOpenChange = (newOpen: boolean) => {
-    console.log("Dialog open state changed via handleOpenChange:", newOpen);
+    logger.log("Dialog open state changed via handleOpenChange:", newOpen);
     if (setOpen) {
       setOpen(newOpen);
     }
@@ -189,12 +190,27 @@ export function LogViewerDialog({
     scrollToBottom();
   };
 
+  const escapeHtml = (str: string) =>
+    str
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#39;");
+
   const highlightSearchTerm = (text: string) => {
-    if (!searchTerm) return text;
+    if (!searchTerm) return escapeHtml(text);
 
     const escaped = searchTerm.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
     const regex = new RegExp(`(${escaped})`, "gi");
-    return text.replace(regex, (match) => `<mark class='bg-primary dark:bg-primary/50 text-white'>${match}</mark>`);
+    return text
+      .split(regex)
+      .map((part, i) =>
+        i % 2 === 1
+          ? `<mark class='bg-primary dark:bg-primary/50 text-white'>${escapeHtml(part)}</mark>`
+          : escapeHtml(part),
+      )
+      .join("");
   };
 
   const filteredContent = React.useMemo(() => {

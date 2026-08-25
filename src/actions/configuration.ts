@@ -59,7 +59,7 @@ export async function fetchMetadataConfiguration(): Promise<MetadataConfiguratio
 
     return data as unknown as MetadataConfiguration;
   } catch (error) {
-    console.log("Error fetching metadata configuration", error);
+    console.error("Error fetching metadata configuration", error);
     if (isAuthError(error)) {
       const authError = new Error(
         "Authentication expired. Please sign in again.",
@@ -90,7 +90,7 @@ export async function fetchXbmcMetadataConfiguration(): Promise<XbmcMetadataOpti
 
     return data as unknown as XbmcMetadataOptions;
   } catch (error) {
-    console.log("Error fetching xbmc metadata configuration", error);
+    console.error("Error fetching xbmc metadata configuration", error);
     if (isAuthError(error)) {
       const authError = new Error(
         "Authentication expired. Please sign in again.",
@@ -121,7 +121,7 @@ export async function fetchEncodingConfiguration(): Promise<EncodingOptions> {
 
     return data as unknown as EncodingOptions;
   } catch (error) {
-    console.log("Error fetching encoding configuration", error);
+    console.error("Error fetching encoding configuration", error);
     if (isAuthError(error)) {
       const authError = new Error(
         "Authentication expired. Please sign in again.",
@@ -152,7 +152,7 @@ export async function updateSystemConfiguration(
       serverConfiguration: configuration,
     });
   } catch (error) {
-    console.log("Error updating system configuration", error);
+    console.error("Error updating system configuration", error);
     if (isAuthError(error)) {
       const authError = new Error(
         "Authentication expired. Please sign in again.",
@@ -184,7 +184,7 @@ export async function updateMetadataConfiguration(
       body: metadataConfiguration,
     });
   } catch (error) {
-    console.log("Error updating metadata configuration", error);
+    console.error("Error updating metadata configuration", error);
     if (isAuthError(error)) {
       const authError = new Error(
         "Authentication expired. Please sign in again.",
@@ -216,7 +216,7 @@ export async function updateXbmcMetadataConfiguration(
       body: xbmcMetadataConfiguration,
     });
   } catch (error) {
-    console.log("Error updating xbmc metadata configuration", error);
+    console.error("Error updating xbmc metadata configuration", error);
     if (isAuthError(error)) {
       const authError = new Error(
         "Authentication expired. Please sign in again.",
@@ -248,7 +248,7 @@ export async function updateEncodingConfiguration(
       body: encodingOptions,
     });
   } catch (error) {
-    console.log("Error updating encoding configuration", error);
+    console.error("Error updating encoding configuration", error);
     if (isAuthError(error)) {
       const authError = new Error(
         "Authentication expired. Please sign in again.",

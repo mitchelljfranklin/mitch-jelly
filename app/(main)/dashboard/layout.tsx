@@ -1,7 +1,6 @@
 "use client";
 import { AuroraBackground } from "@/src/components/aurora-background";
 import { SearchBar } from "@/src/components/search-component";
-import _ from "lodash";
 import { useEffect, useMemo } from "react";
 import { LoaderPinwheel } from "lucide-react";
 import { Badge } from "@/src/components/ui/badge";
@@ -53,7 +52,10 @@ export default function DashboardLayout({
         </div>
         <div className="flex flex-row mb-10 items-center gap-4">
           <h2 className="text-3xl font-semibold text-foreground font-poppins">
-            {_.startCase(route)}
+            {route
+              .split("-")
+              .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+              .join(" ")}
           </h2>
           {isLoading && (
             <Badge

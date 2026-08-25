@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback, useEffect } from "react";
+import { useState, useRef, useCallback, useEffect, useMemo } from "react";
 import { toast } from "sonner";
 import {
   BaseItemDto,
@@ -88,7 +88,10 @@ export interface PlaybackContextValue {
   playPostPlayEpisode: () => void;
   dismissPostPlay: () => void;
   checkNearEnd: (time: number, duration: number) => void;
+  actions: PlaybackActions;
 }
+
+export type PlaybackActions = Omit<PlaybackContextValue, "playbackState" | "actions">;
 
 export function usePlaybackManager(): PlaybackContextValue {
   const playersRef = useRef<Record<string, Player>>({});
@@ -826,32 +829,70 @@ export function usePlaybackManager(): PlaybackContextValue {
     [playbackState.textTracks, updateState],
   );
 
+  // Stable action callbacks — identity changes only on rare state flips
+  // (e.g. muted, postPlayEpisode), NOT on timeupdate. Consumed via the
+  // separate PlaybackActionsContext so leaf components (cards etc.) never
+  // re-render at 4x/sec during playback.
+  const actions = useMemo(
+    () => ({
+      play,
+      pause,
+      unpause,
+      stop,
+      next,
+      previous,
+      seek,
+      setVolume,
+      setMute,
+      toggleMute,
+      toggleFavorite,
+      setPlaybackRate,
+      setAudioStreamIndex,
+      setSubtitleStreamIndex,
+      setSubtitleUrl,
+      setSubtitleOffset,
+      registerPlayer,
+      unregisterPlayer,
+      reportState: updateState,
+      setPreferredQuality,
+      toggleMiniPlayer,
+      setMiniPlayer,
+      playPostPlayEpisode,
+      dismissPostPlay,
+      checkNearEnd,
+    }),
+    [
+      play,
+      pause,
+      unpause,
+      stop,
+      next,
+      previous,
+      seek,
+      setVolume,
+      setMute,
+      toggleMute,
+      toggleFavorite,
+      setPlaybackRate,
+      setAudioStreamIndex,
+      setSubtitleStreamIndex,
+      setSubtitleUrl,
+      setSubtitleOffset,
+      registerPlayer,
+      unregisterPlayer,
+      updateState,
+      setPreferredQuality,
+      toggleMiniPlayer,
+      setMiniPlayer,
+      playPostPlayEpisode,
+      dismissPostPlay,
+      checkNearEnd,
+    ],
+  );
+
   return {
     playbackState,
-    play,
-    pause,
-    unpause,
-    stop,
-    next,
-    previous,
-    seek,
-    setVolume,
-    setMute,
-    toggleMute,
-    toggleFavorite,
-    setPlaybackRate,
-    setAudioStreamIndex,
-    setSubtitleStreamIndex,
-    setSubtitleUrl,
-    setSubtitleOffset,
-    registerPlayer,
-    unregisterPlayer,
-    reportState: updateState,
-    setPreferredQuality,
-    toggleMiniPlayer,
-    setMiniPlayer,
-    playPostPlayEpisode,
-    dismissPostPlay,
-    checkNearEnd,
+    ...actions,
+    actions,
   };
 }

@@ -1,5 +1,5 @@
 import { useCallback, useMemo } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence } from "motion/react";
 import { Check, Sparkles, ArrowLeft } from "lucide-react";
 import { useTheme } from "next-themes";
 import { useAtom } from "jotai";

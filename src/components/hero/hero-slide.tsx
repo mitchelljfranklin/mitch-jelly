@@ -44,7 +44,9 @@ export function HeroSlide({ item, serverUrl }: HeroSlideProps) {
       : null;
     return (
         backdropUrl ||
-        `${serverUrl}/Items/${item.Id}/Images/Primary?maxWidth=3840&quality=90`
+        `${serverUrl}/Items/${item.Id}/Images/Primary?maxWidth=3840&quality=90${
+          item.ImageTags?.Primary ? `&tag=${item.ImageTags.Primary}` : ""
+        }`
       );
   }, [item, backdropTag, serverUrl]);
 
@@ -98,7 +100,8 @@ export function HeroSlide({ item, serverUrl }: HeroSlideProps) {
   const progressPercentage =
     hasProgress && item.RunTimeTicks
       ? Math.min(
-          (item.UserData!.PlaybackPositionTicks! / item.RunTimeTicks) * 100,
+          ((item.UserData?.PlaybackPositionTicks ?? 0) / item.RunTimeTicks) *
+            100,
           100,
         )
       : 0;

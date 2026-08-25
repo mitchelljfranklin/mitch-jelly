@@ -128,6 +128,15 @@ export default function PersonPage() {
 
       {/* Content section */}
       <div className="relative z-10 mt-32 md:pl-8">
+        <div className="mb-4 flex justify-center md:justify-start">
+          <button
+            type="button"
+            onClick={() => router.back()}
+            className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors"
+          >
+            &larr; Back
+          </button>
+        </div>
         <div className="flex flex-col md:flex-row mx-auto">
           {/* Person photo */}
           <div className="w-full md:w-1/3 lg:w-1/4 shrink-0 justify-center flex md:block z-50">

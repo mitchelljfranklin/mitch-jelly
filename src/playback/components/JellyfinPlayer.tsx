@@ -255,7 +255,15 @@ export const JellyfinPlayer: React.FC<JellyfinPlayerProps> = ({
           episodeNumber={playbackState.postPlayEpisode.IndexNumber || undefined}
           episodeImageUrl={
             serverUrl && playbackState.postPlayEpisode.Id
-              ? `${serverUrl}/Items/${playbackState.postPlayEpisode.Id}/Images/Primary?width=400&height=225&quality=95`
+              ? `${
+                  serverUrl
+                }/Items/${
+                  playbackState.postPlayEpisode.Id
+                }/Images/Primary?width=400&height=225&quality=95${
+                  playbackState.postPlayEpisode.ImageTags?.Primary
+                    ? `&tag=${playbackState.postPlayEpisode.ImageTags.Primary}`
+                    : ""
+                }`
               : undefined
           }
           onPlayNow={manager.playPostPlayEpisode}

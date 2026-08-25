@@ -16,7 +16,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "./ui/select";
-import startCase from "lodash/startCase";
 
 type ScheduledTaskTriggersDialogProps = {
   task: TaskInfo | null;
@@ -200,7 +199,8 @@ export const ScheduledTaskTriggersDialog = ({
                   >
                     <div className="min-w-0">
                       <p className="text-sm font-semibold text-foreground">
-                        {startCase(trigger.Type || "") || "Unknown trigger"}
+                        {(trigger.Type || "")
+                          .replace(/([a-z])([A-Z])/g, "$1 $2") || "Unknown trigger"}
                       </p>
                       <p className="text-xs text-muted-foreground">
                         {formatTriggerSummary(trigger)}

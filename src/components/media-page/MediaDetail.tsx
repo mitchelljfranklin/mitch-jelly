@@ -12,7 +12,7 @@ import { TextAnimate } from "../magicui/text-animate";
 import { TextScramble } from "../motion-primitives/text-scramble";
 import { CastScrollArea } from "../cast-scrollarea";
 import { MediaSection } from "../media-section";
-import { motion } from "framer-motion";
+import { motion } from "motion/react";
 import { Search } from "lucide-react";
 
 interface MediaDetailContextType {

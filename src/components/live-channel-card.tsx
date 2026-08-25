@@ -29,7 +29,7 @@ export function LiveChannelCard({
 
   // Adjust image URL parameters based on container type
   const imageUrl = item.ImageTags?.["Primary"]
-    ? `${serverUrl}/Items/${imageItemId}/Images/Primary?maxHeight=256&maxWidth=256&quality=100`
+    ? `${serverUrl}/Items/${imageItemId}/Images/Primary?maxHeight=256&maxWidth=256&quality=100&tag=${item.ImageTags["Primary"]}`
     : null;
 
   // Get blur hash

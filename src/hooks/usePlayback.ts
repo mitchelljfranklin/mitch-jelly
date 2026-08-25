@@ -1,4 +1,5 @@
-import { usePlaybackContext } from "../playback/context/PlaybackContext";
+import { usePlaybackActionsContext } from "../playback/context/PlaybackActionsContext";
+import { logger } from "@/src/lib/logger";
 import { fetchMediaDetails, getNextEpisodeForSeries } from "../actions";
 import { BaseItemDto } from "@jellyfin/sdk/lib/generated-client/models";
 
@@ -12,7 +13,9 @@ export interface PlayOptions {
 }
 
 export function usePlayback() {
-  const manager = usePlaybackContext();
+  // Subscribe ONLY to stable actions — never to volatile playbackState.
+  // This keeps card components from re-rendering on every timeupdate.
+  const manager = usePlaybackActionsContext();
 
   const play = async (options: PlayOptions) => {
     try {
@@ -23,7 +26,7 @@ export function usePlayback() {
       let resumePosition = options.resumePositionTicks;
 
       if (targetType === "Series") {
-        console.log("Fetching next episode for series...");
+        logger.log("Fetching next episode for series...");
         const nextEpisode = await getNextEpisodeForSeries(targetId);
         if (nextEpisode) {
           targetId = nextEpisode.Id!;
@@ -38,7 +41,7 @@ export function usePlayback() {
 
       // If no version provided, fetch item details to get media sources
       if (!selectedVersion) {
-        console.log("No version selected, fetching item details...");
+        logger.log("No version selected, fetching item details...");
         const itemDetails = await fetchMediaDetails(targetId);
         if (
           itemDetails &&
@@ -46,7 +49,7 @@ export function usePlayback() {
           itemDetails.MediaSources.length > 0
         ) {
           selectedVersion = itemDetails.MediaSources[0]; // Default to first source
-          console.log("Selected default version:", selectedVersion.Name);
+          logger.log("Selected default version:", selectedVersion.Name);
         } else {
           throw new Error("No media sources found for item.");
         }

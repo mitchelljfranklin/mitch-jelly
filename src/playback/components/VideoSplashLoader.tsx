@@ -6,7 +6,7 @@ import {
 import { getImageUrl } from "../../actions";
 import { Loader2, ArrowLeft } from "lucide-react";
 import { Badge } from "../../components/ui/badge";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, motion } from "motion/react";
 import { TextScramble } from "../../components/motion-primitives/text-scramble";
 import { Button } from "../../components/ui/button";
 

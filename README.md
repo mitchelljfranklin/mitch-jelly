@@ -25,7 +25,7 @@ Mitch-Jelly is a clean, modern Jellyfin client designed for speed, simplicity, a
 - **Hero Media Bar** — Visually striking carousel showcasing highlighted content
 - **Smart Episodic Features** — Intro and Outro skipping for effortless binge-watching (requires the Intro Skipper plugin)
 - **Mini Player** — Keep watching while browsing with Picture-in-Picture mode
-- **Seerr Integration** — Built-in support for Jellyseerr/Overseerr for content discovery and requests. Admin-gated configuration with per-user authentication so requests track under each user's account.
+- **Seerr Integration** — Built-in support for Jellyseerr/Overseerr for content discovery and requests. Configure once globally via environment variables for all users, or per-device via Settings; optional per-user mode tracks requests under each user's own account.
 - **Smart Episode Continuation** — Netflix-style "Up Next" overlay appears 45s before episode ends with auto-play countdown
 - **Metadata Management** — Refresh or replace metadata per-item (movie, episode, season, series) directly from detail pages (admin)
 - **Navigation & Breadcrumbs** — Clickable breadcrumb trail on all media detail pages (Library > Show > Season > Episode). Floating back-to-top button on library pages.
@@ -56,7 +56,7 @@ Mitch-Jelly is a clean, modern Jellyfin client designed for speed, simplicity, a
 | **Desktop app** | Separate apps (MPV Desktop, JMP) | Native Electron app — Windows, macOS, Linux |
 | **Next episode prompt** | No | "Up Next" overlay 45s before end, countdown, auto-play |
 | **Per-item metadata refresh** | No | Refresh/Replace metadata on any media item detail page |
-| **Breadcrumbs** | No | Clickable path on movie, series, season, and episode pages |
+| **Breadcrumbs** | No | Clickable path on all media detail pages (movie, series, season, episode, boxset, person) |
 | **Session persistence** | Session only | 10-year auth cookies — no re-login on browser restart |
 | **Docker** | Official image | GHCR image, manual `latest` or versioned release builds |
 | **License** | GPL v2 | AGPL v3 |
@@ -64,7 +64,7 @@ Mitch-Jelly is a clean, modern Jellyfin client designed for speed, simplicity, a
 ## Built With
 
 - **Frontend**: Next.js 16, React 19, TypeScript ~5.9
-- **Styling**: Tailwind v4, shadcn/ui, Framer Motion
+- **Styling**: Tailwind v4, shadcn/ui, Motion (framer-motion successor)
 - **State Management**: Jotai
 - **Package Manager**: Bun
 - **Desktop**: Electron

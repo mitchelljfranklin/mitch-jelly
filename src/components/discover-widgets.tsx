@@ -7,6 +7,8 @@ import { useSeerrDashboard } from "@/src/hooks/use-seerr-dashboard";
 import { SeerrSectionSkeleton } from "@/src/components/seerr-section-skeleton";
 import { SeerrLoginPrompt } from "@/src/components/seerr-login-prompt";
 import { useAuth } from "@/src/hooks/useAuth";
+import { Button } from "@/src/components/ui/button";
+import { RefreshCw, ServerCrash } from "lucide-react";
 
 export function DiscoverWidgets() {
   const {
@@ -22,7 +24,9 @@ export function DiscoverWidgets() {
     trending,
     popularMovies,
     popularTv,
+    error: dashboardError,
     loading: dashboardLoading,
+    refreshCallback,
   } = useSeerrDashboard();
 
   const handleLoginSuccess = () => {
@@ -49,6 +53,31 @@ export function DiscoverWidgets() {
           serverUrl={serverUrl}
           onSuccess={handleLoginSuccess}
         />
+      </div>
+    );
+  }
+
+  const hasContent =
+    recentlyAdded.length > 0 ||
+    recentRequests.length > 0 ||
+    trending.length > 0 ||
+    popularMovies.length > 0 ||
+    popularTv.length > 0;
+
+  if (!hasContent && dashboardError) {
+    return (
+      <div className="flex flex-col items-center justify-center pt-20 text-center">
+        <ServerCrash className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+        <p className="text-lg font-semibold text-foreground mb-1">
+          Couldn&apos;t load Discover content
+        </p>
+        <p className="text-sm text-muted-foreground mb-6 max-w-md">
+          {dashboardError} Check your Seerr connection in Settings and try again.
+        </p>
+        <Button variant="outline" onClick={() => refreshCallback()}>
+          <RefreshCw className="h-4 w-4 mr-2" />
+          Retry
+        </Button>
       </div>
     );
   }
