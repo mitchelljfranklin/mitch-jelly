@@ -19,7 +19,7 @@ Mitch-Jelly is a clean, modern Jellyfin client designed for speed, simplicity, a
 - **Watch Status Tracking** — Mark items watched/unwatched from anywhere: cards, episode lists, hero carousel, and detail pages. Progress bars and "X left" episode counts on every card. Auto-mark played at >= 90% completion.
 - **Advanced Library Support** — Collections (Box Sets), Live TV, paginated loading with infinite scroll for large libraries. Three scan modes: Scan Files, Refresh Metadata, Replace All Metadata — available per-library and per-item (admin). Client-side watched/unwatched filtering with server-side sort.
 - **Smart Caching** — 5-minute localStorage cache for instant page loads on revisit. Home page, hero items, and library data cached with automatic background refresh. Cache versioned to auto-invalidate when fixes ship.
-- **Customizable Branding** — Admins can set a custom app name via Settings
+- **Customizable Branding** — Admins can set a custom app name via Settings, or globally for all users via the `APP_NAME` environment variable (locks the Settings field)
 - **Theming** — Multiple theme variations including "Cinematic Theatre Black", "Neon Grid", and more
 - **Redesigned Playback Engine** — Seamless streaming aligned with Jellyfin best practices
 - **Hero Media Bar** — Visually striking carousel showcasing highlighted content
@@ -50,7 +50,7 @@ Mitch-Jelly is a clean, modern Jellyfin client designed for speed, simplicity, a
 | **Hero carousel** | No | Full-height hero with Ken Burns effect, logo extraction |
 | **Mini player** | No | Picture-in-Picture while browsing |
 | **Seerr integration** | No | Built-in — discover, request, and manage media via Jellyseerr/Overseerr |
-| **Custom app name** | No | Admin-configurable branding (sidebar, browser tab, all UI text) |
+| **Custom app name** | No | Admin-configurable branding (sidebar, browser tab, all UI text), or global via `APP_NAME` env var |
 | **Splash screen** | No | Cinematic splash loader |
 | **Intro/Outro skipping** | Plugin | Built-in support with Intro Skipper plugin |
 | **Desktop app** | Separate apps (MPV Desktop, JMP) | Native Electron app — Windows, macOS, Linux |
@@ -77,6 +77,9 @@ Mitch-Jelly is a clean, modern Jellyfin client designed for speed, simplicity, a
 ```env
 # Jellyfin
 DEFAULT_SERVER_URL=your_jellyfin_server_url
+
+# Branding (optional)
+APP_NAME=Your App Name   # sets the app name globally for all users; Settings field becomes read-only
 
 # Seerr/Jellyseerr Integration (optional)
 # Set all required vars for your auth type to enable globally for all users.
@@ -129,7 +132,7 @@ docker build -t mitch-jelly .
 docker run -d -p 3000:3000 --name mitch-jelly --restart unless-stopped mitch-jelly
 ```
 
-Or with docker-compose:
+Or with docker-compose (all optional environment variables shown commented out — see [`docker-compose.yml`](docker-compose.yml)):
 
 ```yaml
 services:
@@ -138,9 +141,25 @@ services:
     ports:
       - "3000:3000"
     environment:
+      # Jellyfin server URL (optional) — pre-fills the login screen
       - DEFAULT_SERVER_URL=${DEFAULT_SERVER_URL}
+
+      # Branding (optional) — sets the app name globally for all users;
+      # the Settings > General field becomes read-only while set.
+      # - APP_NAME=Mitch-Jelly
+
+      # Seerr/Jellyseerr integration (optional) — set all vars for your chosen
+      # auth type to enable Discover + requests globally for all users.
+      # - SEERR_SERVER_URL=https://requests.yourdomain.com
+      # - SEERR_AUTH_TYPE=api-key            # api-key | jellyfin-user | local-user | jellyfin-session
+      # - SEERR_API_KEY=your-api-key         # required for SEERR_AUTH_TYPE=api-key
+      # - SEERR_USERNAME=your-username       # required for SEERR_AUTH_TYPE=jellyfin-user | local-user
+      # - SEERR_PASSWORD=your-password       # required for SEERR_AUTH_TYPE=jellyfin-user | local-user
+
     restart: unless-stopped
 ```
+
+Use `SEERR_AUTH_TYPE=jellyfin-session` with just `SEERR_SERVER_URL` for per-user request tracking — each user signs in once with their Jellyfin password and requests are tracked under their individual account.
 
 ### Desktop App (Electron)
 

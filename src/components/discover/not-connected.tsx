@@ -3,11 +3,10 @@ import { Button } from "../ui/button";
 import { Settings2, Globe, Server } from "lucide-react";
 import { motion } from "motion/react";
 import Link from "next/link";
-import { useAtomValue } from "jotai";
-import { appNameAtom } from "../../lib/atoms";
+import { useAppName } from "../../hooks/use-app-name";
 
 export function NotConnected() {
-  const appName = useAtomValue(appNameAtom);
+  const { appName } = useAppName();
   return (
     <div className="flex flex-col items-center justify-center pt-20">
       <motion.div

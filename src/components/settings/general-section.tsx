@@ -18,11 +18,13 @@ import { Pencil, ChevronDown } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useAtom } from "jotai";
 import { appNameAtom } from "@/src/lib/atoms";
+import { useAppName } from "@/src/hooks/use-app-name";
 import { getUser } from "@/src/actions";
 
 export default function GeneralSection() {
   const [generalOpen, setGeneralOpen] = useState(false);
-  const [appName, setAppName] = useAtom(appNameAtom);
+  const [, setAppName] = useAtom(appNameAtom);
+  const { appName, locked } = useAppName();
   const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
@@ -69,10 +71,20 @@ export default function GeneralSection() {
                 value={appName}
                 onChange={(e) => setAppName(e.target.value)}
                 placeholder="Mitch-Jelly"
+                disabled={locked}
+                className={locked ? "opacity-70 cursor-not-allowed" : ""}
               />
-              <p className="text-xs text-muted-foreground">
-                This name appears in the sidebar, browser tab, and throughout the interface.
-              </p>
+              {locked ? (
+                <p className="text-xs text-muted-foreground">
+                  Configured via the <code className="font-mono">APP_NAME</code>{" "}
+                  environment variable. To change it, update the variable and
+                  restart the server.
+                </p>
+              ) : (
+                <p className="text-xs text-muted-foreground">
+                  This name appears in the sidebar, browser tab, and throughout the interface.
+                </p>
+              )}
             </div>
           </CardContent>
         </CollapsibleContent>

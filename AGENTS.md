@@ -34,7 +34,7 @@
   - `src/playback/components/PostPlayOverlay.tsx` — Netflix-style "Up Next" overlay (appears 45s before episode end)
   - **Two playback contexts:** volatile `PlaybackContext` (full state incl. currentTime — re-renders ~4×/sec during playback) and stable `PlaybackActionsContext` (memoized callbacks only). Leaf components (cards, buttons) MUST use `usePlayback()` from `src/hooks/usePlayback.ts` (actions-backed); never subscribe leaves to the full context.
 - `src/contexts/` — Auth, Settings, Seerr React contexts
-- `src/hooks/` — custom hooks (useAuth, usePlayback, useSkipSegments, etc.)
+- `src/hooks/` — custom hooks (`useAuth`, `usePlayback`, `useAppName`, `useSkipSegments`, etc.)
 - `src/lib/atoms.ts` — all Jotai atoms: home page cache, hero items, library cache, app name, theme selection
 - `src/lib/logger.ts` — dev-only logging utility (gates `console.log`/`console.warn` on `NODE_ENV === "development"`)
 - `scripts/copy-static.mjs` — copies `.next/static/` and `public/` into standalone for Electron packaging
@@ -51,8 +51,10 @@ Authentication uses `@jellyfin/sdk`. Credentials stored as cookies via `src/acti
 ## Branding
 
 - The app is **Mitch-Jelly**. All Aperture/Apertúre references replaced.
-- Admins can customize the name via **Settings → General** (uses `appNameAtom` in `atoms.ts`, an `atomWithStorage`).
-- The atom feeds the sidebar brand text, browser tab title (via `useEffect` in `app-sidebar.tsx`), splash loader, and in-app text.
+- App name precedence: **`APP_NAME` env var** (global, locks the Settings field read-only) → `appNameAtom` in `atoms.ts` (per-browser, admin-editable via **Settings → General**) → default `"Mitch-Jelly"`.
+- Consumers must use `useAppName()` from `src/hooks/use-app-name.ts` (resolves env > atom); do NOT read `appNameAtom` directly. The hook caches `/api/config` app-wide (single request).
+- Static SSR metadata (`app/layout.tsx` title + apple-web-app-title) reads `process.env.APP_NAME` at server render.
+- The atom feeds the sidebar brand text, browser tab title (via `app-title.tsx`), splash loader, and in-app text.
 - Jellyfin SDK identifiers (`CLIENT_NAME`, `DEVICE_NAME` in `auth.ts` and `utils.ts`) are static `"Mitch-Jelly"` — not user-configurable.
 - All localStorage keys use `mitch-jelly-` prefix (was `aperture-`).
 

@@ -1,7 +1,6 @@
 "use client";
 import { ChevronDown, ImagePlus, QrCode, Settings2, Lock } from "lucide-react";
-import { useAtomValue } from "jotai";
-import { appNameAtom } from "../../lib/atoms";
+import { useAppName } from "../../hooks/use-app-name";
 import {
   Card,
   CardContent,
@@ -54,7 +53,7 @@ export default function ProfileSection() {
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [user, setUser] = useState<JellyfinUserWithToken | null>(null);
   const router = useRouter();
-  const appName = useAtomValue(appNameAtom);
+  const { appName } = useAppName();
 
   const updateAvatarPreview = useCallback((next: string | null) => {
     setAvatarPreview((previous) => {

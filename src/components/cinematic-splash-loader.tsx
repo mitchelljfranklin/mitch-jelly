@@ -1,8 +1,7 @@
 "use client";
 import React from "react";
 import { Loader2 } from "lucide-react";
-import { useAtomValue } from "jotai";
-import { appNameAtom } from "../lib/atoms";
+import { useAppName } from "../hooks/use-app-name";
 import { cn } from "../lib/utils";
 
 interface CinematicSplashLoaderProps {
@@ -22,7 +21,7 @@ export const CinematicSplashLoader: React.FC<CinematicSplashLoaderProps> = ({
 
   className,
 }) => {
-  const appName = useAtomValue(appNameAtom);
+  const { appName } = useAppName();
   const displayTitle = title ?? appName;
   return (
     <div

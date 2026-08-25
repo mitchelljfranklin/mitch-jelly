@@ -1,7 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
-import { useAtom } from "jotai";
-import { appNameAtom } from "../lib/atoms";
+import { useAppName } from "../hooks/use-app-name";
 import dashboardLinksConfig from "../config/sidebar/dashboard-links.json";
 import {
   Sidebar,
@@ -79,7 +78,7 @@ export function AppSidebar() {
   const [isLoading, setIsLoading] = useState(true);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const isAdmin = Boolean(user?.Policy?.IsAdministrator);
-  const [appName] = useAtom(appNameAtom);
+  const { appName } = useAppName();
 
   useEffect(() => {
     const fetchData = async () => {
