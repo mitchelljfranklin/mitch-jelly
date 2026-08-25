@@ -1,4 +1,5 @@
 import { UserLibraryApi } from "@jellyfin/sdk/lib/generated-client/api/user-library-api";
+import { logger } from "@/src/lib/logger";
 import { LibraryApi } from "@jellyfin/sdk/lib/generated-client/api/library-api";
 import { getUserViewsApi } from "@jellyfin/sdk/lib/utils/api/user-views-api";
 import { getUserApi } from "@jellyfin/sdk/lib/utils/api/user-api";
@@ -686,12 +687,12 @@ export async function reorderBackdropImage(
   newIndex: number,
 ): Promise<void> {
   const { serverUrl, user } = await getAuthData();
-  console.log(
+  logger.log(
     `Reordering backdrop image for item ${itemId} from index ${currentIndex} to ${newIndex}`,
   );
 
   const url = `${serverUrl}/Items/${itemId}/Images/Backdrop/${currentIndex}/Index?newIndex=${newIndex}`;
-  console.log(`Reorder URL: ${url}`);
+  logger.log(`Reorder URL: ${url}`);
 
   const response = await fetch(url, {
     method: "POST",
@@ -700,7 +701,7 @@ export async function reorderBackdropImage(
     },
   });
 
-  console.log(`Reorder response status: ${response.status}`);
+  logger.log(`Reorder response status: ${response.status}`);
 
   if (!response.ok) {
     throw new Error(`Failed to reorder backdrop image: ${response.statusText}`);

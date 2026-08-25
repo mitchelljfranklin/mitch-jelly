@@ -5,6 +5,7 @@ import {
   fetchSimilarItems,
   getServerUrl,
   fetchMovieByCollection,
+  getAuthData,
 } from "@/src/actions";
 import { MediaActions } from "@/src/components/media-actions";
 import { Star, Play } from "lucide-react";
@@ -28,6 +29,8 @@ export default function BoxSet() {
   const [boxset, setBoxset] = useState<BaseItemDto | null>(null);
   const [collectionMovies, setCollectionMovies] = useState<BaseItemDto[]>([]);
   const [similarItems, setSimilarItems] = useState<any[]>([]);
+  const [libraryId, setLibraryId] = useState<string>("");
+  const [libraryName, setLibraryName] = useState<string>("Collections");
   const [serverUrl, setServerUrl] = useState<string | null>(null);
   const [primaryImage, setPrimaryImage] = useState<string>("");
   const [backdropImage, setBackdropImage] = useState<string>("");
@@ -52,29 +55,51 @@ export default function BoxSet() {
     async function fetchData() {
       try {
         if (!id?.trim()) return;
-        const boxsetData = await fetchMediaDetails(id);
-        const collectionData = await fetchMovieByCollection(id);
 
-        if (!boxsetData || !collectionData) return;
+        // Fetch the parent library view for breadcrumbs.
+        const fetchParentLibrary = async () => {
+          try {
+            const { user, serverUrl: srv } = await getAuthData();
+            const base = srv.replace(/\/+$/, "");
+            const resp = await fetch(
+              `${base}/Items/${id}/Ancestors?userId=${user.Id}`,
+              { headers: { Authorization: `MediaBrowser Token="${user.AccessToken}"` } },
+            );
+            if (!resp.ok) return null;
+            const ancestors = await resp.json();
+            return ancestors.find((a: any) => a.Type === "CollectionFolder") ?? null;
+          } catch {
+            return null;
+          }
+        };
 
-        const [primaryImg, backdropImg, logoImg, similar, srvUrl] =
+        const [boxsetData, collectionData, primaryImg, backdropImg, logoImg, similar, srvUrl, library] =
           await Promise.all([
+            fetchMediaDetails(id),
+            fetchMovieByCollection(id),
             getImageUrl(id, "Primary"),
             getImageUrl(id, "Backdrop"),
-            boxsetData.ImageTags?.Logo
-              ? getImageUrl(id, "Logo")
-              : Promise.resolve(""),
+            getImageUrl(id, "Logo"),
             fetchSimilarItems(id, 12),
             getServerUrl(),
+            fetchParentLibrary(),
           ]);
+
+        if (!boxsetData || !collectionData) return;
 
         setBoxset(boxsetData);
         setCollectionMovies(collectionData);
         setPrimaryImage(primaryImg);
         setBackdropImage(backdropImg);
-        setLogoImage(logoImg);
+        // Only use the logo if the item actually has one
+        setLogoImage(boxsetData.ImageTags?.Logo ? logoImg : "");
         setSimilarItems(similar);
         setServerUrl(srvUrl);
+
+        if (library?.Id) {
+          setLibraryId(library.Id);
+          setLibraryName(library.Name || "Collections");
+        }
       } catch (err: any) {
         console.error("Failed to load box set:", err);
 
@@ -147,6 +172,12 @@ export default function BoxSet() {
         <MediaDetail.Poster />
         <MediaDetail.Content>
           <MediaDetail.Info>
+            <Link
+              href={libraryId ? `/library/${libraryId}` : "/"}
+              className="text-sm text-muted-foreground hover:text-foreground transition-colors md:pl-8 mb-2 inline-block"
+            >
+              &larr; {libraryName}
+            </Link>
             <div className="flex flex-col">
               <h1 className="text-4xl md:text-5xl font-semibold font-poppins text-foreground md:pl-8 drop-shadow-xl mb-4">
                 {boxset.Name}

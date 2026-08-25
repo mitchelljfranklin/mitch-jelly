@@ -45,7 +45,9 @@ export function SearchSuggestionItem({
     ? item.ImageTags?.Primary
       ? `https://image.tmdb.org/t/p/w200${item.ImageTags.Primary}`
       : undefined
-    : `${serverUrl}/Items/${item.Id}/Images/Primary`;
+    : `${serverUrl}/Items/${item.Id}/Images/Primary${
+        item.ImageTags?.Primary ? `?tag=${item.ImageTags.Primary}` : ""
+      }`;
 
   // Get blur hash
   const imageTag = item.ImageTags?.Primary;

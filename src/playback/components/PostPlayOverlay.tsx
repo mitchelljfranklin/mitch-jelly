@@ -26,7 +26,10 @@ export function PostPlayOverlay({
 }: PostPlayOverlayProps) {
   const [countdown, setCountdown] = useState(COUNTDOWN_SECONDS);
   const onPlayNowRef = useRef(onPlayNow);
-  onPlayNowRef.current = onPlayNow;
+
+  useEffect(() => {
+    onPlayNowRef.current = onPlayNow;
+  }, [onPlayNow]);
 
   useEffect(() => {
     if (countdown <= 0) {

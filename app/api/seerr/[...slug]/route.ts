@@ -1,9 +1,70 @@
 import { NextRequest, NextResponse } from "next/server";
+import { lookup } from "node:dns/promises";
 import { SeerrMediaItem } from "@/src/types/seerr-types";
 
 // Shared map to track pending logins per user/server
 // Note: In serverless environments, this map might be reset frequently.
 const loginPromises = new Map<string, Promise<string | null>>();
+
+// --- SSRF protection helpers ---
+function isPrivateIPv4(ip: string): boolean {
+  const parts = ip.split(".").map(Number);
+  if (parts.length !== 4 || parts.some((p) => Number.isNaN(p) || p < 0 || p > 255)) {
+    return true; // malformed → treat as unsafe
+  }
+  const [a, b] = parts;
+  if (a === 0 || a === 10 || a === 127) return true;
+  if (a === 169 && b === 254) return true;
+  if (a === 172 && b >= 16 && b <= 31) return true;
+  if (a === 192 && b === 168) return true;
+  return false;
+}
+
+function isPrivateIPv6(ip: string): boolean {
+  const v = ip.toLowerCase().replace(/^\[|\]$/g, "");
+  return (
+    v === "::" ||
+    v === "::1" ||
+    v.startsWith("fe80") ||
+    v.startsWith("fc") ||
+    v.startsWith("fd")
+  );
+}
+
+async function isBlockedHost(hostname: string): Promise<boolean> {
+  const h = hostname.toLowerCase();
+  if (h === "localhost" || h.endsWith(".localhost") || h === "metadata") {
+    return true;
+  }
+  // Literal IPs (no DNS needed)
+  if (/^\d{1,3}(\.\d{1,3}){3}$/.test(h)) return isPrivateIPv4(h);
+  if (h.includes(":")) {
+    if (!h.includes(".")) return isPrivateIPv6(h);
+  }
+  // Hostname — resolve and check every result
+  try {
+    const results = await lookup(h, { all: true, verbatim: true });
+    return results.some(
+      (r) => isPrivateIPv4(r.address) || isPrivateIPv6(r.address),
+    );
+  } catch {
+    return true; // unresolvable → fail closed
+  }
+}
+
+// --- Auth gate: only authenticated Jellyfin sessions may use the proxy ---
+function hasJellyfinSession(req: NextRequest): boolean {
+  const raw = req.cookies.get("jellyfin-auth")?.value;
+  if (!raw) return false;
+  try {
+    const parsed = JSON.parse(raw);
+    const token =
+      parsed?.user?.AccessToken ?? parsed?.user?.User?.AccessToken ?? null;
+    return typeof token === "string" && token.length > 0;
+  } catch {
+    return false;
+  }
+}
 
 async function seerrFetch<T>(
   req: NextRequest,
@@ -25,13 +86,13 @@ async function seerrFetch<T>(
     baseUrl = `https://${baseUrl}`;
   }
 
-  // Validate URL to prevent SSRF — reject private/internal IPs and localhost
+  // Validate URL to prevent SSRF — reject private/internal hosts (incl. DNS-resolved)
   try {
     const parsed = new URL(baseUrl);
-    if (parsed.hostname === "localhost" || parsed.hostname === "127.0.0.1" || parsed.hostname === "[::1]") {
+    if (!(parsed.protocol === "https:" || parsed.protocol === "http:")) {
       return { success: false, message: "Invalid server URL" };
     }
-    if (parsed.hostname.startsWith("169.254.") || parsed.hostname.startsWith("0.") || parsed.hostname.startsWith("10.") || parsed.hostname.startsWith("172.16.") || parsed.hostname.startsWith("192.168.")) {
+    if (await isBlockedHost(parsed.hostname)) {
       return { success: false, message: "Invalid server URL" };
     }
   } catch {
@@ -188,6 +249,9 @@ export async function GET(
   req: NextRequest,
   props: { params: Promise<{ slug: string[] }> },
 ) {
+  if (!hasJellyfinSession(req)) {
+    return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+  }
   const params = await props.params;
   const slug = params.slug;
   const path = slug.join("/");
@@ -460,6 +524,9 @@ export async function POST(
   req: NextRequest,
   props: { params: Promise<{ slug: string[] }> },
 ) {
+  if (!hasJellyfinSession(req)) {
+    return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+  }
   const params = await props.params;
   const slug = params.slug;
   const path = slug.join("/");
@@ -563,6 +630,9 @@ export async function DELETE(
   req: NextRequest,
   props: { params: Promise<{ slug: string[] }> },
 ) {
+  if (!hasJellyfinSession(req)) {
+    return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+  }
   const params = await props.params;
   const slug = params.slug;
 

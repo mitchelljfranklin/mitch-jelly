@@ -11,12 +11,14 @@ import {
   TabsTrigger,
   TabsContent,
 } from "@/src/components/ui/tabs";
-import { SearchIcon, Film, Tv, PlayCircle, User } from "lucide-react";
+import { SearchIcon, Film, Tv, PlayCircle, User, RefreshCw } from "lucide-react";
 import { Suspense, useEffect, useState } from "react";
 import { BaseItemDto } from "@jellyfin/sdk/lib/generated-client/models";
 import { useRouter, useSearchParams } from "next/navigation";
 import { CinematicSplashLoader } from "@/src/components/cinematic-splash-loader";
 import { useAuthError } from "@/src/hooks/use-auth-error";
+import LoadingSpinner from "@/src/components/loading-spinner";
+import { Button } from "@/src/components/ui/button";
 
 export default function Page() {
   return (
@@ -37,11 +39,15 @@ function Search() {
   const [series, setSeries] = useState<BaseItemDto[]>([]);
   const [episodes, setEpisodes] = useState<BaseItemDto[]>([]);
   const [people, setPeople] = useState<BaseItemDto[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const { handleAuthError } = useAuthError();
 
   useEffect(() => {
     async function fetchData() {
       if (!query.trim()) return;
+      setIsLoading(true);
+      setError(null);
       try {
         const url = await getServerUrl();
         setServerUrl(url);
@@ -55,7 +61,10 @@ function Search() {
         setPeople(results.filter((item) => item.Type === "Person"));
       } catch (err: any) {
         console.error(err);
+        setError(err?.message || "Something went wrong while searching.");
         if (handleAuthError(err)) return;
+      } finally {
+        setIsLoading(false);
       }
     }
 
@@ -107,14 +116,28 @@ function Search() {
         <h2 className="text-3xl font-semibold text-foreground mb-2 font-poppins">
           &quot;{query}&quot;
         </h2>
-        <p className="text-muted-foreground mb-6 inline-flex items-center">
-          <SearchIcon className="h-4 w-4 mr-2" />
-          Found {searchResults.length} results for &quot;{query}&quot;
-        </p>
+        {!isLoading && !error && (
+          <p className="text-muted-foreground mb-6 inline-flex items-center">
+            <SearchIcon className="h-4 w-4 mr-2" />
+            Found {searchResults.length} results for &quot;{query}&quot;
+          </p>
+        )}
       </div>
 
       <section className="relative z-10 mb-12">
-        {searchResults.length > 0 ? (
+        {isLoading ? (
+          <LoadingSpinner />
+        ) : error ? (
+          <div className="text-center p-8">
+            <SearchIcon className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+            <p className="text-destructive mb-1">Search failed</p>
+            <p className="text-muted-foreground mb-4">{error}</p>
+            <Button variant="outline" onClick={() => router.refresh()}>
+              <RefreshCw className="h-4 w-4 mr-2" />
+              Try again
+            </Button>
+          </div>
+        ) : searchResults.length > 0 ? (
           <Tabs defaultValue="all" className="w-full">
             <TabsList className="mb-6">
               <TabsTrigger value="all" className="flex items-center gap-2">

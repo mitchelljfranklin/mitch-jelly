@@ -1,7 +1,6 @@
 "use client";
 import { useState, SyntheticEvent, ImgHTMLAttributes, useEffect } from "react";
 import { cn } from "../lib/utils";
-import _ from "lodash";
 
 interface OptimizedImageProps extends ImgHTMLAttributes<HTMLImageElement> {
   fallbackSrc?: string;
@@ -61,7 +60,7 @@ export function OptimizedImage({
         )}
       >
         <span className="select-none">
-          {showMissingLabel ? `MISSING ${_.upperCase(alt)}` : "No image"}
+          {showMissingLabel ? `MISSING ${alt?.toUpperCase()}` : "No image"}
         </span>
       </div>
     );

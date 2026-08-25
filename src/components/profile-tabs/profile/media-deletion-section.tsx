@@ -1,5 +1,6 @@
 "use client";
 import { useFormContext, useWatch } from "react-hook-form";
+import { logger } from "@/src/lib/logger";
 import { FormControl, FormField, FormItem, FormLabel } from "../../ui/form";
 import { Checkbox } from "../../ui/checkbox";
 import { BaseItemDto } from "@jellyfin/sdk/lib/generated-client/models";
@@ -35,7 +36,7 @@ export function MediaDeletionSection({
                 <Checkbox
                   checked={field.value}
                   onCheckedChange={(checked) => {
-                    console.log("Checkbox clicked:", checked);
+                    logger.log("Checkbox clicked:", checked);
                     field.onChange(checked);
                   }}
                 />

@@ -12,6 +12,9 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Electron main-process files (CommonJS, not part of the Next.js app)
+    "desktop/**",
+    "dist-electron/**",
   ]),
   {
     rules: {

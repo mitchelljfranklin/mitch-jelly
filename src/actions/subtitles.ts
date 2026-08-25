@@ -1,4 +1,5 @@
 import { UserLibraryApi } from "@jellyfin/sdk/lib/generated-client/api/user-library-api";
+import { logger } from "@/src/lib/logger";
 import { createJellyfinInstance } from "../lib/utils";
 import { JellyfinUserWithToken } from "../types/jellyfin";
 import { StoreAuthData } from "./store/store-auth-data";
@@ -135,7 +136,7 @@ export async function getSubtitleContent(
     // Fetch the subtitle content in JSON format
     const subtitleUrl = `${serverUrl}/Videos/${itemId}/${mediaSourceId}/Subtitles/${subtitleStream.Index}/Stream.js?api_key=${user.AccessToken}`;
 
-    console.log("Fetching subtitles from:", subtitleUrl);
+    logger.log("Fetching subtitles from:", subtitleUrl);
 
     const response = await fetch(subtitleUrl);
 
@@ -148,12 +149,12 @@ export async function getSubtitleContent(
     }
 
     const jsonContent = await response.text();
-    console.log("JSON Content length:", jsonContent.length);
+    logger.log("JSON Content length:", jsonContent.length);
 
     // Parse all subtitle entries
     const subtitles = parseJsonSubtitles(jsonContent);
 
-    console.log(`Parsed ${subtitles.length} subtitle entries`);
+    logger.log(`Parsed ${subtitles.length} subtitle entries`);
 
     return {
       success: true,

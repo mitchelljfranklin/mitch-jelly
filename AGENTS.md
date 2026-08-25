@@ -5,7 +5,7 @@
 - **Package manager:** Bun only. `bun install`, `bun run build`, `bun dev`, `bun lint`
 - `bun dev` starts Next.js dev server on port 3000
 - `bun run build` produces an optimized build in `.next/`
-- `bun lint` runs ESLint (eslint-config-next) — expect 0 errors, ~39 intentional warnings
+- `bun lint` runs ESLint (eslint-config-next) — expect 0 errors, ~42 intentional warnings
 - `bun electron:dev` runs Next.js dev server + Electron window concurrently
 - `bun electron:build` builds Next.js standalone, then packages with electron-builder
 
@@ -24,7 +24,7 @@
   - `app/(main)/` — grouped route for all authenticated pages (dashboard, library, movie, series, etc.)
   - `app/login/` — standalone login page
   - `app/api/config/` — `GET` returns `{ defaultServerUrl, seerrServerUrl, seerrAuthType }` from env
-  - `app/api/seerr/[...slug]/` — server-side proxy for Seerr (Jellyseerr/Overseerr)
+  - `app/api/seerr/[...slug]/` — server-side proxy for Seerr (Jellyseerr/Overseerr). **Auth-gated:** requires a valid Jellyfin session cookie; SSRF-hardened (private-IP blocklist incl. DNS resolution, fail-closed)
 - `src/actions/` — Server Actions for Jellyfin API calls (auth, media, search, utils)
   - `src/actions/store/` — cookie-based persistent storage via `next/headers` cookies
   - `src/actions/get-seerr-config.ts` — server action that reads Seerr env vars (SEERR_*) or falls back to cookies
@@ -32,6 +32,7 @@
 - `src/components/scroll-to-top.tsx` — floating "back to top" FAB for infinite-scroll pages
 - `src/playback/` — modular playback engine with `HTMLAudioPlayer`, `HTMLVideoPlayer`, context provider
   - `src/playback/components/PostPlayOverlay.tsx` — Netflix-style "Up Next" overlay (appears 45s before episode end)
+  - **Two playback contexts:** volatile `PlaybackContext` (full state incl. currentTime — re-renders ~4×/sec during playback) and stable `PlaybackActionsContext` (memoized callbacks only). Leaf components (cards, buttons) MUST use `usePlayback()` from `src/hooks/usePlayback.ts` (actions-backed); never subscribe leaves to the full context.
 - `src/contexts/` — Auth, Settings, Seerr React contexts
 - `src/hooks/` — custom hooks (useAuth, usePlayback, useSkipSegments, etc.)
 - `src/lib/atoms.ts` — all Jotai atoms: home page cache, hero items, library cache, app name, theme selection
@@ -103,17 +104,19 @@ Authentication uses `@jellyfin/sdk`. Credentials stored as cookies via `src/acti
 
 ## Key Conventions
 
-- ESLint disables `@typescript-eslint/no-explicit-any`, `@next/next/no-img-element`, `react-hooks/set-state-in-effect`, `react-hooks/static-components`.
+- ESLint disables `@typescript-eslint/no-explicit-any`, `@next/next/no-img-element`, `react-hooks/set-state-in-effect`, `react-hooks/static-components`. Global ignores cover `desktop/` and `dist-electron/` (Electron CommonJS files are not linted).
 - No test suite or test scripts configured.
 - The `ignoreScripts` in package.json suppresses native build scripts for `sharp` and `unrs-resolver`.
 - `scripts/bump-version.mjs` bumps version via `bun run scripts/bump-version.mjs -- --level=patch|minor|major`.
-- The `app/(main)/` layout has a 60-second home page cache window that was extended to 5 minutes. Always include `handleAuthError` in try/catch for API calls in page `useEffect` blocks, but **do NOT add it to useEffect dependency arrays** — it would cause infinite re-render loops. The linter warns about this (~25 instances), which is intentional.
+- The `app/(main)/` home page caches data in localStorage with a 5-minute TTL (`homeLastVisitedTimeAtom`). Always include `handleAuthError` in try/catch for API calls in page `useEffect` blocks, but **do NOT add it to useEffect dependency arrays** — it would cause infinite re-render loops. The linter warns about this (~25 instances), which is intentional.
+- **Dev-mode stale builds:** if changes don't appear in `bun dev`, stop the server, delete `.next/turbopack/`, and restart. Turbopack occasionally serves stale chunks after branch switches or large refactors. Browser hard-refresh (Ctrl+Shift+R) may also be needed.
 - When using `OptimizedImage`, avoid `loading="lazy"` — it causes cancelled image loads during DOM reordering.
 
 ## Docker / CI
 
 - Docker image: `ghcr.io/mitchelljfranklin/mitch-jelly:latest`
-- Release workflow: triggers on `v*` tags — builds, tags as version + `latest`, creates GitHub Release
+- **CI workflow** (`.github/workflows/ci.yml`): runs lint + production build on every PR to `main`
+- Release workflow (`.github/workflows/release.yml`): triggers on `v*` tags — builds Docker image (tagged version + `latest`), creates GitHub Release, and matrix-builds Electron installers (Windows NSIS, macOS DMG, Linux AppImage) attached to the release
 - Manual dispatch: `workflow_dispatch` in Actions builds arbitrary tags (e.g., `latest`, `beta`)
 - No Docker Hub — uses GitHub Container Registry with built-in `GITHUB_TOKEN`
 

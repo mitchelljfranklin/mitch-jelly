@@ -1,7 +1,7 @@
 "use client"
 import { Button } from "../ui/button";
 import { Settings2, Globe, Server } from "lucide-react";
-import { motion } from "framer-motion";
+import { motion } from "motion/react";
 import Link from "next/link";
 import { useAtomValue } from "jotai";
 import { appNameAtom } from "../../lib/atoms";
