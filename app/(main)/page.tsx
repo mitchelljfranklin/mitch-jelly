@@ -69,7 +69,12 @@ export default function Home() {
                       { id: library.Id!, collectionType: library.CollectionType },
                       200,
                       0,
-                      ItemSortBy.DateCreated,
+                      // Shows resurface when new seasons/episodes are added,
+                      // matching Jellyfin's "Latest" semantics. Movies/boxsets
+                      // sort by when the item itself was created.
+                      library.CollectionType === "tvshows"
+                        ? ("DateLastContentAdded" as ItemSortBy)
+                        : ItemSortBy.DateCreated,
                       SortOrder.Descending,
                       [ItemFilter.IsUnplayed],
                     )).items;
