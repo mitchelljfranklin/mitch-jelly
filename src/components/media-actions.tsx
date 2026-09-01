@@ -199,12 +199,21 @@ export function MediaActions({
         </div>
       );
     }
-    return (
-      <div className="mb-4 flex items-center rounded-lg border border-border/60 bg-background/50 px-4 py-3 text-sm text-muted-foreground">
-        This item has no playable sources. It may be missing from disk or not
-        yet scanned by the server.
-      </div>
+    // Only leaf playable types can have (or lack) playable sources.
+    // Containers (Series/Season/BoxSet/Playlist) legitimately have no
+    // MediaSources — playback is driven by their children, so stay silent.
+    const isPlayableLeaf = ["Movie", "Episode", "TvChannel", "Video"].includes(
+      media.Type ?? "",
     );
+    if (isPlayableLeaf) {
+      return (
+        <div className="mb-4 flex items-center rounded-lg border border-border/60 bg-background/50 px-4 py-3 text-sm text-muted-foreground">
+          This item has no playable sources. It may be missing from disk or not
+          yet scanned by the server.
+        </div>
+      );
+    }
+    return null;
   }
 
   if (!selectedVersion) {
