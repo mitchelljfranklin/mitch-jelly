@@ -11,6 +11,7 @@ import {
 } from "@jellyfin/sdk/lib/generated-client/models";
 import { PlayOptions, Player } from "../types";
 import * as htmlMediaHelper from "../utils/mediaHelper";
+import { getAuthData } from "../../actions/utils";
 
 interface HTMLVideoPlayerProps {
   className?: string;
@@ -166,52 +167,75 @@ export const HTMLVideoPlayer = forwardRef<Player, HTMLVideoPlayerProps>(
         // Basic HLS check - in real app might need more robust detection via MediaSource info
         // Basic HLS check
         if (Hls.isSupported()) {
-          const hlsConfig: any = isLive
-            ? {
-                enableWorker: true,
-                lowLatencyMode: true,
-                maxBufferLength: 30,
-                backBufferLength: 30,
-                startPosition: seconds,
-              }
-            : {
-                enableWorker: true,
-                lowLatencyMode: false,
-                // Match jellyfin-web: 240s (4 mins) buffer for VOD
-                maxBufferLength: 240,
-                maxMaxBufferLength: 240,
-                startPosition: seconds,
-                manifestLoadingTimeOut: 20000,
+          // Send the Jellyfin auth header on every manifest/segment XHR so
+          // the stream URL does not need to carry api_key.
+          getAuthData()
+            .then(({ user }) => {
+              const video = videoRef.current;
+              if (!video) return;
+
+              const xhrSetup = (xhr: XMLHttpRequest, reqUrl: string) => {
+                // Only stamp Jellyfin requests (skip blob:/TMDB/etc.)
+                if (reqUrl.startsWith(window.location.origin) || reqUrl.includes("/Videos/") || reqUrl.includes("/Audio/")) {
+                  if (user?.AccessToken) {
+                    xhr.setRequestHeader(
+                      "Authorization",
+                      `MediaBrowser Token="${user.AccessToken}"`,
+                    );
+                  }
+                }
               };
 
-          const hls = new Hls(hlsConfig);
-          hls.loadSource(url);
-          hls.attachMedia(videoRef.current);
-          hlsRef.current = hls;
+              const hlsConfig: any = {
+                ...(isLive
+                  ? {
+                      enableWorker: true,
+                      lowLatencyMode: true,
+                      maxBufferLength: 30,
+                      backBufferLength: 30,
+                      startPosition: seconds,
+                    }
+                  : {
+                      enableWorker: true,
+                      lowLatencyMode: false,
+                      // Match jellyfin-web: 240s (4 mins) buffer for VOD
+                      maxBufferLength: 240,
+                      maxMaxBufferLength: 240,
+                      startPosition: seconds,
+                      manifestLoadingTimeOut: 20000,
+                    }),
+                xhrSetup,
+              };
 
-          hls.on(Hls.Events.MANIFEST_PARSED, () => {
-            if (videoRef.current) {
-              // Note: startPosition in config handles the initial seek
-              return videoRef.current.play().catch((e) => onError?.(e));
-            }
-          });
+              const hls = new Hls(hlsConfig);
+              hls.loadSource(url);
+              hls.attachMedia(video);
+              hlsRef.current = hls;
 
-          hls.on(Hls.Events.ERROR, (event, data) => {
-            if (data.fatal) {
-              switch (data.type) {
-                case Hls.ErrorTypes.NETWORK_ERROR:
-                  hls.startLoad();
-                  break;
-                case Hls.ErrorTypes.MEDIA_ERROR:
-                  hls.recoverMediaError();
-                  break;
-                default:
-                  onError?.(data);
-                  resetPlayer();
-                  break;
-              }
-            }
-          });
+              hls.on(Hls.Events.MANIFEST_PARSED, () => {
+                if (videoRef.current) {
+                  // Note: startPosition in config handles the initial seek
+                  return videoRef.current.play().catch((e) => onError?.(e));
+                }
+              });
+
+              hls.on(Hls.Events.ERROR, (event, data) => {
+                if (data.fatal) {
+                  switch (data.type) {
+                    case Hls.ErrorTypes.NETWORK_ERROR:
+                      hls.startLoad();
+                      break;
+                    case Hls.ErrorTypes.MEDIA_ERROR:
+                      hls.recoverMediaError();
+                      break;
+                    default:
+                      onError?.(data);
+                      resetPlayer();
+                      break;
+                  }
+                }
+              });
+            });
         } else if (
           videoRef.current.canPlayType("application/vnd.apple.mpegurl")
         ) {

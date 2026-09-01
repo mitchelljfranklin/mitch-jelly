@@ -790,7 +790,21 @@ export function usePlaybackManager(): PlaybackContextValue {
   const setSubtitleUrl = useCallback(
     async (url: string) => {
       try {
-        const response = await fetch(url);
+        // Stamp the Jellyfin auth header when the subtitle URL points at the
+        // configured server (Stream.vtt etc.); harmless for external URLs.
+        let headers: Record<string, string> = {};
+        try {
+          const { serverUrl, user } = await getAuthData();
+          if (user?.AccessToken && serverUrl && url.startsWith(serverUrl)) {
+            headers = {
+              Authorization: `MediaBrowser Token="${user.AccessToken}"`,
+            };
+          }
+        } catch {
+          // No auth available — fetch without header
+        }
+
+        const response = await fetch(url, { headers });
         if (!response.ok) {
           throw new Error(`Failed to fetch subtitle: ${response.statusText}`);
         }

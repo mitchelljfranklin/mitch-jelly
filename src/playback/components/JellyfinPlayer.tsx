@@ -226,6 +226,7 @@ export const JellyfinPlayer: React.FC<JellyfinPlayerProps> = ({
             currentTime={playbackState.currentTime}
             textTracks={playbackState.textTracks}
             subtitleStreamIndex={playbackState.subtitleStreamIndex}
+            subtitleOffset={playbackState.subtitleOffset}
             isVisible={(playbackState.subtitleStreamIndex ?? -1) >= 0}
             isControlsVisible={cursorVisible}
           />

@@ -76,11 +76,26 @@ function LogActionsCell({
           <DropdownMenuItem
             onClick={async () => {
               try {
-                const url = `${serverUrl}/System/Logs/Log?name=${log.Name}&api_key=${accessToken}`;
+                // Fetch with auth header, then download via blob URL —
+                // avoids api_key in a navigable URL.
+                const response = await fetch(
+                  `${serverUrl}/System/Logs/Log?name=${encodeURIComponent(log.Name!)}`,
+                  {
+                    headers: {
+                      Authorization: `MediaBrowser Token="${accessToken}"`,
+                    },
+                  },
+                );
+                if (!response.ok) {
+                  throw new Error(`Download failed: ${response.statusText}`);
+                }
+                const blob = await response.blob();
+                const objectUrl = URL.createObjectURL(blob);
                 const a = document.createElement("a");
-                a.href = url;
+                a.href = objectUrl;
                 a.download = log.Name!;
                 a.click();
+                URL.revokeObjectURL(objectUrl);
               } catch (error) {
                 console.error("Failed to download log:", error);
               }

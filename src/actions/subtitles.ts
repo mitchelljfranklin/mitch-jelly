@@ -134,11 +134,15 @@ export async function getSubtitleContent(
     const subtitleStream = subtitleStreams[subtitleIndex];
 
     // Fetch the subtitle content in JSON format
-    const subtitleUrl = `${serverUrl}/Videos/${itemId}/${mediaSourceId}/Subtitles/${subtitleStream.Index}/Stream.js?api_key=${user.AccessToken}`;
+    const subtitleUrl = `${serverUrl}/Videos/${itemId}/${mediaSourceId}/Subtitles/${subtitleStream.Index}/Stream.js`;
 
     logger.log("Fetching subtitles from:", subtitleUrl);
 
-    const response = await fetch(subtitleUrl);
+    const response = await fetch(subtitleUrl, {
+      headers: {
+        Authorization: `MediaBrowser Token="${user.AccessToken}"`,
+      },
+    });
 
     if (!response.ok) {
       return {
