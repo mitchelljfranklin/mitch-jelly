@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import type {
   TaskInfo,
   TaskTriggerInfo,
+  TaskTriggerInfoType,
 } from "@jellyfin/sdk/lib/generated-client/models";
 import { toast } from "sonner";
 import { updateTaskTriggers } from "../actions";
@@ -63,7 +64,8 @@ export const ScheduledTaskTriggersDialog = ({
   onTaskUpdated,
 }: ScheduledTaskTriggersDialogProps) => {
   const [isUpdatingTriggers, setIsUpdatingTriggers] = useState(false);
-  const [newTriggerType, setNewTriggerType] = useState("IntervalTrigger");
+  const [newTriggerType, setNewTriggerType] =
+    useState<TaskTriggerInfoType>("IntervalTrigger");
   const [newIntervalPreset, setNewIntervalPreset] = useState("15");
   const [newTimeOfDay, setNewTimeOfDay] = useState("");
   const [newTimeLimitHours, setNewTimeLimitHours] = useState("");
@@ -242,7 +244,7 @@ export const ScheduledTaskTriggersDialog = ({
                 </label>
                 <Select
                   value={newTriggerType}
-                  onValueChange={setNewTriggerType}
+                  onValueChange={(v) => setNewTriggerType(v as TaskTriggerInfoType)}
                 >
                   <SelectTrigger className="w-full">
                     <SelectValue placeholder="Select trigger type" />

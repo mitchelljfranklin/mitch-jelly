@@ -179,7 +179,7 @@ export const buildLibraryOptions = (
   )
     .map((s) => s.Name.trim())
     .filter(Boolean),
-  MediaSegmentProvideOrder: toAllNames(data.MediaSegmentProviders),
+  MediaSegmentProviderOrder: toAllNames(data.MediaSegmentProviders),
 
   TypeOptions: buildTypeOptions(data),
 });
@@ -324,7 +324,7 @@ export const buildFormValuesFromLibrary = (
     MediaSegmentProviders: buildFetcherItemsFromDisabled(
       (availableOptions as any).MediaSegmentProviders,
       libraryOptions.DisabledMediaSegmentProviders,
-      libraryOptions.MediaSegmentProvideOrder,
+      libraryOptions.MediaSegmentProviderOrder,
     ),
     Trickplay: {
       ...base.Trickplay,
