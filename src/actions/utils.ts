@@ -138,8 +138,12 @@ export async function getLiveTVStreamUrl(
 ): Promise<string | undefined> {
   try {
     const { serverUrl, user } = await getAuthData();
-    const playbackInfoUrl = `${serverUrl}/Items/${item_id}/PlaybackInfo?api_key=${user.AccessToken}`;
-    const playbackInfo = await axios.post(playbackInfoUrl);
+    const playbackInfoUrl = `${serverUrl}/Items/${item_id}/PlaybackInfo`;
+    const playbackInfo = await axios.post(playbackInfoUrl, undefined, {
+      headers: {
+        Authorization: `MediaBrowser Token="${user.AccessToken}"`,
+      },
+    });
     if (
       playbackInfo.data &&
       playbackInfo.data.MediaSources &&
@@ -204,6 +208,9 @@ export async function uploadUserImage(
 export async function getDownloadUrl(itemId: string): Promise<string> {
   const { serverUrl, user } = await getAuthData();
 
+  // api_key is REQUIRED here: the URL is opened via window.open (browser
+  // navigation cannot send headers). Jellyfin retains api_key support for
+  // media/download endpoints (official clients depend on it).
   return `${serverUrl}/Items/${itemId}/Download?api_key=${user.AccessToken}`;
 }
 
@@ -224,6 +231,10 @@ export async function getStreamUrl(
   // Generate a unique PlaySessionId for each stream request
   const playSessionId = uuidv4();
 
+  // api_key stays in the URL: this manifest is consumed by hls.js, which
+  // ALSO sends the auth header via xhrSetup (see HTMLVideoPlayer) — the
+  // query param remains as a fallback for environments where header
+  // injection is unavailable (e.g. native HLS on Safari).
   let url = `${serverUrl}/Videos/${itemId}/master.m3u8?api_key=${user.AccessToken}&MediaSourceId=${mediaSourceId}&PlaySessionId=${playSessionId}&VideoCodec=${preferredVideoCodecs}&AudioCodec=aac&TranscodingProtocol=hls&RequireAvc=${requireAvc}&AllowVideoStreamCopy=${allowVideoStreamCopy}&AudioStreamIndex=${audioStreamIndex}&SegmentContainer=mp4&BreakOnNonKeyFrames=True&MinSegments=2&MaxFramerate=60`;
 
   if (subtitleStreamIndex !== undefined) {
@@ -267,6 +278,9 @@ export async function getDirectStreamUrl(
 
   const playSessionId = uuidv4();
   const container = mediaSource.Container || "mp4";
+  // api_key stays: consumed directly as <video src> — headers are
+  // structurally impossible for media elements, and Jellyfin retains
+  // api_key support for media endpoints (official clients depend on it).
   const params = new URLSearchParams({
     api_key: user.AccessToken || "",
     Static: "true",
@@ -309,6 +323,7 @@ export async function getThemeSongStreamUrl(
     }
 
     const params = new URLSearchParams({
+      // api_key stays: <audio src> media element — see getDirectStreamUrl
       api_key: user.AccessToken!,
       Static: "true",
       UserId: user.Id!,
@@ -345,6 +360,7 @@ export async function getThemeVideoStreamUrl(
     }
 
     const params = new URLSearchParams({
+      // api_key stays: <video src> media element — see getDirectStreamUrl
       api_key: user.AccessToken!,
       Static: "true",
       UserId: user.Id!,
@@ -396,7 +412,9 @@ export async function getSubtitleTracks(
           (stream.Codec || "").toLowerCase() !== "pgssub",
       ) || [];
     const subtitleTracks = subtitleStreams.map((stream) => {
-      const src = `${serverUrl}/Videos/${itemId}/${mediaSourceId}/Subtitles/${stream.Index}/Stream.vtt?api_key=${user.AccessToken}`;
+      // No api_key: the VTT is only consumed via fetch in SubtitleDisplay,
+      // which sends the Jellyfin auth header. Never rendered as a <track>.
+      const src = `${serverUrl}/Videos/${itemId}/${mediaSourceId}/Subtitles/${stream.Index}/Stream.vtt`;
       return {
         kind: "subtitles",
         label:

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { getAuthData } from "../../actions/utils";
 
 interface SubtitleLine {
   startTime: number; // in seconds
@@ -255,9 +256,24 @@ export const SubtitleDisplay: React.FC<SubtitleDisplayProps> = ({
     const loadAllSubtitles = async () => {
       const subtitleMap = new Map<number, SubtitleLine[]>();
 
+      // Track URLs may require auth (e.g. Stream.vtt?api_key= on servers
+      // that reject query-param auth) — send the Jellyfin token header when
+      // the track points at the configured Jellyfin server.
+      let authHeader: Record<string, string> = {};
+      try {
+        const { serverUrl, user } = await getAuthData();
+        if (user?.AccessToken && serverUrl) {
+          authHeader = {
+            Authorization: `MediaBrowser Token="${user.AccessToken}"`,
+          };
+        }
+      } catch {
+        // Not authenticated — proceed without header (blob: URLs etc.)
+      }
+
       for (const track of textTracks) {
         try {
-          const response = await fetch(track.src);
+          const response = await fetch(track.src, { headers: authHeader });
           if (!response.ok) {
             console.error(
               `Failed to fetch subtitles for ${track.label}:`,
