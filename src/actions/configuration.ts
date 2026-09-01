@@ -1,6 +1,6 @@
 import { getConfigurationApi } from "@jellyfin/sdk/lib/utils/api/configuration-api";
 import { ServerConfiguration } from "@jellyfin/sdk/lib/generated-client/models";
-import { createJellyfinInstance } from "../lib/utils";
+import { createJellyfinApi } from "../lib/utils";
 import { getAuthData } from "./utils";
 import {
   MetadataConfiguration,
@@ -12,14 +12,10 @@ import { isAuthError } from "./media";
 export async function fetchSystemConfiguration(): Promise<ServerConfiguration> {
   try {
     const { serverUrl, user } = await getAuthData();
-    const jellyfinInstance = createJellyfinInstance();
-    const api = jellyfinInstance.createApi(serverUrl);
-
+    const api = createJellyfinApi(serverUrl, user.AccessToken);
     if (!user.AccessToken) {
       throw new Error("No access token found");
     }
-
-    api.accessToken = user.AccessToken;
 
     const configurationApi = getConfigurationApi(api);
     const { data } = await configurationApi.getConfiguration();
@@ -41,14 +37,10 @@ export async function fetchSystemConfiguration(): Promise<ServerConfiguration> {
 export async function fetchMetadataConfiguration(): Promise<MetadataConfiguration> {
   try {
     const { serverUrl, user } = await getAuthData();
-    const jellyfinInstance = createJellyfinInstance();
-    const api = jellyfinInstance.createApi(serverUrl);
-
+    const api = createJellyfinApi(serverUrl, user.AccessToken);
     if (!user.AccessToken) {
       throw new Error("No access token found");
     }
-
-    api.accessToken = user.AccessToken;
 
     const configurationApi = getConfigurationApi(api);
     // Using getNamedConfiguration with key "metadata"
@@ -74,14 +66,10 @@ export async function fetchMetadataConfiguration(): Promise<MetadataConfiguratio
 export async function fetchXbmcMetadataConfiguration(): Promise<XbmcMetadataOptions> {
   try {
     const { serverUrl, user } = await getAuthData();
-    const jellyfinInstance = createJellyfinInstance();
-    const api = jellyfinInstance.createApi(serverUrl);
-
+    const api = createJellyfinApi(serverUrl, user.AccessToken);
     if (!user.AccessToken) {
       throw new Error("No access token found");
     }
-
-    api.accessToken = user.AccessToken;
 
     const configurationApi = getConfigurationApi(api);
     const { data } = await configurationApi.getNamedConfiguration({
@@ -105,14 +93,10 @@ export async function fetchXbmcMetadataConfiguration(): Promise<XbmcMetadataOpti
 export async function fetchEncodingConfiguration(): Promise<EncodingOptions> {
   try {
     const { serverUrl, user } = await getAuthData();
-    const jellyfinInstance = createJellyfinInstance();
-    const api = jellyfinInstance.createApi(serverUrl);
-
+    const api = createJellyfinApi(serverUrl, user.AccessToken);
     if (!user.AccessToken) {
       throw new Error("No access token found");
     }
-
-    api.accessToken = user.AccessToken;
 
     const configurationApi = getConfigurationApi(api);
     const { data } = await configurationApi.getNamedConfiguration({
@@ -138,14 +122,11 @@ export async function updateSystemConfiguration(
 ): Promise<void> {
   try {
     const { serverUrl, user } = await getAuthData();
-    const jellyfinInstance = createJellyfinInstance();
-    const api = jellyfinInstance.createApi(serverUrl);
-
+    const api = createJellyfinApi(serverUrl, user.AccessToken);
     if (!user.AccessToken) {
       throw new Error("No access token found");
     }
 
-    api.accessToken = user.AccessToken;
     const configurationApi = getConfigurationApi(api);
 
     await configurationApi.updateConfiguration({
@@ -169,14 +150,11 @@ export async function updateMetadataConfiguration(
 ): Promise<void> {
   try {
     const { serverUrl, user } = await getAuthData();
-    const jellyfinInstance = createJellyfinInstance();
-    const api = jellyfinInstance.createApi(serverUrl);
-
+    const api = createJellyfinApi(serverUrl, user.AccessToken);
     if (!user.AccessToken) {
       throw new Error("No access token found");
     }
 
-    api.accessToken = user.AccessToken;
     const configurationApi = getConfigurationApi(api);
 
     await configurationApi.updateNamedConfiguration({
@@ -201,14 +179,11 @@ export async function updateXbmcMetadataConfiguration(
 ): Promise<void> {
   try {
     const { serverUrl, user } = await getAuthData();
-    const jellyfinInstance = createJellyfinInstance();
-    const api = jellyfinInstance.createApi(serverUrl);
-
+    const api = createJellyfinApi(serverUrl, user.AccessToken);
     if (!user.AccessToken) {
       throw new Error("No access token found");
     }
 
-    api.accessToken = user.AccessToken;
     const configurationApi = getConfigurationApi(api);
 
     await configurationApi.updateNamedConfiguration({
@@ -233,14 +208,11 @@ export async function updateEncodingConfiguration(
 ): Promise<void> {
   try {
     const { serverUrl, user } = await getAuthData();
-    const jellyfinInstance = createJellyfinInstance();
-    const api = jellyfinInstance.createApi(serverUrl);
-
+    const api = createJellyfinApi(serverUrl, user.AccessToken);
     if (!user.AccessToken) {
       throw new Error("No access token found");
     }
 
-    api.accessToken = user.AccessToken;
     const configurationApi = getConfigurationApi(api);
 
     await configurationApi.updateNamedConfiguration({

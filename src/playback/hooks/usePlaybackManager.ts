@@ -21,6 +21,7 @@ import {
 import { PlaybackState, Player, PlayOptions, PlayerType } from "../types";
 import { PlayQueueManager } from "../utils/playQueueManager";
 import { v4 as uuidv4 } from "uuid";
+import { buildMediaBrowserAuthHeader } from "../../lib/utils";
 
 export const playQueueManager = new PlayQueueManager();
 
@@ -797,7 +798,7 @@ export function usePlaybackManager(): PlaybackContextValue {
           const { serverUrl, user } = await getAuthData();
           if (user?.AccessToken && serverUrl && url.startsWith(serverUrl)) {
             headers = {
-              Authorization: `MediaBrowser Token="${user.AccessToken}"`,
+              Authorization: buildMediaBrowserAuthHeader(user.AccessToken),
             };
           }
         } catch {

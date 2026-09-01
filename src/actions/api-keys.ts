@@ -3,21 +3,18 @@ import type {
   AuthenticationInfo,
   AuthenticationInfoQueryResult,
 } from "@jellyfin/sdk/lib/generated-client/models";
-import { createJellyfinInstance } from "../lib/utils";
+import { createJellyfinApi } from "../lib/utils";
 import { getAuthData } from "./utils";
 import { isAuthError } from "./media";
 
 export async function fetchApiKeys(): Promise<AuthenticationInfoQueryResult> {
   try {
     const { serverUrl, user } = await getAuthData();
-    const jellyfinInstance = createJellyfinInstance();
-    const api = jellyfinInstance.createApi(serverUrl);
-
+    const api = createJellyfinApi(serverUrl, user.AccessToken);
     if (!user.AccessToken) {
       throw new Error("No access token found");
     }
 
-    api.accessToken = user.AccessToken;
     const apiKeyApi = getApiKeyApi(api);
 
     const { data } = await apiKeyApi.getKeys();
@@ -64,14 +61,11 @@ export function normalizeApiKeys(
 export async function createApiKey(appName: string): Promise<void> {
   try {
     const { serverUrl, user } = await getAuthData();
-    const jellyfinInstance = createJellyfinInstance();
-    const api = jellyfinInstance.createApi(serverUrl);
-
+    const api = createJellyfinApi(serverUrl, user.AccessToken);
     if (!user.AccessToken) {
       throw new Error("No access token found");
     }
 
-    api.accessToken = user.AccessToken;
     const apiKeyApi = getApiKeyApi(api);
 
     await apiKeyApi.createKey({ app: appName });
@@ -90,14 +84,11 @@ export async function createApiKey(appName: string): Promise<void> {
 export async function revokeApiKey(key: string): Promise<void> {
   try {
     const { serverUrl, user } = await getAuthData();
-    const jellyfinInstance = createJellyfinInstance();
-    const api = jellyfinInstance.createApi(serverUrl);
-
+    const api = createJellyfinApi(serverUrl, user.AccessToken);
     if (!user.AccessToken) {
       throw new Error("No access token found");
     }
 
-    api.accessToken = user.AccessToken;
     const apiKeyApi = getApiKeyApi(api);
 
     await apiKeyApi.revokeKey({ key });

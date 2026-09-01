@@ -18,6 +18,7 @@ import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import ErrorWindow from "@/src/components/error-window";
 import { useAuthError } from "@/src/hooks/use-auth-error";
+import { buildMediaBrowserAuthHeader } from "@/src/lib/utils";
 
 export default function Movie() {
   const { id } = useParams<{ id: string }>();
@@ -44,7 +45,7 @@ export default function Movie() {
             const base = srv.replace(/\/+$/, "");
             const resp = await fetch(
               `${base}/Items/${id}/Ancestors?userId=${user.Id}`,
-              { headers: { Authorization: `MediaBrowser Token="${user.AccessToken}"` } },
+              { headers: { Authorization: buildMediaBrowserAuthHeader(user.AccessToken) } },
             );
             if (!resp.ok) return null;
             const ancestors = await resp.json();

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { getAuthData } from "../../actions/utils";
+import { buildMediaBrowserAuthHeader } from "../../lib/utils";
 
 interface SubtitleLine {
   startTime: number; // in seconds
@@ -264,7 +265,7 @@ export const SubtitleDisplay: React.FC<SubtitleDisplayProps> = ({
         const { serverUrl, user } = await getAuthData();
         if (user?.AccessToken && serverUrl) {
           authHeader = {
-            Authorization: `MediaBrowser Token="${user.AccessToken}"`,
+            Authorization: buildMediaBrowserAuthHeader(user.AccessToken),
           };
         }
       } catch {

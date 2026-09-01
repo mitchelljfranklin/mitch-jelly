@@ -13,7 +13,7 @@ import { getGenresApi } from "@jellyfin/sdk/lib/utils/api/genres-api";
 import { VirtualFolderInfo } from "@jellyfin/sdk/lib/generated-client/models/virtual-folder-info";
 import { LibraryOptionsResultDto } from "@jellyfin/sdk/lib/generated-client/models/library-options-result-dto";
 import { getTvShowsApi } from "@jellyfin/sdk/lib/utils/api/tv-shows-api";
-import { createJellyfinInstance } from "../lib/utils";
+import { createJellyfinApi, buildMediaBrowserAuthHeader } from "../lib/utils";
 import { JellyfinUserWithToken } from "../types/jellyfin";
 import { StoreAuthData } from "./store/store-auth-data";
 import { LibraryOptions } from "@jellyfin/sdk/lib/generated-client/models";
@@ -72,9 +72,7 @@ export async function fetchMovies(
     const { serverUrl, user } = await getAuthData();
     if (!user.AccessToken) throw new Error("No access token found");
 
-    const jellyfinInstance = createJellyfinInstance();
-    const api = jellyfinInstance.createApi(serverUrl);
-    api.accessToken = user.AccessToken;
+    const api = createJellyfinApi(serverUrl, user.AccessToken);
 
     const { data } = await getItemsApi(api).getItems({
       userId: user.Id,
@@ -114,9 +112,7 @@ export async function fetchMovieByCollection(
     const { serverUrl, user } = await getAuthData();
     if (!user.AccessToken) throw new Error("No access token found");
 
-    const jellyfinInstance = createJellyfinInstance();
-    const api = jellyfinInstance.createApi(serverUrl);
-    api.accessToken = user.AccessToken;
+    const api = createJellyfinApi(serverUrl, user.AccessToken);
 
     const { data } = await getItemsApi(api).getItems({
       userId: user.Id,
@@ -155,9 +151,7 @@ export async function fetchTVShows(
     const { serverUrl, user } = await getAuthData();
     if (!user.AccessToken) throw new Error("No access token found");
 
-    const jellyfinInstance = createJellyfinInstance();
-    const api = jellyfinInstance.createApi(serverUrl);
-    api.accessToken = user.AccessToken;
+    const api = createJellyfinApi(serverUrl, user.AccessToken);
 
     const { data } = await getItemsApi(api).getItems({
       userId: user.Id,
@@ -198,9 +192,7 @@ export async function fetchMediaDetails(
     const { serverUrl, user } = await getAuthData();
     if (!user.AccessToken) throw new Error("No access token found");
 
-    const jellyfinInstance = createJellyfinInstance();
-    const api = jellyfinInstance.createApi(serverUrl);
-    api.accessToken = user.AccessToken;
+    const api = createJellyfinApi(serverUrl, user.AccessToken);
 
     const itemsApi = getItemsApi(api);
     const { data } = await itemsApi.getItems({
@@ -246,9 +238,7 @@ export async function fetchPersonDetails(
     const { serverUrl, user } = await getAuthData();
     if (!user.AccessToken) throw new Error("No access token found");
 
-    const jellyfinInstance = createJellyfinInstance();
-    const api = jellyfinInstance.createApi(serverUrl);
-    api.accessToken = user.AccessToken;
+    const api = createJellyfinApi(serverUrl, user.AccessToken);
 
     const userLibraryApi = new UserLibraryApi(api.configuration);
     const { data } = await userLibraryApi.getItem({
@@ -279,9 +269,7 @@ export async function fetchPersonFilmography(
     const { serverUrl, user } = await getAuthData();
     if (!user.AccessToken) throw new Error("No access token found");
 
-    const jellyfinInstance = createJellyfinInstance();
-    const api = jellyfinInstance.createApi(serverUrl);
-    api.accessToken = user.AccessToken;
+    const api = createJellyfinApi(serverUrl, user.AccessToken);
 
     const { data } = await getItemsApi(api).getItems({
       userId: user.Id,
@@ -320,10 +308,7 @@ export async function fetchResumeItems() {
     const { serverUrl, user } = await getAuthData();
     if (!user.AccessToken) throw new Error("No access token found");
 
-    const jellyfinInstance = createJellyfinInstance();
-    const api = jellyfinInstance.createApi(serverUrl);
-
-    api.accessToken = user.AccessToken;
+    const api = createJellyfinApi(serverUrl, user.AccessToken);
 
     const itemsApi = getItemsApi(api);
 
@@ -356,9 +341,7 @@ export async function fetchNextUpItems() {
     const { serverUrl, user } = await getAuthData();
     if (!user.AccessToken) throw new Error("No access token found");
 
-    const jellyfinInstance = createJellyfinInstance();
-    const api = jellyfinInstance.createApi(serverUrl);
-    api.accessToken = user.AccessToken;
+    const api = createJellyfinApi(serverUrl, user.AccessToken);
 
     const tvShowsApi = getTvShowsApi(api);
     const { data } = await tvShowsApi.getNextUp({
@@ -396,15 +379,11 @@ export async function reportPlaybackStart(
     const { serverUrl, user } = await getAuthData();
     if (!user.AccessToken) throw new Error("No access token found");
 
-    const jellyfinInstance = createJellyfinInstance();
-    const api = jellyfinInstance.createApi(serverUrl);
-    api.accessToken = user.AccessToken;
-
     const response = await fetch(`${serverUrl}/Sessions/Playing`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `MediaBrowser Token="${user.AccessToken}"`,
+        Authorization: buildMediaBrowserAuthHeader(user.AccessToken),
       },
       body: JSON.stringify({
         ItemId: itemId,
@@ -434,15 +413,11 @@ export async function reportPlaybackProgress(
     const { serverUrl, user } = await getAuthData();
     if (!user.AccessToken) throw new Error("No access token found");
 
-    const jellyfinInstance = createJellyfinInstance();
-    const api = jellyfinInstance.createApi(serverUrl);
-    api.accessToken = user.AccessToken;
-
     const response = await fetch(`${serverUrl}/Sessions/Playing/Progress`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `MediaBrowser Token="${user.AccessToken}"`,
+        Authorization: buildMediaBrowserAuthHeader(user.AccessToken),
       },
       body: JSON.stringify({
         ItemId: itemId,
@@ -471,15 +446,11 @@ export async function reportPlaybackStopped(
     const { serverUrl, user } = await getAuthData();
     if (!user.AccessToken) throw new Error("No access token found");
 
-    const jellyfinInstance = createJellyfinInstance();
-    const api = jellyfinInstance.createApi(serverUrl);
-    api.accessToken = user.AccessToken;
-
     const response = await fetch(`${serverUrl}/Sessions/Playing/Stopped`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `MediaBrowser Token="${user.AccessToken}"`,
+        Authorization: buildMediaBrowserAuthHeader(user.AccessToken),
       },
       body: JSON.stringify({
         ItemId: itemId,
@@ -509,9 +480,7 @@ export async function fetchLibraryItems(
     const { serverUrl, user } = await getAuthData();
     if (!user.AccessToken) throw new Error("No access token found");
 
-    const jellyfinInstance = createJellyfinInstance();
-    const api = jellyfinInstance.createApi(serverUrl);
-    api.accessToken = user.AccessToken;
+    const api = createJellyfinApi(serverUrl, user.AccessToken);
 
     const { data } = await getItemsApi(api).getItems({
       userId: user.Id,
@@ -577,9 +546,7 @@ export async function fetchLiveTVItems(
     const { serverUrl, user } = await getAuthData();
     if (!user.AccessToken) throw new Error("No access token found");
 
-    const jellyfinInstance = createJellyfinInstance();
-    const api = jellyfinInstance.createApi(serverUrl);
-    api.accessToken = user.AccessToken;
+    const api = createJellyfinApi(serverUrl, user.AccessToken);
 
     const { data } = await getLiveTvApi(api).getLiveTvChannels({
       userId: user.Id,
@@ -622,9 +589,7 @@ export async function fetchSimilarItems(itemId: string, limit: number = 12) {
     const { serverUrl, user } = await getAuthData();
     if (!user.AccessToken) throw new Error("No access token found");
 
-    const jellyfinInstance = createJellyfinInstance();
-    const api = jellyfinInstance.createApi(serverUrl);
-    api.accessToken = user.AccessToken;
+    const api = createJellyfinApi(serverUrl, user.AccessToken);
 
     const { data } = await getLibraryApi(api).getSimilarItems({
       itemId: itemId,
@@ -656,9 +621,7 @@ export async function fetchMediaSegments(
     const { serverUrl, user } = await getAuthData();
     if (!user.AccessToken) throw new Error("No access token found");
 
-    const jellyfinInstance = createJellyfinInstance();
-    const api = jellyfinInstance.createApi(serverUrl);
-    api.accessToken = user.AccessToken;
+    const api = createJellyfinApi(serverUrl, user.AccessToken);
 
     const { getMediaSegmentsApi } =
       await import("@jellyfin/sdk/lib/utils/api/media-segments-api");
@@ -705,7 +668,7 @@ export async function fetchTrickplayTileImageUrl(
     const response = await fetch(url.toString(), {
       method: "GET",
       headers: {
-        Authorization: `MediaBrowser Token="${user.AccessToken}"`,
+        Authorization: buildMediaBrowserAuthHeader(user.AccessToken),
       },
     });
 
@@ -770,7 +733,7 @@ export async function scanLibrary(
     const response = await fetch(url, {
       method: "POST",
       headers: {
-        Authorization: `MediaBrowser Token="${user.AccessToken}"`,
+        Authorization: buildMediaBrowserAuthHeader(user.AccessToken),
         "Content-Type": "application/json",
       },
     });
@@ -798,9 +761,7 @@ export async function fetchGenres() {
     const { serverUrl, user } = await getAuthData();
     if (!user.AccessToken) throw new Error("No access token found");
 
-    const jellyfinInstance = createJellyfinInstance();
-    const api = jellyfinInstance.createApi(serverUrl);
-    api.accessToken = user.AccessToken;
+    const api = createJellyfinApi(serverUrl, user.AccessToken);
 
     const { data } = await getGenresApi(api).getGenres({
       userId: user.Id,
@@ -827,9 +788,7 @@ export async function fetchGenre(genreName: string) {
     const { serverUrl, user } = await getAuthData();
     if (!user.AccessToken) throw new Error("No access token found");
 
-    const jellyfinInstance = createJellyfinInstance();
-    const api = jellyfinInstance.createApi(serverUrl);
-    api.accessToken = user.AccessToken;
+    const api = createJellyfinApi(serverUrl, user.AccessToken);
 
     const { data } = await getGenresApi(api).getGenre({
       userId: user.Id,
@@ -857,9 +816,7 @@ export async function fetchHeroItems(): Promise<JellyfinItem[]> {
     const { serverUrl, user } = await getAuthData();
     if (!user.AccessToken) throw new Error("No access token found");
 
-    const jellyfinInstance = createJellyfinInstance();
-    const api = jellyfinInstance.createApi(serverUrl);
-    api.accessToken = user.AccessToken;
+    const api = createJellyfinApi(serverUrl, user.AccessToken);
 
     const itemsApi = getItemsApi(api);
 
@@ -1003,7 +960,7 @@ export async function markFavorite(itemId: string): Promise<boolean> {
       {
         method: "POST",
         headers: {
-          Authorization: `MediaBrowser Token="${user.AccessToken}"`,
+          Authorization: buildMediaBrowserAuthHeader(user.AccessToken),
           "Content-Type": "application/json",
         },
       },
@@ -1026,7 +983,7 @@ export async function unmarkFavorite(itemId: string): Promise<boolean> {
       {
         method: "DELETE",
         headers: {
-          Authorization: `MediaBrowser Token="${user.AccessToken}"`,
+          Authorization: buildMediaBrowserAuthHeader(user.AccessToken),
         },
       },
     );
@@ -1048,7 +1005,7 @@ export async function markAsPlayed(itemId: string): Promise<boolean> {
       {
         method: "POST",
         headers: {
-          Authorization: `MediaBrowser Token="${user.AccessToken}"`,
+          Authorization: buildMediaBrowserAuthHeader(user.AccessToken),
         },
       },
     );
@@ -1070,7 +1027,7 @@ export async function markAsUnplayed(itemId: string): Promise<boolean> {
       {
         method: "DELETE",
         headers: {
-          Authorization: `MediaBrowser Token="${user.AccessToken}"`,
+          Authorization: buildMediaBrowserAuthHeader(user.AccessToken),
         },
       },
     );
@@ -1087,9 +1044,7 @@ export async function fetchVirtualFolders(): Promise<VirtualFolderInfo[]> {
     const { serverUrl, user } = await getAuthData();
     if (!user.AccessToken) throw new Error("No access token found");
 
-    const jellyfinInstance = createJellyfinInstance();
-    const api = jellyfinInstance.createApi(serverUrl);
-    api.accessToken = user.AccessToken;
+    const api = createJellyfinApi(serverUrl, user.AccessToken);
 
     const libraryStructureApi = new LibraryStructureApi(api.configuration);
     const { data } = await libraryStructureApi.getVirtualFolders();
@@ -1118,9 +1073,7 @@ export async function removeVirtualFolder(
     const { serverUrl, user } = await getAuthData();
     if (!user.AccessToken) throw new Error("No access token found");
 
-    const jellyfinInstance = createJellyfinInstance();
-    const api = jellyfinInstance.createApi(serverUrl);
-    api.accessToken = user.AccessToken;
+    const api = createJellyfinApi(serverUrl, user.AccessToken);
 
     const libraryStructureApi = new LibraryStructureApi(api.configuration);
     await libraryStructureApi.removeVirtualFolder({ name, refreshLibrary });
@@ -1146,9 +1099,7 @@ export async function renameVirtualFolder(
     const { serverUrl, user } = await getAuthData();
     if (!user.AccessToken) throw new Error("No access token found");
 
-    const jellyfinInstance = createJellyfinInstance();
-    const api = jellyfinInstance.createApi(serverUrl);
-    api.accessToken = user.AccessToken;
+    const api = createJellyfinApi(serverUrl, user.AccessToken);
 
     const libraryStructureApi = new LibraryStructureApi(api.configuration);
     await libraryStructureApi.renameVirtualFolder({
@@ -1182,7 +1133,7 @@ export async function fetchLibraryOptionsInfo(
       {
         method: "GET",
         headers: {
-          Authorization: `MediaBrowser Token="${user.AccessToken}"`,
+          Authorization: buildMediaBrowserAuthHeader(user.AccessToken),
           "Content-Type": "application/json",
         },
       },
@@ -1223,9 +1174,7 @@ export async function addLibrary(
     const { serverUrl, user } = await getAuthData();
     if (!user.AccessToken) throw new Error("No access token found");
 
-    const jellyfinInstance = createJellyfinInstance();
-    const api = jellyfinInstance.createApi(serverUrl);
-    api.accessToken = user.AccessToken;
+    const api = createJellyfinApi(serverUrl, user.AccessToken);
 
     const libraryStructureApi = new LibraryStructureApi(api.configuration);
 
@@ -1261,9 +1210,7 @@ export async function updateLibraryOptions(
     const { serverUrl, user } = await getAuthData();
     if (!user.AccessToken) throw new Error("No access token found");
 
-    const jellyfinInstance = createJellyfinInstance();
-    const api = jellyfinInstance.createApi(serverUrl);
-    api.accessToken = user.AccessToken;
+    const api = createJellyfinApi(serverUrl, user.AccessToken);
 
     const libraryStructureApi = new LibraryStructureApi(api.configuration);
 
@@ -1291,9 +1238,7 @@ export async function fetchSeasons(tvShowId: string): Promise<JellyfinItem[]> {
     const { serverUrl, user } = await getAuthData();
     if (!user.AccessToken) throw new Error("No access token found");
 
-    const jellyfinInstance = createJellyfinInstance();
-    const api = jellyfinInstance.createApi(serverUrl);
-    api.accessToken = user.AccessToken;
+    const api = createJellyfinApi(serverUrl, user.AccessToken);
     const itemsApi = getItemsApi(api);
     const { data } = await itemsApi.getItems({
       userId: user.Id,
@@ -1320,9 +1265,7 @@ export async function fetchEpisodes(seasonId: string): Promise<JellyfinItem[]> {
   const { serverUrl, user } = await getAuthData();
   if (!user.AccessToken) throw new Error("No access token found");
 
-  const jellyfinInstance = createJellyfinInstance();
-  const api = jellyfinInstance.createApi(serverUrl);
-  api.accessToken = user.AccessToken;
+  const api = createJellyfinApi(serverUrl, user.AccessToken);
 
   try {
     const itemsApi = getItemsApi(api);
@@ -1363,9 +1306,7 @@ export async function getNextEpisode(
   if (!user.AccessToken) throw new Error("No access token found");
 
   try {
-    const jellyfinInstance = createJellyfinInstance();
-    const api = jellyfinInstance.createApi(serverUrl);
-    api.accessToken = user.AccessToken;
+    const api = createJellyfinApi(serverUrl, user.AccessToken);
 
     const itemsApi = getItemsApi(api);
     const { data } = await itemsApi.getItems({
@@ -1419,9 +1360,7 @@ export async function getPreviousEpisode(
   if (!user.AccessToken) throw new Error("No access token found");
 
   try {
-    const jellyfinInstance = createJellyfinInstance();
-    const api = jellyfinInstance.createApi(serverUrl);
-    api.accessToken = user.AccessToken;
+    const api = createJellyfinApi(serverUrl, user.AccessToken);
 
     const itemsApi = getItemsApi(api);
     const { data } = await itemsApi.getItems({
@@ -1471,9 +1410,7 @@ export async function fetchTVShowDetails(
   const { serverUrl, user } = await getAuthData();
   if (!user.AccessToken) throw new Error("No access token found");
 
-  const jellyfinInstance = createJellyfinInstance();
-  const api = jellyfinInstance.createApi(serverUrl);
-  api.accessToken = user.AccessToken;
+  const api = createJellyfinApi(serverUrl, user.AccessToken);
 
   try {
     const userLibraryApi = new UserLibraryApi(api.configuration);
@@ -1499,9 +1436,7 @@ export async function fetchEpisodeDetails(
   const { serverUrl, user } = await getAuthData();
   if (!user.AccessToken) throw new Error("No access token found");
 
-  const jellyfinInstance = createJellyfinInstance();
-  const api = jellyfinInstance.createApi(serverUrl);
-  api.accessToken = user.AccessToken;
+  const api = createJellyfinApi(serverUrl, user.AccessToken);
 
   try {
     const itemsApi = getItemsApi(api);
@@ -1538,9 +1473,7 @@ export async function getNextEpisodeForSeries(
   const { serverUrl, user } = await getAuthData();
   if (!user.AccessToken) throw new Error("No access token found");
 
-  const jellyfinInstance = createJellyfinInstance();
-  const api = jellyfinInstance.createApi(serverUrl);
-  api.accessToken = user.AccessToken;
+  const api = createJellyfinApi(serverUrl, user.AccessToken);
 
   try {
     const itemsApi = getItemsApi(api);

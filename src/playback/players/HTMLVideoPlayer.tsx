@@ -12,6 +12,7 @@ import {
 import { PlayOptions, Player } from "../types";
 import * as htmlMediaHelper from "../utils/mediaHelper";
 import { getAuthData } from "../../actions/utils";
+import { buildMediaBrowserAuthHeader } from "../../lib/utils";
 
 interface HTMLVideoPlayerProps {
   className?: string;
@@ -180,7 +181,7 @@ export const HTMLVideoPlayer = forwardRef<Player, HTMLVideoPlayerProps>(
                   if (user?.AccessToken) {
                     xhr.setRequestHeader(
                       "Authorization",
-                      `MediaBrowser Token="${user.AccessToken}"`,
+                      buildMediaBrowserAuthHeader(user.AccessToken),
                     );
                   }
                 }

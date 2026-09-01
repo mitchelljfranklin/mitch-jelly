@@ -1,24 +1,63 @@
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
-import { Jellyfin } from "@jellyfin/sdk";
+import { Jellyfin, type Api } from "@jellyfin/sdk";
 import { getDeviceId } from "./device-id";
+import pkg from "@/package.json";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
+export const CLIENT_NAME = "Mitch-Jelly";
+export const DEVICE_NAME = "Mitch-Jelly Web Client";
+
 // Create Jellyfin SDK instance with unique device ID
 export function createJellyfinInstance() {
   return new Jellyfin({
     clientInfo: {
-      name: "Mitch-Jelly",
-      version: "1.0.0",
+      name: CLIENT_NAME,
+      version: pkg.version,
     },
     deviceInfo: {
-      name: "Mitch-Jelly Web Client",
+      name: DEVICE_NAME,
       id: getDeviceId(),
     },
   });
+}
+
+/**
+ * Create an SDK Api instance for a server, with the access token applied.
+ * Single point of SDK API creation — any future SDK migration only needs
+ * to change this function.
+ */
+export function createJellyfinApi(
+  serverUrl: string,
+  accessToken?: string | null,
+): Api {
+  const jellyfinInstance = createJellyfinInstance();
+  const api = jellyfinInstance.createApi(serverUrl);
+  if (accessToken) {
+    api.accessToken = accessToken;
+  }
+  return api;
+}
+
+/**
+ * Full-form Jellyfin authorization header for raw fetch/axios calls.
+ * 12.0 requires client/device identification; the abbreviated
+ * `MediaBrowser Token="..."`-only form omits these.
+ */
+export function buildMediaBrowserAuthHeader(accessToken?: string | null): string {
+  const params = [
+    `Client="${CLIENT_NAME}"`,
+    `Device="${DEVICE_NAME}"`,
+    `DeviceId="${getDeviceId()}"`,
+    `Version="${pkg.version}"`,
+  ];
+  if (accessToken) {
+    params.push(`Token="${accessToken}"`);
+  }
+  return `MediaBrowser ${params.join(", ")}`;
 }
 
 export const getMediaDetailsFromName = (name: string) => {

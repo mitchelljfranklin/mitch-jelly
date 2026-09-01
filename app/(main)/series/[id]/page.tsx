@@ -20,6 +20,7 @@ import { MediaDetail } from "@/src/components/media-page/MediaDetail";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuthError } from "@/src/hooks/use-auth-error";
+import { buildMediaBrowserAuthHeader } from "@/src/lib/utils";
 import ErrorWindow from "@/src/components/error-window";
 
 export default function Show() {
@@ -48,7 +49,7 @@ export default function Show() {
             const base = srv.replace(/\/+$/, "");
             const resp = await fetch(
               `${base}/Items/${id}/Ancestors?userId=${user.Id}`,
-              { headers: { Authorization: `MediaBrowser Token="${user.AccessToken}"` } },
+              { headers: { Authorization: buildMediaBrowserAuthHeader(user.AccessToken) } },
             );
             if (!resp.ok) return null;
             const ancestors = await resp.json();

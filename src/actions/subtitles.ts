@@ -1,6 +1,6 @@
 import { UserLibraryApi } from "@jellyfin/sdk/lib/generated-client/api/user-library-api";
 import { logger } from "@/src/lib/logger";
-import { createJellyfinInstance } from "../lib/utils";
+import { createJellyfinApi, buildMediaBrowserAuthHeader } from "../lib/utils";
 import { JellyfinUserWithToken } from "../types/jellyfin";
 import { StoreAuthData } from "./store/store-auth-data";
 
@@ -85,11 +85,8 @@ export async function getSubtitleContent(
 ): Promise<SubtitleContentResult> {
   try {
     const { serverUrl, user } = await getAuthData();
-    const jellyfinInstance = createJellyfinInstance();
-    const api = jellyfinInstance.createApi(serverUrl);
     if (!user.AccessToken) throw new Error("No access token found");
-
-    api.accessToken = user.AccessToken;
+  const api = createJellyfinApi(serverUrl, user.AccessToken);
 
     // First get the media item to find subtitle streams
     const userLibraryApi = new UserLibraryApi(api.configuration);
@@ -140,7 +137,7 @@ export async function getSubtitleContent(
 
     const response = await fetch(subtitleUrl, {
       headers: {
-        Authorization: `MediaBrowser Token="${user.AccessToken}"`,
+        Authorization: buildMediaBrowserAuthHeader(user.AccessToken),
       },
     });
 

@@ -4,7 +4,7 @@ import type {
   LocalizationOption,
   ServerConfiguration,
 } from "@jellyfin/sdk/lib/generated-client/models";
-import { createJellyfinInstance } from "../lib/utils";
+import { createJellyfinApi } from "../lib/utils";
 import { getAuthData } from "./utils";
 import { isAuthError } from "./media";
 
@@ -17,14 +17,10 @@ export interface DashboardGeneralData {
 export async function fetchDashboardGeneralData(): Promise<DashboardGeneralData> {
   try {
     const { serverUrl, user } = await getAuthData();
-    const jellyfinInstance = createJellyfinInstance();
-    const api = jellyfinInstance.createApi(serverUrl);
-
+    const api = createJellyfinApi(serverUrl, user.AccessToken);
     if (!user.AccessToken) {
       throw new Error("No access token found");
     }
-
-    api.accessToken = user.AccessToken;
 
     const configurationApi = getConfigurationApi(api);
     const localizationApi = getLocalizationApi(api);
@@ -75,14 +71,11 @@ export async function updateDashboardConfiguration(
 ): Promise<void> {
   try {
     const { serverUrl, user } = await getAuthData();
-    const jellyfinInstance = createJellyfinInstance();
-    const api = jellyfinInstance.createApi(serverUrl);
-
+    const api = createJellyfinApi(serverUrl, user.AccessToken);
     if (!user.AccessToken) {
       throw new Error("No access token found");
     }
 
-    api.accessToken = user.AccessToken;
     const configurationApi = getConfigurationApi(api);
 
     await configurationApi.updateConfiguration({

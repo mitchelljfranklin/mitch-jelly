@@ -4,8 +4,7 @@ import { getQuickConnectApi } from "@jellyfin/sdk/lib/utils/api/quick-connect-ap
 import { logger } from "@/src/lib/logger";
 import { Configuration } from "@jellyfin/sdk/lib/generated-client/configuration";
 import type { UserDto } from "@jellyfin/sdk/lib/generated-client/models/user-dto";
-import { createJellyfinInstance } from "../lib/utils";
-import { getDeviceId } from "../lib/device-id";
+import { createJellyfinApi, buildMediaBrowserAuthHeader } from "../lib/utils";
 import { StoreServerURL } from "./store/store-server-url";
 import { StoreAuthData } from "./store/store-auth-data";
 import { StoreSeerrData } from "./store/store-seerr-data";
@@ -13,10 +12,6 @@ import { isAuthError } from "./media";
 
 // Type aliases for easier use
 type JellyfinUserWithToken = UserDto & { AccessToken?: string };
-
-const CLIENT_NAME = "Mitch-Jelly";
-const CLIENT_VERSION = "1.0.0";
-const DEVICE_NAME = "Mitch-Jelly Web Client";
 
 export interface QuickConnectResult {
   Authenticated?: boolean;
@@ -29,25 +24,10 @@ export interface QuickConnectResult {
   DateAdded?: string;
 }
 
-function buildAuthorizationHeader(
-  additional?: Record<string, string | undefined>,
-) {
-  const parts = [
-    `MediaBrowser Client="${CLIENT_NAME}"`,
-    `Device="${DEVICE_NAME}"`,
-    `DeviceId="${getDeviceId()}"`,
-    `Version="${CLIENT_VERSION}"`,
-  ];
-
-  if (additional) {
-    Object.entries(additional).forEach(([key, value]) => {
-      if (value) {
-        parts.push(`${key}="${value}"`);
-      }
-    });
-  }
-
-  return parts.join(", ");
+function buildAuthorizationHeader() {
+  // Pre-auth requests carry no token — the shared helper builds the full
+  // Client/Device/DeviceId/Version form and omits Token when null.
+  return buildMediaBrowserAuthHeader(null);
 }
 
 export async function setServerUrl(url: string) {
@@ -121,11 +101,9 @@ export async function authenticateUser(
 
   // First try with the SDK
   try {
-    const jellyfinInstance = createJellyfinInstance();
-    const api = jellyfinInstance.createApi(serverUrl);
-
+    const api = createJellyfinApi(serverUrl);
     // Log the request details for debugging (without PII)
-    logger.log("Authentication request:", { serverUrl, clientInfo: jellyfinInstance.clientInfo });
+    logger.log("Authentication request:", { serverUrl, client: "Mitch-Jelly" });
 
     const { data: result } = await api.authenticateUserByName(
       username,
@@ -180,7 +158,7 @@ export async function authenticateUser(
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "X-Emby-Authorization": buildAuthorizationHeader(),
+          "Authorization": buildAuthorizationHeader(),
         },
         body: JSON.stringify({
           Username: username,
@@ -239,7 +217,7 @@ async function fetchQuickConnectEnabledPublic(
       method: "GET",
       headers: {
         Accept: "application/json",
-        "X-Emby-Authorization": buildAuthorizationHeader(),
+        "Authorization": buildAuthorizationHeader(),
       },
     });
 
@@ -275,9 +253,7 @@ async function fetchQuickConnectEnabledWithAuth(
       return null;
     }
 
-    const jellyfinInstance = createJellyfinInstance();
-    const api = jellyfinInstance.createApi(serverUrl);
-    api.accessToken = storedUser.AccessToken;
+    const api = createJellyfinApi(serverUrl, storedUser.AccessToken);
 
     const quickConnectApi = getQuickConnectApi(api);
     const { data } = await quickConnectApi.getQuickConnectEnabled();
@@ -322,7 +298,7 @@ export async function initiateQuickConnect(): Promise<QuickConnectResult | null>
       method: "POST",
       headers: {
         Accept: "application/json",
-        "X-Emby-Authorization": buildAuthorizationHeader(),
+        "Authorization": buildAuthorizationHeader(),
       },
     });
 
@@ -360,7 +336,7 @@ export async function getQuickConnectStatus(
         method: "GET",
         headers: {
           Accept: "application/json",
-          "X-Emby-Authorization": buildAuthorizationHeader(),
+          "Authorization": buildAuthorizationHeader(),
         },
       },
     );
@@ -400,7 +376,7 @@ export async function authenticateWithQuickConnect(
         headers: {
           "Content-Type": "application/json",
           Accept: "application/json",
-          "X-Emby-Authorization": buildAuthorizationHeader(),
+          "Authorization": buildAuthorizationHeader(),
         },
         body: JSON.stringify({ Secret: secret }),
       },
@@ -478,9 +454,7 @@ export async function changeUserPassword(
     throw new Error("Missing authentication token. Please sign in again.");
   }
 
-  const jellyfinInstance = createJellyfinInstance();
-  const api = jellyfinInstance.createApi(authData.serverUrl);
-  api.accessToken = storedUser.AccessToken;
+  const api = createJellyfinApi(authData.serverUrl, storedUser.AccessToken);
   const userApi = getUserApi(api);
 
   try {
@@ -535,9 +509,7 @@ export async function authorizeQuickConnectCode(code: string): Promise<void> {
     throw new Error("Missing account information. Please sign in again.");
   }
 
-  const jellyfinInstance = createJellyfinInstance();
-  const api = jellyfinInstance.createApi(authData.serverUrl);
-  api.accessToken = storedUser.AccessToken;
+  const api = createJellyfinApi(authData.serverUrl, storedUser.AccessToken);
 
   const quickConnectApi = getQuickConnectApi(api);
 
@@ -585,7 +557,7 @@ export async function debugServerConnection(): Promise<void> {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "X-Emby-Authorization": buildAuthorizationHeader(),
+        "Authorization": buildAuthorizationHeader(),
       },
       body: JSON.stringify({
         Username: process.env.NODE_ENV === "development" ? "test" : "",

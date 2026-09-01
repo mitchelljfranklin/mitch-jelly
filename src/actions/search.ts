@@ -3,7 +3,7 @@ import { PersonsApi } from "@jellyfin/sdk/lib/generated-client/api/persons-api";
 import { BaseItemDto } from "@jellyfin/sdk/lib/generated-client/models/base-item-dto";
 import { BaseItemKind } from "@jellyfin/sdk/lib/generated-client/models/base-item-kind";
 import { ItemFields } from "@jellyfin/sdk/lib/generated-client/models/item-fields";
-import { createJellyfinInstance } from "../lib/utils";
+import { createJellyfinApi } from "../lib/utils";
 import { JellyfinUserWithToken } from "../types/jellyfin";
 import { StoreAuthData } from "./store/store-auth-data";
 
@@ -36,9 +36,7 @@ export async function searchItems(query: string): Promise<JellyfinItem[]> {
 
   if (!query.trim()) return [];
 
-  const jellyfinInstance = createJellyfinInstance();
-  const api = jellyfinInstance.createApi(serverUrl);
-  api.accessToken = user.AccessToken;
+  const api = createJellyfinApi(serverUrl, user.AccessToken);
 
   try {
     // Search for media items (movies, series, episodes)

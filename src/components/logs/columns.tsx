@@ -16,6 +16,7 @@ import { LogViewerDialog } from "./log-viewer-dialog";
 import { LogFile } from "@jellyfin/sdk/lib/generated-client/models";
 import { useState } from "react";
 import { useAuth } from "../../hooks/useAuth";
+import { buildMediaBrowserAuthHeader } from "../../lib/utils";
 
 // Wrapper component to manage dialog state for both name and actions
 function LogRowWrapper({
@@ -82,7 +83,7 @@ function LogActionsCell({
                   `${serverUrl}/System/Logs/Log?name=${encodeURIComponent(log.Name!)}`,
                   {
                     headers: {
-                      Authorization: `MediaBrowser Token="${accessToken}"`,
+                      Authorization: buildMediaBrowserAuthHeader(accessToken),
                     },
                   },
                 );

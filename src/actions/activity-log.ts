@@ -1,6 +1,6 @@
 import { getActivityLogApi } from "@jellyfin/sdk/lib/utils/api/activity-log-api";
 import type { ActivityLogEntryQueryResult } from "@jellyfin/sdk/lib/generated-client/models";
-import { createJellyfinInstance } from "../lib/utils";
+import { createJellyfinApi } from "../lib/utils";
 import { getAuthData } from "./utils";
 import { isAuthError } from "./media";
 
@@ -17,14 +17,11 @@ export async function fetchActivityLogEntries({
 }: FetchActivityLogParams): Promise<ActivityLogEntryQueryResult> {
   try {
     const { serverUrl, user } = await getAuthData();
-    const jellyfinInstance = createJellyfinInstance();
-    const api = jellyfinInstance.createApi(serverUrl);
-
+    const api = createJellyfinApi(serverUrl, user.AccessToken);
     if (!user.AccessToken) {
       throw new Error("No access token found");
     }
 
-    api.accessToken = user.AccessToken;
     const activityLogApi = getActivityLogApi(api);
 
     const { data } = await activityLogApi.getLogEntries({
