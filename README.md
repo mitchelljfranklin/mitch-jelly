@@ -1,3 +1,14 @@
+As of November 2026, I will no longer be able to dedicate time to this project.
+
+**Initial Work**
+Initially, I took the non-maintained source code of Aperture and worked on enhancing it to address the issues with JellyFin before its current release.
+
+**Current Status**
+With the current stable 12x release, these issues are no longer relevant.
+
+**Future Plans**
+However, I will revisit this project when time permits, as the SDK is changing and will require an overhaul.
+
 # Mitch-Jelly
 
 <p align="center">
